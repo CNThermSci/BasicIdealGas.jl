@@ -43,13 +43,26 @@ end
 # External constructors
 # ---------------------
 
+# Set type conversion / 1 indirection
 function SpecificHeat{ℙ}(
         ID::Symbol, CP_F::Function, M::Real,
         Tmin::Real, Tmax::Real, Tref::Real,
         uref::Real, sref::Real, B::Symbol,
-        RU::Real = RU
+        RU::Real = ℙ(Ru),
     ) where {ℙ <: FLOAT}
     return SpecificHeat(ID, CP_F, P.((M, Tmin, Tmax, Tref, uref, sref))..., B, ℙ(RU))
+end
+
+# Promotion type conversion / 2 indirections
+function SpecificHeat(
+        ID::Symbol, CP_F::Function, M::Real,
+        Tmin::Real, Tmax::Real, Tref::Real,
+        uref::Real, sref::Real, B::Symbol,
+        RU::Real = Ru
+    )
+    ℙ = promote_type(typeof.((M, Tmin, Tmax, Tref, uref, sref))...)
+    ℙ = ℙ <: FLOAT ? ℙ : Float64
+    return SpecificHeat{ℙ}(ID, CP_F, M, Tmin, Tmax, Tref, uref, sref, B, ℙ(RU))
 end
 
 # Export
