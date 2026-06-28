@@ -28,11 +28,11 @@ struct SpecificHeat{ℙ <: FLOAT}
         uref::ℙ, sref::ℙ, B::Symbol,
         RU::ℙ
     ) where {ℙ <: FLOAT} = begin
-        @assert ID != Symbol("")
-        @assert RU > zero(ℙ)
-        @assert M > zero(ℙ)
-        @assert zero(ℙ) <= Tmin <= Tref < Tmax
-        @assert B in (:MA, :MO)
+        @assert(ID != Symbol(""), "Error: Empty ID")
+        @assert(RU > zero(ℙ), "Error: RU <= 0")
+        @assert(M > zero(ℙ), "Error: M <= 0")
+        @assert(zero(ℙ) <= Tmin <= Tref < Tmax, "Error: Temperature values")
+        @assert(B in (:MA, :MO), "Error: B should be either :MA or :MO")
         mult = B == :MA ? M : one(ℙ)
         new{ℙ}(ID, T -> ℙ(CP_F(T) * mult), M, Tmin, Tmax, Tref, uref * mult, sref * mult, RU)
     end
