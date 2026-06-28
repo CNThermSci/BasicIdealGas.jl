@@ -22,6 +22,8 @@ struct SpecificHeat{ℙ <: FLOAT}
     uref::ℙ
     sref::ℙ
     RU::ℙ
+    # Internal constructors
+    # Validating
     SpecificHeat(
         ID::Symbol, CP_F::Function, M::ℙ,
         Tmin::ℙ, Tmax::ℙ, Tref::ℙ,
@@ -38,11 +40,32 @@ struct SpecificHeat{ℙ <: FLOAT}
     end
 end
 
+# External constructors
+# ---------------------
+
+function SpecificHeat{ℙ}(
+        ID::Symbol, CP_F::Function, M::Real,
+        Tmin::Real, Tmax::Real, Tref::Real,
+        uref::Real, sref::Real, B::Symbol,
+        RU::Real = RU
+    ) where {ℙ <: FLOAT}
+    return SpecificHeat(ID, CP_F, P.((M, Tmin, Tmax, Tref, uref, sref))..., B, ℙ(RU))
+end
+
+# Export
+# ------
+
 export SpecificHeat
+
+# Show
+# ----
 
 function Base.show(io::IO, S::SpecificHeat)
     return print(io, "$(S.id) cp(T) model, $(S.Tmin) <= T <= $(S.Tmax)")
 end
+
+# User-facing functions
+# ---------------------
 
 import Base: cp
 
