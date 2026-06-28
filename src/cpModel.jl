@@ -1,34 +1,40 @@
 # cpModel.jl - General Specific Heat Model
 
+# Type aliasing
+# -------------
+
+# IEEE-754 normalized floating point types of half, single, and double precision
+FLOAT = Base.IEEEFloat
+
+
 const Ru = 8.31447  # Universal R, kJ/kmol·K
 
-struct SpecificHeat
+# Structure (type) definition
+# ---------------------------
+
+struct SpecificHeat{ℙ <: FLOAT}
     id::Symbol
     cp_f::Function
-    M::Float64
-    Tmin::Float64
-    Tmax::Float64
-    Tref::Float64
-    uref::Float64
-    sref::Float64
-    RU::Float64
+    M::ℙ
+    Tmin::ℙ
+    Tmax::ℙ
+    Tref::ℙ
+    uref::ℙ
+    sref::ℙ
+    RU::ℙ
     SpecificHeat(
-        ID::Symbol, CP_F::Function, M::Real,
-        Tmin::Real, Tmax::Real, Tref::Real,
-        uref::Real, sref::Real, B::Symbol,
-        RU::Real = Ru
-    ) = begin
+        ID::Symbol, CP_F::Function, M::ℙ,
+        Tmin::ℙ, Tmax::ℙ, Tref::ℙ,
+        uref::ℙ, sref::ℙ, B::Symbol,
+        RU::ℙ
+    ) where {ℙ <: FLOAT} = begin
         @assert ID != Symbol("")
-        @assert RU > 0
-        @assert M > 0
-        @assert 0 <= Tmin <= Tref < Tmax
+        @assert RU > zero(ℙ)
+        @assert M > zero(ℙ)
+        @assert zero(ℙ) <= Tmin <= Tref < Tmax
         @assert B in (:MA, :MO)
-        mult = B == :MA ? M : 1.0
-        new(
-            ID, T -> Float64(CP_F(T) * mult), Float64(M),
-            Float64(Tmin), Float64(Tmax), Float64(Tref),
-            Float64(uref * mult), Float64(sref * mult), RU
-        )
+        mult = B == :MA ? M : one(ℙ)
+        new{ℙ}(ID, T -> ℙ(CP_F(T) * mult), M, Tmin, Tmax, Tref, uref * mult, sref * mult, RU)
     end
 end
 
