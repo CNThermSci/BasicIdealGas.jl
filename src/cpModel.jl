@@ -15,13 +15,13 @@ const Ru = 8.31447  # Universal R, kJ/kmol·K
 struct SpecificHeat{ℙ <: FLOAT}
     id::Symbol
     cp_f::Function
-    M::ℙ
-    Tmin::ℙ
-    Tmax::ℙ
-    Tref::ℙ
-    uref::ℙ
-    sref::ℙ
-    RU::ℙ
+    M::ℙ        # kg/kmol
+    Tmin::ℙ     # K
+    Tmax::ℙ     # K
+    Tref::ℙ     # K
+    uref::ℙ     # kJ/kmol
+    sref::ℙ     # kJ/kmol⋅K
+    RU::ℙ       # kJ/kmol⋅K
     # Internal constructors
     # Validating
     SpecificHeat(
@@ -60,9 +60,44 @@ function SpecificHeat(
         uref::Real, sref::Real, B::Symbol,
         RU::Real = Ru
     )
-    ℙ = promote_type(typeof.((M, Tmin, Tmax, Tref, uref, sref))...)
+    ℙ = promote_type(typeof.((M, Tmin, Tmax, Tref, uref, sref))...) # RU left out of promotion
     ℙ = ℙ <: FLOAT ? ℙ : Float64
     return SpecificHeat{ℙ}(ID, CP_F, M, Tmin, Tmax, Tref, uref, sref, B, ℙ(RU))
+end
+
+# Set type with unit conversion and stripping / 2 indirections
+function SpecificHeat{ℙ}(
+        ID::Symbol,
+        CP_F::Function,
+        M::Union{Real, Quantity{<:Real, dimension(u"kg/kmol")}},
+        Tmin::Union{Real, Quantity{<:Real, dimension(u"K")}},
+        Tmax::Union{Real, Quantity{<:Real, dimension(u"K")}},
+        Tref::Union{Real, Quantity{<:Real, dimension(u"K")}},
+        uref::Union{
+            Quantity{<:Real, dimension(u"kJ/kmol")},
+            Quantity{<:Real, dimension(u"kJ/kg")},
+        },
+        sref::Union{
+            Quantity{<:Real, dimension(u"kJ/kmol/K")},
+            Quantity{<:Real, dimension(u"kJ/kg/K")},
+        },
+        RU::Union{Real, Quantity{<:Real, dimension(u"kJ/kmol/K")}} = ℙ(Ru) * u"kJ/kmol/K",
+    ) where {ℙ <: FLOAT}
+    _M = M isa Quantity ? uconvert(u"kg/kmol", M).val : M
+    _uMO = uref isa Quantity{<:Real, dimension(u"kJ/kmol")} ? (
+        uconvert(u"kJ/kmol", uref).val) : (
+        uconvert(u"kJ/kg", uref).val * _M)
+    _sMO = sref isa Quantity{<:Real, dimension(u"kJ/kmol/K")} ? (
+        uconvert(u"kJ/kmol/K", sref).val) : (
+        uconvert(u"kJ/kg/K", sref).val * _M)
+    return SpecificHeat{ℙ}(
+        ID, CP_F, _M,
+        Tmin isa Quantity ? uconvert(u"K", Tmin).val : Tmin,
+        Tmax isa Quantity ? uconvert(u"K", Tmax).val : Tmax,
+        Tref isa Quantity ? uconvert(u"K", Tref).val : Tref,
+        _uMO, _sMO, :MO,
+        RU isa Quantity ? uconvert(u"kJ/kmol/K", RU).val : RU,
+    )
 end
 
 # Export
