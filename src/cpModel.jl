@@ -100,6 +100,29 @@ function SpecificHeat{ℙ}(
     )
 end
 
+# Promotion type with unit conversion and stripping / 3 indirections
+function SpecificHeat(
+        ID::Symbol,
+        CP_F::Function,
+        M::Union{𝕄, Quantity{<:𝕄, dimension(u"kg/kmol")}},
+        Tmin::Union{𝕀, Quantity{<:𝕀, dimension(u"K")}},
+        Tmax::Union{𝔸, Quantity{<:𝔸, dimension(u"K")}},
+        Tref::Union{𝔼, Quantity{<:𝔼, dimension(u"K")}},
+        uref::Union{
+            Quantity{<:𝕌, dimension(u"kJ/kmol")},
+            Quantity{<:𝕌, dimension(u"kJ/kg")},
+        },
+        sref::Union{
+            Quantity{<:𝕊, dimension(u"kJ/kmol/K")},
+            Quantity{<:𝕊, dimension(u"kJ/kg/K")},
+        },
+        RU::Union{ℝ, Quantity{<:ℝ, dimension(u"kJ/kmol/K")}} = ℙ(Ru) * u"kJ/kmol/K",
+    ) where {𝕄 <: Real, 𝕀 <: Real, 𝔸 <: Real, 𝔼 <: Real, 𝕌 <: Real, 𝕊 <: Real, ℝ <: Real}
+    ℙ = promote_type(𝕄, 𝕀, 𝔸, 𝔼, 𝕌, 𝕊, ℝ)
+    ℙ = ℙ <: FLOAT ? ℙ : Float64
+    return SpecificHeat{ℙ}(ID, CP_F, M, Tmin, Tmax, Tref, uref, sref, RU)
+end
+
 # Export
 # ------
 
