@@ -99,8 +99,8 @@ function SpecificHeat{ℙ}(
     return SpecificHeat{ℙ}(
         ID, FN, _M,
         Tmin isa Quantity ? uconvert(u"K", Tmin).val : Tmin,
-        Tmax isa Quantity ? uconvert(u"K", Tmax).val : Tmax,
         Tref isa Quantity ? uconvert(u"K", Tref).val : Tref,
+        Tmax isa Quantity ? uconvert(u"K", Tmax).val : Tmax,
         _uMO, _sMO,
         RU isa Quantity ? uconvert(u"kJ/kmol/K", RU).val : RU, :MO,
     )
