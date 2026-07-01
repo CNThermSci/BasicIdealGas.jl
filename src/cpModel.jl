@@ -29,7 +29,7 @@ struct SpecificHeat{ℙ <: FLOAT}
     # Validating
     SpecificHeat(
         ID::Symbol, FN::Function, M::ℙ,
-        Tmin::ℙ, Tmax::ℙ, Tref::ℙ,
+        Tmin::ℙ, Tref::ℙ, Tmax::ℙ,
         uref::ℙ, sref::ℙ, RU::ℙ,
         B::Symbol
     ) where {ℙ <: FLOAT} = begin
@@ -39,9 +39,9 @@ struct SpecificHeat{ℙ <: FLOAT}
         @assert(RU > zero(ℙ), "Error: RU <= 0")
         @assert(B in (:MA, :MO), "Error: B should be either :MA or :MO")
         return B == :MA ? (
-            new{ℙ}(ID, ℙ ⊚ T -> FN(T) * M, M, Tmin, Tmax, Tref, uref * M, sref * M, RU)
+            new{ℙ}(ID, ℙ ⊚ T -> FN(T) * M, M, Tmin, Tref, Tmax, uref * M, sref * M, RU)
         ) : (
-            new{ℙ}(ID, ℙ ⊚ FN, M, Tmin, Tmax, Tref, uref, sref, RU)
+            new{ℙ}(ID, ℙ ⊚ FN, M, Tmin, Tref, Tmax, uref, sref, RU)
         )
     end
 end
@@ -56,7 +56,7 @@ function SpecificHeat{ℙ}(
         uref::Real, sref::Real, RU::Real,
         B::Symbol
     ) where {ℙ <: FLOAT}
-    return SpecificHeat(ID, ℙ ⊚ FN, ℙ.((M, Tmin, Tmax, Tref, uref, sref, RU))..., B)
+    return SpecificHeat(ID, ℙ ⊚ FN, ℙ.((M, Tmin, Tref, Tmax, uref, sref, RU))..., B)
 end
 
 # Promotion type conversion / 2 indirections
@@ -66,9 +66,9 @@ function SpecificHeat(
         uref::Real, sref::Real, B::Symbol,
         RU::Real
     )
-    ℙ = promote_type(typeof.((M, Tmin, Tmax, Tref, uref, sref))...) # RU left out of promotion
+    ℙ = promote_type(typeof.((M, Tmin, Tref, Tmax, uref, sref))...) # RU left out of promotion
     ℙ = ℙ <: FLOAT ? ℙ : Float64
-    return SpecificHeat{ℙ}(ID, FN, M, Tmin, Tmax, Tref, uref, sref, B, ℙ(RU))
+    return SpecificHeat{ℙ}(ID, FN, M, Tmin, Tref, Tmax, uref, sref, B, ℙ(RU))
 end
 
 # Set type with unit conversion and stripping / 2 indirections
@@ -126,7 +126,7 @@ function SpecificHeat(
     ) where {𝕄 <: Real, 𝕀 <: Real, 𝔸 <: Real, 𝔼 <: Real, 𝕌 <: Real, 𝕊 <: Real, ℝ <: Real}
     ℙ = promote_type(𝕄, 𝕀, 𝔸, 𝔼, 𝕌, 𝕊, ℝ)
     ℙ = ℙ <: FLOAT ? ℙ : Float64
-    return SpecificHeat{ℙ}(ID, FN, M, Tmin, Tmax, Tref, uref, sref, RU)
+    return SpecificHeat{ℙ}(ID, FN, M, Tmin, Tref, Tmax, uref, sref, RU)
 end
 
 # Conversions
@@ -136,7 +136,7 @@ import Base: convert
 
 function convert(::Type{SpecificHeat{ℙ}}, ξ::SpecificHeat{ℚ}) where {ℙ <: FLOAT, ℚ <: FLOAT}
     return SpecificHeat{ℙ}(
-        ξ.ID, ξ.FN, ξ.M, ξ.Tmin, ξ.Tmax, ξ.Tref, ξ.uref, ξ.sref, ξ.RU, :MO
+        ξ.ID, ξ.FN, ξ.M, ξ.Tmin, ξ.Tref, ξ.Tmax, ξ.uref, ξ.sref, ξ.RU, :MO
     )
 end
 
