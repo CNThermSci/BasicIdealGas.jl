@@ -45,6 +45,14 @@ adjswp(t::Tuple) = [
             pars = (ID, CP, ℙ.((M, temp[2:end]..., uref, sref, RU))..., B)
             @test_throws "Error: Temperature values" SpecificHeat(pars...)
         end
+        pars = ℙ.((M, Tmin, Tref, Tmax, uref, sref, 0))
+        @test_throws "Error: RU <= 0" SpecificHeat(ID, CP, pars..., B)
+        pars = ℙ.((M, Tmin, Tref, Tmax, uref, sref, -RU))
+        @test_throws "Error: RU <= 0" SpecificHeat(ID, CP, pars..., B)
+        pars = (ID, CP, ℙ.((M, Tmin, Tref, Tmax, uref, sref, RU))...)
+        for b in (:ma, :mo, :other, Symbol(""))
+            @test_throws "Error: B should be either :MA or :MO" SpecificHeat(pars..., b)
+        end
     end
 end
 
