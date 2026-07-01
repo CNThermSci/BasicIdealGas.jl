@@ -12,15 +12,12 @@ FLOAT = Base.IEEEFloat
 # Chained Precision Composition Simplification
 ⊚(p::Type{ℙ}, c::ComposedFunction{Type{ℚ}}) where {ℙ <: FLOAT, ℚ <: FLOAT} = ⊚(p, c.inner)
 
-# Universal R, kJ/kmol·K
-const Ru = 8.31447
-
 # Structure (type) definition
 # ---------------------------
 
 struct SpecificHeat{ℙ <: FLOAT}
-    id::Symbol
-    cp_f::Function
+    ID::Symbol
+    FN::Function
     M::ℙ        # kg/kmol
     Tmin::ℙ     # K
     Tmax::ℙ     # K
@@ -31,20 +28,20 @@ struct SpecificHeat{ℙ <: FLOAT}
     # Internal constructors
     # Validating
     SpecificHeat(
-        ID::Symbol, CP_F::Function, M::ℙ,
+        ID::Symbol, FN::Function, M::ℙ,
         Tmin::ℙ, Tmax::ℙ, Tref::ℙ,
-        uref::ℙ, sref::ℙ, B::Symbol,
-        RU::ℙ
+        uref::ℙ, sref::ℙ, RU::ℙ,
+        B::Symbol
     ) where {ℙ <: FLOAT} = begin
         @assert(ID != Symbol(""), "Error: Empty ID")
-        @assert(RU > zero(ℙ), "Error: RU <= 0")
         @assert(M > zero(ℙ), "Error: M <= 0")
         @assert(zero(ℙ) <= Tmin <= Tref < Tmax, "Error: Temperature values")
+        @assert(RU > zero(ℙ), "Error: RU <= 0")
         @assert(B in (:MA, :MO), "Error: B should be either :MA or :MO")
         return B == :MA ? (
-            new{ℙ}(ID, ℙ ⊚ T -> CP_F(T) * M, M, Tmin, Tmax, Tref, uref * M, sref * M, RU)
+            new{ℙ}(ID, ℙ ⊚ T -> FN(T) * M, M, Tmin, Tmax, Tref, uref * M, sref * M, RU)
         ) : (
-            new{ℙ}(ID, ℙ ⊚ CP_F, M, Tmin, Tmax, Tref, uref, sref, RU)
+            new{ℙ}(ID, ℙ ⊚ FN, M, Tmin, Tmax, Tref, uref, sref, RU)
         )
     end
 end
@@ -54,30 +51,30 @@ end
 
 # Set type conversion / 1 indirection
 function SpecificHeat{ℙ}(
-        ID::Symbol, CP_F::Function, M::Real,
+        ID::Symbol, FN::Function, M::Real,
         Tmin::Real, Tmax::Real, Tref::Real,
-        uref::Real, sref::Real, B::Symbol,
-        RU::Real = ℙ(Ru),
+        uref::Real, sref::Real, RU::Real,
+        B::Symbol
     ) where {ℙ <: FLOAT}
-    return SpecificHeat(ID, ℙ ⊚ CP_F, ℙ.((M, Tmin, Tmax, Tref, uref, sref))..., B, ℙ(RU))
+    return SpecificHeat(ID, ℙ ⊚ FN, ℙ.((M, Tmin, Tmax, Tref, uref, sref, RU))..., B)
 end
 
 # Promotion type conversion / 2 indirections
 function SpecificHeat(
-        ID::Symbol, CP_F::Function, M::Real,
+        ID::Symbol, FN::Function, M::Real,
         Tmin::Real, Tmax::Real, Tref::Real,
         uref::Real, sref::Real, B::Symbol,
-        RU::Real = Ru
+        RU::Real
     )
     ℙ = promote_type(typeof.((M, Tmin, Tmax, Tref, uref, sref))...) # RU left out of promotion
     ℙ = ℙ <: FLOAT ? ℙ : Float64
-    return SpecificHeat{ℙ}(ID, CP_F, M, Tmin, Tmax, Tref, uref, sref, B, ℙ(RU))
+    return SpecificHeat{ℙ}(ID, FN, M, Tmin, Tmax, Tref, uref, sref, B, ℙ(RU))
 end
 
 # Set type with unit conversion and stripping / 2 indirections
 function SpecificHeat{ℙ}(
         ID::Symbol,
-        CP_F::Function,
+        FN::Function,
         M::Union{Real, Quantity{<:Real, dimension(u"kg/kmol")}},
         Tmin::Union{Real, Quantity{<:Real, dimension(u"K")}},
         Tmax::Union{Real, Quantity{<:Real, dimension(u"K")}},
@@ -90,7 +87,7 @@ function SpecificHeat{ℙ}(
             Quantity{<:Real, dimension(u"kJ/kmol/K")},
             Quantity{<:Real, dimension(u"kJ/kg/K")},
         },
-        RU::Union{Real, Quantity{<:Real, dimension(u"kJ/kmol/K")}} = ℙ(Ru) * u"kJ/kmol/K",
+        RU::Union{Real, Quantity{<:Real, dimension(u"kJ/kmol/K")}}
     ) where {ℙ <: FLOAT}
     _M = M isa Quantity ? uconvert(u"kg/kmol", M).val : M
     _uMO = uref isa Quantity{<:Real, dimension(u"kJ/kmol")} ? (
@@ -100,7 +97,7 @@ function SpecificHeat{ℙ}(
         uconvert(u"kJ/kmol/K", sref).val) : (
         uconvert(u"kJ/kg/K", sref).val * _M)
     return SpecificHeat{ℙ}(
-        ID, CP_F, _M,
+        ID, FN, _M,
         Tmin isa Quantity ? uconvert(u"K", Tmin).val : Tmin,
         Tmax isa Quantity ? uconvert(u"K", Tmax).val : Tmax,
         Tref isa Quantity ? uconvert(u"K", Tref).val : Tref,
@@ -112,7 +109,7 @@ end
 # Promotion type with unit conversion and stripping / 3 indirections
 function SpecificHeat(
         ID::Symbol,
-        CP_F::Function,
+        FN::Function,
         M::Union{𝕄, Quantity{<:𝕄, dimension(u"kg/kmol")}},
         Tmin::Union{𝕀, Quantity{<:𝕀, dimension(u"K")}},
         Tmax::Union{𝔸, Quantity{<:𝔸, dimension(u"K")}},
@@ -125,11 +122,11 @@ function SpecificHeat(
             Quantity{<:𝕊, dimension(u"kJ/kmol/K")},
             Quantity{<:𝕊, dimension(u"kJ/kg/K")},
         },
-        RU::Union{ℝ, Quantity{<:ℝ, dimension(u"kJ/kmol/K")}} = ℙ(Ru) * u"kJ/kmol/K",
+        RU::Union{ℝ, Quantity{<:ℝ, dimension(u"kJ/kmol/K")}}
     ) where {𝕄 <: Real, 𝕀 <: Real, 𝔸 <: Real, 𝔼 <: Real, 𝕌 <: Real, 𝕊 <: Real, ℝ <: Real}
     ℙ = promote_type(𝕄, 𝕀, 𝔸, 𝔼, 𝕌, 𝕊, ℝ)
     ℙ = ℙ <: FLOAT ? ℙ : Float64
-    return SpecificHeat{ℙ}(ID, CP_F, M, Tmin, Tmax, Tref, uref, sref, RU)
+    return SpecificHeat{ℙ}(ID, FN, M, Tmin, Tmax, Tref, uref, sref, RU)
 end
 
 # Conversions
@@ -139,7 +136,7 @@ import Base: convert
 
 function convert(::Type{SpecificHeat{ℙ}}, ξ::SpecificHeat{ℚ}) where {ℙ <: FLOAT, ℚ <: FLOAT}
     return SpecificHeat{ℙ}(
-        ξ.id, ξ.cp_f, ξ.M, ξ.Tmin, ξ.Tmax, ξ.Tref, ξ.uref, ξ.sref, :MO, ξ.RU
+        ξ.ID, ξ.FN, ξ.M, ξ.Tmin, ξ.Tmax, ξ.Tref, ξ.uref, ξ.sref, ξ.RU, :MO
     )
 end
 
@@ -158,7 +155,7 @@ export SpecificHeat
 # ----
 
 function Base.show(io::IO, S::SpecificHeat)
-    return print(io, "$(S.id) cp(T) model, $(S.Tmin) <= T <= $(S.Tmax)")
+    return print(io, "$(S.ID) cp(T) model, $(S.Tmin) <= T <= $(S.Tmax)")
 end
 
 # User-facing functions
@@ -171,7 +168,7 @@ function cp(C::SpecificHeat, T::Real, B::Symbol)
     @assert B in (:MA, :MO)
     @assert C.Tmin <= T <= C.Tmax
     divisor = B == :MA ? C.M : 1.0
-    return C.cp_f(T) / divisor
+    return C.FN(T) / divisor
 end
 
 function R(C::SpecificHeat, B::Symbol)
