@@ -52,7 +52,7 @@ end
 # Set type conversion / 1 indirection
 function SpecificHeat{ℙ}(
         ID::Symbol, FN::Function, M::Real,
-        Tmin::Real, Tmax::Real, Tref::Real,
+        Tmin::Real, Tref::Real, Tmax::Real,
         uref::Real, sref::Real, RU::Real,
         B::Symbol
     ) where {ℙ <: FLOAT}
@@ -62,7 +62,7 @@ end
 # Promotion type conversion / 2 indirections
 function SpecificHeat(
         ID::Symbol, FN::Function, M::Real,
-        Tmin::Real, Tmax::Real, Tref::Real,
+        Tmin::Real, Tref::Real, Tmax::Real,
         uref::Real, sref::Real, B::Symbol,
         RU::Real
     )
@@ -77,8 +77,8 @@ function SpecificHeat{ℙ}(
         FN::Function,
         M::Union{Real, Quantity{<:Real, dimension(u"kg/kmol")}},
         Tmin::Union{Real, Quantity{<:Real, dimension(u"K")}},
-        Tmax::Union{Real, Quantity{<:Real, dimension(u"K")}},
         Tref::Union{Real, Quantity{<:Real, dimension(u"K")}},
+        Tmax::Union{Real, Quantity{<:Real, dimension(u"K")}},
         uref::Union{
             Quantity{<:Real, dimension(u"kJ/kmol")},
             Quantity{<:Real, dimension(u"kJ/kg")},
@@ -101,8 +101,8 @@ function SpecificHeat{ℙ}(
         Tmin isa Quantity ? uconvert(u"K", Tmin).val : Tmin,
         Tmax isa Quantity ? uconvert(u"K", Tmax).val : Tmax,
         Tref isa Quantity ? uconvert(u"K", Tref).val : Tref,
-        _uMO, _sMO, :MO,
-        RU isa Quantity ? uconvert(u"kJ/kmol/K", RU).val : RU,
+        _uMO, _sMO,
+        RU isa Quantity ? uconvert(u"kJ/kmol/K", RU).val : RU, :MO,
     )
 end
 
@@ -112,8 +112,8 @@ function SpecificHeat(
         FN::Function,
         M::Union{𝕄, Quantity{<:𝕄, dimension(u"kg/kmol")}},
         Tmin::Union{𝕀, Quantity{<:𝕀, dimension(u"K")}},
-        Tmax::Union{𝔸, Quantity{<:𝔸, dimension(u"K")}},
-        Tref::Union{𝔼, Quantity{<:𝔼, dimension(u"K")}},
+        Tref::Union{𝔸, Quantity{<:𝔸, dimension(u"K")}},
+        Tmax::Union{𝔼, Quantity{<:𝔼, dimension(u"K")}},
         uref::Union{
             Quantity{<:𝕌, dimension(u"kJ/kmol")},
             Quantity{<:𝕌, dimension(u"kJ/kg")},
