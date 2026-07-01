@@ -165,8 +165,18 @@ export SpecificHeat
 # Show
 # ----
 
-function Base.show(io::IO, S::SpecificHeat)
-    return print(io, "$(S.ID) cp(T) model, $(S.Tmin) <= T <= $(S.Tmax)")
+# Auxiliary methods
+function subscript(x::Int)
+    asSub(c::Char) = Char(Int(c) - Int('0') + Int('₀'))
+    map(asSub, "$(x)")
+end
+
+pDeco(::Type{Float16}) = subscript(16)
+pDeco(::Type{Float32}) = subscript(32)
+pDeco(::Type{Float64}) = subscript(64)
+
+function Base.show(io::IO, S::SpecificHeat{ℙ}) where {ℙ <: FLOAT}
+    return print(io, "$(S.ID) cp$(pDeco(ℙ))(T) model, $(S.Tmin) <= T <= $(S.Tmax)")
 end
 
 # User-facing functions
@@ -174,11 +184,10 @@ end
 
 import Base: cp
 
-function cp(C::SpecificHeat, T::Real, B::Symbol)
-    T = Float64(T)
+function cp(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
     @assert B in (:MA, :MO)
     @assert C.Tmin <= T <= C.Tmax
-    divisor = B == :MA ? C.M : 1.0
+    divisor = B == :MA ? C.M : one(ℙ)
     return C.FN(T) / divisor
 end
 
