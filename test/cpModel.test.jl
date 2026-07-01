@@ -68,8 +68,19 @@ end
     end
     # Set type with unit conversion and stripping / 2 indirections
     for ℙ in union2vec(Base.IEEEFloat)
-        pars = (ID, FN, M*u"kg/kmol", Tmin, Tref, Tmax, uref*u"kJ/kmol", sref*u"kJ/kmol/K", RU)
-        @test SpecificHeat{ℙ}(pars...) isa SpecificHeat{ℙ}
+        pars = (ID, FN, M*u"kg/kmol", Tmin, Tref, Tmax, uref*u"kJ/kmol", sref*u"kJ/kmol/K")
+        @test SpecificHeat{ℙ}(pars..., RU) isa SpecificHeat{ℙ}
+    end
+    uref, sref, M, RU = 6885, 213685//1000, 4401//100, 8.31447
+    # Promotion type conversion / 2 indirections
+    for ℙ in union2vec(Base.IEEEFloat)
+        pars = (ID, FN, M, Tmin, Tref, Tmax, uref, sref, ℙ(RU), B)
+        @test SpecificHeat(pars...) isa SpecificHeat{ℙ}
+    end
+    # Promotion type with unit conversion and stripping / 3 indirections
+    for ℙ in union2vec(Base.IEEEFloat)
+        pars = (ID, FN, M*u"kg/kmol", Tmin, Tref, Tmax, uref*u"kJ/kmol", sref*u"kJ/kmol/K")
+        @test SpecificHeat(pars..., ℙ(RU)) isa SpecificHeat{ℙ}
     end
 end
 
