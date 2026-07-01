@@ -84,3 +84,54 @@ end
     end
 end
 
+@testset "cpModel.test.jl: type conversions                                         " begin
+    ID, B = :CO2_CB7_test, :MO
+    FN = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
+    Tmin, Tref, Tmax = 273.0, 298.0, 1800.0
+    uref, sref, M, RU = 6885.0, 213.685, 44.01, 8.31447
+    pars = (ID, FN, M, Tmin, Tref, Tmax, uref, sref, RU, B)
+    SH = Dict(
+        Float16 => SpecificHeat{Float16}(pars...),
+        Float32 => SpecificHeat{Float32}(pars...),
+        Float64 => SpecificHeat{Float64}(pars...),
+    )
+    # Conversions
+    for orig in union2vec(Base.IEEEFloat)
+        for dest in union2vec(Base.IEEEFloat)
+            # Lossless FN conversion
+            @test SH[orig].FN === orig(SH[dest]).FN
+            # Type conversion
+            @test typeof(SH[orig]) === typeof(orig(SH[dest]))
+        end
+    end
+    # Lossless narrowings
+    @test SH[Float64] === Float64(SH[Float64])
+    @test SH[Float32] === Float32(SH[Float64])
+    @test SH[Float32] === Float32(SH[Float32])
+    @test SH[Float16] === Float16(SH[Float64])
+    @test SH[Float16] === Float16(SH[Float32])
+    @test SH[Float16] === Float16(SH[Float16])
+end
+
+@testset "cpModel.test.jl: type promotions                                          " begin
+    ID, B = :CO2_CB7_test, :MO
+    FN = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
+    Tmin, Tref, Tmax = 273.0, 298.0, 1800.0
+    uref, sref, M, RU = 6885.0, 213.685, 44.01, 8.31447
+    pars = (ID, FN, M, Tmin, Tref, Tmax, uref, sref, RU, B)
+    SH = Dict(
+        Float16 => SpecificHeat{Float16}(pars...),
+        Float32 => SpecificHeat{Float32}(pars...),
+        Float64 => SpecificHeat{Float64}(pars...),
+    )
+    # Promotions
+    for orig in union2vec(Base.IEEEFloat)
+        for dest in union2vec(Base.IEEEFloat)
+            @test all([
+                i isa SpecificHeat{promote_type(orig, dest)}
+                for i in promote(SH[orig], SH[dest])
+            ])
+        end
+    end
+end
+
