@@ -20,8 +20,8 @@ struct SpecificHeat{ℙ <: FLOAT}
     FN::Function
     M::ℙ        # kg/kmol
     Tmin::ℙ     # K
-    Tmax::ℙ     # K
     Tref::ℙ     # K
+    Tmax::ℙ     # K
     uref::ℙ     # kJ/kmol
     sref::ℙ     # kJ/kmol⋅K
     RU::ℙ       # kJ/kmol⋅K
