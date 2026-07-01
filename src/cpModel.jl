@@ -146,6 +146,15 @@ Float16(ξ::SpecificHeat) = convert(SpecificHeat{Float16}, ξ)
 Float32(ξ::SpecificHeat) = convert(SpecificHeat{Float32}, ξ)
 Float64(ξ::SpecificHeat) = convert(SpecificHeat{Float64}, ξ)
 
+# Promotions
+# ----------
+
+import Base: promote_rule
+
+function promote_rule(::Type{SpecificHeat{ℙ}}, ::Type{SpecificHeat{ℚ}}) where {ℙ <: FLOAT, ℚ <: FLOAT}
+    return SpecificHeat{promote_type(ℙ, ℚ)}
+end
+
 # Export
 # ------
 
