@@ -6,8 +6,14 @@
 # IEEE-754 normalized floating point types of half, single, and double precision
 FLOAT = Base.IEEEFloat
 
+# Precision Composition Simplification
+⊚(p::Type{ℙ}, f::Function) where ℙ <: FLOAT = f(1) isa ℙ ? f : p ∘ f
 
-const Ru = 8.31447  # Universal R, kJ/kmol·K
+# Chained Precision Composition Simplification
+⊚(p::Type{ℙ}, c::ComposedFunction{Type{ℚ}}) where {ℙ <: FLOAT, ℚ <: FLOAT} = ⊚(p, c.inner)
+
+# Universal R, kJ/kmol·K
+const Ru = 8.31447
 
 # Structure (type) definition
 # ---------------------------
@@ -35,8 +41,11 @@ struct SpecificHeat{ℙ <: FLOAT}
         @assert(M > zero(ℙ), "Error: M <= 0")
         @assert(zero(ℙ) <= Tmin <= Tref < Tmax, "Error: Temperature values")
         @assert(B in (:MA, :MO), "Error: B should be either :MA or :MO")
-        mult = B == :MA ? M : one(ℙ)
-        new{ℙ}(ID, T -> ℙ(CP_F(T) * mult), M, Tmin, Tmax, Tref, uref * mult, sref * mult, RU)
+        return B == :MA ? (
+            new{ℙ}(ID, ℙ ⊚ T -> CP_F(T) * M, M, Tmin, Tmax, Tref, uref * M, sref * M, RU)
+        ) : (
+            new{ℙ}(ID, ℙ ⊚ CP_F, M, Tmin, Tmax, Tref, uref, sref, RU)
+        )
     end
 end
 
@@ -50,7 +59,7 @@ function SpecificHeat{ℙ}(
         uref::Real, sref::Real, B::Symbol,
         RU::Real = ℙ(Ru),
     ) where {ℙ <: FLOAT}
-    return SpecificHeat(ID, CP_F, P.((M, Tmin, Tmax, Tref, uref, sref))..., B, ℙ(RU))
+    return SpecificHeat(ID, ℙ ⊚ CP_F, P.((M, Tmin, Tmax, Tref, uref, sref))..., B, ℙ(RU))
 end
 
 # Promotion type conversion / 2 indirections
@@ -122,6 +131,23 @@ function SpecificHeat(
     ℙ = ℙ <: FLOAT ? ℙ : Float64
     return SpecificHeat{ℙ}(ID, CP_F, M, Tmin, Tmax, Tref, uref, sref, RU)
 end
+
+# Conversions
+# -----------
+
+import Base: convert
+
+function convert(::Type{SpecificHeat{ℙ}}, ξ::SpecificHeat{ℚ}) where {ℙ <: FLOAT, ℚ <: FLOAT}
+    return SpecificHeat{ℙ}(
+        ξ.id, ξ.cp_f, ξ.M, ξ.Tmin, ξ.Tmax, ξ.Tref, ξ.uref, ξ.sref, :MO, ξ.RU
+    )
+end
+
+import Base: Float16, Float32, Float64
+
+Float16(ξ::SpecificHeat) = convert(SpecificHeat{Float16}, ξ)
+Float32(ξ::SpecificHeat) = convert(SpecificHeat{Float32}, ξ)
+Float64(ξ::SpecificHeat) = convert(SpecificHeat{Float64}, ξ)
 
 # Export
 # ------
