@@ -66,9 +66,9 @@ function SpecificHeat(
         uref::Real, sref::Real, RU::Real,
         B::Symbol
     )
-    ℙ = promote_type(typeof.((M, Tmin, Tref, Tmax, uref, sref))...) # RU left out of promotion
+    ℙ = promote_type(typeof.((M, Tmin, Tref, Tmax, uref, sref, RU))...)
     ℙ = ℙ <: FLOAT ? ℙ : Float64
-    return SpecificHeat{ℙ}(ID, FN, M, Tmin, Tref, Tmax, uref, sref, ℙ(RU), B)
+    return SpecificHeat{ℙ}(ID, FN, M, Tmin, Tref, Tmax, uref, sref, RU, B)
 end
 
 # Set type with unit conversion and stripping / 2 indirections
