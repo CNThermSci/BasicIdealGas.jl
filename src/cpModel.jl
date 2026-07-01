@@ -59,7 +59,7 @@ function SpecificHeat{ℙ}(
         uref::Real, sref::Real, B::Symbol,
         RU::Real = ℙ(Ru),
     ) where {ℙ <: FLOAT}
-    return SpecificHeat(ID, ℙ ⊚ CP_F, P.((M, Tmin, Tmax, Tref, uref, sref))..., B, ℙ(RU))
+    return SpecificHeat(ID, ℙ ⊚ CP_F, ℙ.((M, Tmin, Tmax, Tref, uref, sref))..., B, ℙ(RU))
 end
 
 # Promotion type conversion / 2 indirections
