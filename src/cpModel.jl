@@ -16,7 +16,6 @@ FLOAT = Base.IEEEFloat
 # ---------------------------
 
 struct SpecificHeat{ℙ <: FLOAT}
-    ID::Symbol
     FN::Function
     MM::ℙ        # kg/kmol
     Tmin::ℙ     # K
@@ -28,20 +27,19 @@ struct SpecificHeat{ℙ <: FLOAT}
     # Internal constructors
     # Validating
     SpecificHeat(
-        ID::Symbol, FN::Function, MM::ℙ,
+        FN::Function, MM::ℙ,
         Tmin::ℙ, Tref::ℙ, Tmax::ℙ,
         uref::ℙ, sref::ℙ, RU::ℙ,
         B::Symbol
     ) where {ℙ <: FLOAT} = begin
-        @assert(ID != Symbol(""), "Error: Empty ID")
         @assert(MM > zero(ℙ), "Error: M <= 0")
         @assert(zero(ℙ) <= Tmin <= Tref < Tmax, "Error: Temperature values")
         @assert(RU > zero(ℙ), "Error: RU <= 0")
         @assert(B in (:MA, :MO), "Error: B should be either :MA or :MO")
         return B == :MA ? (
-            new{ℙ}(ID, ℙ ⊚ T -> FN(T) * MM, MM, Tmin, Tref, Tmax, uref * MM, sref * MM, RU)
+            new{ℙ}(ℙ ⊚ T -> FN(T) * MM, MM, Tmin, Tref, Tmax, uref * MM, sref * MM, RU)
         ) : (
-            new{ℙ}(ID, ℙ ⊚ FN, MM, Tmin, Tref, Tmax, uref, sref, RU)
+            new{ℙ}(ℙ ⊚ FN, MM, Tmin, Tref, Tmax, uref, sref, RU)
         )
     end
 end
@@ -51,29 +49,28 @@ end
 
 # Set type conversion / 1 indirection
 function SpecificHeat{ℙ}(
-        ID::Symbol, FN::Function, MM::Real,
+        FN::Function, MM::Real,
         Tmin::Real, Tref::Real, Tmax::Real,
         uref::Real, sref::Real, RU::Real,
         B::Symbol
     ) where {ℙ <: FLOAT}
-    return SpecificHeat(ID, ℙ ⊚ FN, ℙ.((MM, Tmin, Tref, Tmax, uref, sref, RU))..., B)
+    return SpecificHeat(ℙ ⊚ FN, ℙ.((MM, Tmin, Tref, Tmax, uref, sref, RU))..., B)
 end
 
 # Promotion type conversion / 2 indirections
 function SpecificHeat(
-        ID::Symbol, FN::Function, MM::Real,
+        FN::Function, MM::Real,
         Tmin::Real, Tref::Real, Tmax::Real,
         uref::Real, sref::Real, RU::Real,
         B::Symbol
     )
     ℙ = promote_type(typeof.((MM, Tmin, Tref, Tmax, uref, sref, RU))...)
     ℙ = ℙ <: FLOAT ? ℙ : Float64
-    return SpecificHeat{ℙ}(ID, FN, MM, Tmin, Tref, Tmax, uref, sref, RU, B)
+    return SpecificHeat{ℙ}(FN, MM, Tmin, Tref, Tmax, uref, sref, RU, B)
 end
 
 # Set type with unit conversion and stripping / 2 indirections
 function SpecificHeat{ℙ}(
-        ID::Symbol,
         FN::Function,
         MM::Union{Real, Quantity{<:Real, dimension(u"kg/kmol")}},
         Tmin::Union{Real, Quantity{<:Real, dimension(u"K")}},
@@ -97,7 +94,7 @@ function SpecificHeat{ℙ}(
         uconvert(u"kJ/kmol/K", sref).val) : (
         uconvert(u"kJ/kg/K", sref).val * _M)
     return SpecificHeat{ℙ}(
-        ID, FN, _MM,
+        FN, _MM,
         Tmin isa Quantity ? uconvert(u"K", Tmin).val : Tmin,
         Tref isa Quantity ? uconvert(u"K", Tref).val : Tref,
         Tmax isa Quantity ? uconvert(u"K", Tmax).val : Tmax,
@@ -108,7 +105,6 @@ end
 
 # Promotion type with unit conversion and stripping / 3 indirections
 function SpecificHeat(
-        ID::Symbol,
         FN::Function,
         MM::Union{𝕄, Quantity{<:𝕄, dimension(u"kg/kmol")}},
         Tmin::Union{𝕀, Quantity{<:𝕀, dimension(u"K")}},
@@ -126,7 +122,7 @@ function SpecificHeat(
     ) where {𝕄 <: Real, 𝕀 <: Real, 𝔸 <: Real, 𝔼 <: Real, 𝕌 <: Real, 𝕊 <: Real, ℝ <: Real}
     ℙ = promote_type(𝕄, 𝕀, 𝔸, 𝔼, 𝕌, 𝕊, ℝ)
     ℙ = ℙ <: FLOAT ? ℙ : Float64
-    return SpecificHeat{ℙ}(ID, FN, MM, Tmin, Tref, Tmax, uref, sref, RU)
+    return SpecificHeat{ℙ}(FN, MM, Tmin, Tref, Tmax, uref, sref, RU)
 end
 
 # Conversions
@@ -138,7 +134,7 @@ convert(::Type{SpecificHeat{ℙ}}, ξ::SpecificHeat{ℙ}) where {ℙ <: FLOAT} =
 
 function convert(::Type{SpecificHeat{ℙ}}, ξ::SpecificHeat{ℚ}) where {ℙ <: FLOAT, ℚ <: FLOAT}
     return SpecificHeat{ℙ}(
-        ξ.ID, ξ.FN, ξ.MM, ξ.Tmin, ξ.Tref, ξ.Tmax, ξ.uref, ξ.sref, ξ.RU, :MO
+        ξ.FN, ξ.MM, ξ.Tmin, ξ.Tref, ξ.Tmax, ξ.uref, ξ.sref, ξ.RU, :MO
     )
 end
 
@@ -176,7 +172,7 @@ pDeco(::Type{Float32}) = subscript(32)
 pDeco(::Type{Float64}) = subscript(64)
 
 function Base.show(io::IO, S::SpecificHeat{ℙ}) where {ℙ <: FLOAT}
-    return print(io, "$(S.ID) cp$(pDeco(ℙ))(T) model, $(S.Tmin) <= T <= $(S.Tmax)")
+    return print(io, "cp$(pDeco(ℙ))(T) model, $(S.Tmin) <= T <= $(S.Tmax)")
 end
 
 # User-facing functions
