@@ -193,7 +193,7 @@ end
 function R(C::SpecificHeat{ℙ}, B::Symbol)::ℙ where {ℙ <: FLOAT}
     @assert B in (:MA, :MO)
     divisor = B == :MA ? C.M : one(ℙ)
-    return C.RU / divisor
+    return B == :MO ? C.RU : C.RU / C.M
 end
 
 function cv(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
