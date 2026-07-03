@@ -17,7 +17,7 @@ struct IdealGas{ℙ <: FLOAT}
         @assert("Error: Pref <= 0", PREF > 0)
         @assert("Error: Empty formula", length(FORM) > 0)
         @assert("Error: Empty name", length(NAME) > 0)
-        new{ℙ}(String(FORM), String(NAME), HMOD, PREF)
+        return new{ℙ}(String(FORM), String(NAME), HMOD, PREF)
     end
 end
 
@@ -30,7 +30,16 @@ IdealGas{ℙ}(
     NAME::AbstractString,
     HMOD::SpecificHeat,
     PREF::Real = one(ℙ)
-) = IdealGas(FORM, NAME, ℙ(HMOD), ℙ(PREF))
+) where {ℙ} = IdealGas(FORM, NAME, ℙ(HMOD), ℙ(PREF))
+
+# Heat model type conversion / 2 indirections
+IdealGas(
+    FORM::AbstractString,
+    NAME::AbstractString,
+    HMOD::SpecificHeat{ℙ},
+    PREF::Real = one(ℙ)
+) where {ℙ} = IdealGas{ℙ}(FORM, NAME, HMOD, PREF)
+
 
 # Conversions
 # -----------
@@ -66,7 +75,7 @@ end
 export IdealGas
 
 function Base.show(io::IO, G::IdealGas)
-    print(io, "$(G.form) gas with $(G.hmod)")
+    return print(io, "$(G.form) gas with $(G.hmod)")
 end
 
 for FUNC in (:cp, :cv, :u, :h, :s0)
@@ -75,13 +84,13 @@ for FUNC in (:cp, :cv, :u, :h, :s0)
     end
 end
 
-for FUNC in (:gamma, )
+for FUNC in (:gamma,)
     @eval begin
         $FUNC(G::IdealGas, T::Real) = $FUNC(G.hmod, T)
     end
 end
 
-for FUNC in (:R, )
+for FUNC in (:R,)
     @eval begin
         $FUNC(G::IdealGas, B::Symbol) = $FUNC(G.hmod, B)
     end
@@ -117,13 +126,17 @@ end
 
 # Keyworded, user-facing entropy
 
-function s(G::IdealGas;
-           P::Union{Missing,Real} = missing,
-           T::Union{Missing,Real} = missing,
-           v::Union{Missing,Real} = missing,
-           B::Symbol = :MA)
-    @assert(count(x -> isa(x, Real), (P, T, v)) == 2,
-        "exactly two P-T-v state functions must be specified!")
+function s(
+        G::IdealGas;
+        P::Union{Missing, Real} = missing,
+        T::Union{Missing, Real} = missing,
+        v::Union{Missing, Real} = missing,
+        B::Symbol = :MA
+    )
+    @assert(
+        count(x -> isa(x, Real), (P, T, v)) == 2,
+        "exactly two P-T-v state functions must be specified!"
+    )
     return if ismissing(P)
         _s(G, _P(G, T, v, B), T, B)
     elseif ismissing(T)
