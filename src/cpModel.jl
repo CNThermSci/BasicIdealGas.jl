@@ -214,12 +214,10 @@ function h(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
     u(C, T, B) + R(C, B) * ℙ(T)
 end
 
-function s0(C::SpecificHeat, T::Real, B::Symbol)
-    T = Float64(T)
+function s0(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
     @assert B in (:MA, :MO)
-    divisor = B == :MA ? C.M : 1.0
-    IE = quadgk(T -> cp(C, T, :MO) / T, C.Tref, T, rtol = 1.0e-5)
-    return (IE[1] + C.sref) / divisor
+    IE = quadgk(T -> cp(C, T, :MO) / ℙ(T), ℙ.((C.Tref, T))..., rtol = eps(ℙ) * 2 << 6)
+    return B == :MO ? IE[1] + C.sref : (IE[1] + C.sref) / C.M
 end
 
 export cp, cv, R, gamma, u, h, s0
