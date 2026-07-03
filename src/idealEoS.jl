@@ -14,9 +14,9 @@ struct IdealGas{ℙ <: FLOAT}
             HMOD::SpecificHeat{ℙ},
             PREF::ℙ = one(ℙ)
         ) where {ℙ <: FLOAT}
-        @assert("Error: Pref <= 0", PREF > 0)
-        @assert("Error: Empty formula", length(FORM) > 0)
-        @assert("Error: Empty name", length(NAME) > 0)
+        @assert(length(FORM) > 0, "Error: Empty formula")
+        @assert(length(NAME) > 0, "Error: Empty name")
+        @assert(PREF > 0, "Error: Pref <= 0")
         return new{ℙ}(String(FORM), String(NAME), HMOD, PREF)
     end
 end
@@ -58,7 +58,7 @@ IdealGas(
     FORM::AbstractString,
     NAME::AbstractString,
     HMOD::SpecificHeat{ℙ},
-    PREF::Union{Real, Quantity{<:Real, dimension(u"kPa")}} = one(ℙ) * u"kPa"
+    PREF::Quantity{<:Real, dimension(u"kPa")}
 ) where {ℙ} = IdealGas{ℙ}(FORM, NAME, HMOD, PREF)
 
 # Conversions
@@ -95,8 +95,8 @@ export IdealGas
 # User-facing functions
 # ---------------------
 
-function Base.show(io::IO, G::IdealGas)
-    return print(io, "$(G.form) gas with $(G.hmod)")
+function Base.show(io::IO, G::IdealGas{ℙ}) where {ℙ <: FLOAT}
+    return print(io, "$(G.form)$(pDeco(ℙ)) gas")
 end
 
 for FUNC in (:cp, :cv, :u, :h, :s0)
