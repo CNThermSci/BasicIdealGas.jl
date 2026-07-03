@@ -200,7 +200,9 @@ function cv(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
     return cp(C, T, B) - R(C, B)
 end
 
-gamma(C::SpecificHeat{ℙ}, T::Real)::ℙ where {ℙ <: FLOAT} = cp(C, T, :MO) / cv(C, T, :MO)
+function gamma(C::SpecificHeat{ℙ}, T::Real)::ℙ where {ℙ <: FLOAT}
+    cp(C, T, :MO) / cv(C, T, :MO)
+end
 
 function u(C::SpecificHeat, T::Real, B::Symbol)
     T = Float64(T)
