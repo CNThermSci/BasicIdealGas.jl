@@ -187,8 +187,7 @@ import Base: cp
 function cp(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
     @assert B in (:MA, :MO)
     @assert C.Tmin <= T <= C.Tmax
-    divisor = B == :MA ? C.M : one(ℙ)
-    return C.FN(T) / divisor
+    return B == :MO ? C.FN(T) : C.FN(T) / C.M
 end
 
 function R(C::SpecificHeat{ℙ}, B::Symbol)::ℙ where {ℙ <: FLOAT}
