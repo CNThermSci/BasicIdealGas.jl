@@ -4,41 +4,86 @@
 # ---------------------------
 
 struct IdealGas{ℙ <: FLOAT}
-    form::String
-    name::String
-    cpMod::SpecificHeat
-    Pref::Float64
-    function IdealGas(FORM::String, NAME::String,
-                      CPMD::SpecificHeat, PREF::Real = 1.0)
-        Pref = Float64(PREF)
-        @assert Pref > 0.0
-        @assert FORM != ""
-        @assert NAME != ""
-        new(FORM, NAME, CPMD, Pref)
+    form::String            # formula
+    name::String            # name
+    hmod::SpecificHeat{ℙ}   # heat model
+    Pref::ℙ                 # reference pressure
+    function IdealGas(
+            FORM::AbstractString,
+            NAME::AbstractString,
+            HMOD::SpecificHeat{ℙ},
+            PREF::ℙ = one(ℙ)
+        ) where {ℙ <: FLOAT}
+        @assert("Error: Pref <= 0", PREF > 0)
+        @assert("Error: Empty formula", length(FORM) > 0)
+        @assert("Error: Empty name", length(NAME) > 0)
+        new{ℙ}(String(FORM), String(NAME), HMOD, PREF)
     end
 end
+
+# External constructors
+# ---------------------
+
+# Set type conversion / 1 indirection
+IdealGas{ℙ}(
+    FORM::AbstractString,
+    NAME::AbstractString,
+    HMOD::SpecificHeat,
+    PREF::Real = one(ℙ)
+) = IdealGas(FORM, NAME, ℙ(HMOD), ℙ(PREF))
+
+# Conversions
+# -----------
+
+import Base: convert
+
+convert(::Type{IdealGas{ℙ}}, ξ::IdealGas{ℙ}) where {ℙ <: FLOAT} = ξ
+
+function convert(::Type{IdealGas{ℙ}}, ξ::IdealGas{ℚ}) where {ℙ <: FLOAT, ℚ <: FLOAT}
+    return IdealGas{ℙ}(
+        ξ.FN, ξ.MM, ξ.Tmin, ξ.Tref, ξ.Tmax, ξ.uref, ξ.sref, ξ.RU, :MO
+    )
+end
+
+import Base: Float16, Float32, Float64
+
+Float16(ξ::IdealGas) = convert(IdealGas{Float16}, ξ)
+Float32(ξ::IdealGas) = convert(IdealGas{Float32}, ξ)
+Float64(ξ::IdealGas) = convert(IdealGas{Float64}, ξ)
+
+# Promotions
+# ----------
+
+import Base: promote_rule
+
+function promote_rule(::Type{IdealGas{ℙ}}, ::Type{IdealGas{ℚ}}) where {ℙ <: FLOAT, ℚ <: FLOAT}
+    return IdealGas{promote_type(ℙ, ℚ)}
+end
+
+# Export
+# ------
 
 export IdealGas
 
 function Base.show(io::IO, G::IdealGas)
-    print(io, "$(G.form) gas with $(G.cpMod)")
+    print(io, "$(G.form) gas with $(G.hmod)")
 end
 
 for FUNC in (:cp, :cv, :u, :h, :s0)
     @eval begin
-        $FUNC(G::IdealGas, T::Real, B::Symbol) = $FUNC(G.cpMod, T, B)
+        $FUNC(G::IdealGas, T::Real, B::Symbol) = $FUNC(G.hmod, T, B)
     end
 end
 
 for FUNC in (:gamma, )
     @eval begin
-        $FUNC(G::IdealGas, T::Real) = $FUNC(G.cpMod, T)
+        $FUNC(G::IdealGas, T::Real) = $FUNC(G.hmod, T)
     end
 end
 
 for FUNC in (:R, )
     @eval begin
-        $FUNC(G::IdealGas, B::Symbol) = $FUNC(G.cpMod, B)
+        $FUNC(G::IdealGas, B::Symbol) = $FUNC(G.hmod, B)
     end
 end
 
