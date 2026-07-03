@@ -1,6 +1,9 @@
 # idealEoS.jl - Ideal Gas Equation of State
 
-struct IdealGas
+# Structure (type) definition
+# ---------------------------
+
+struct IdealGas{ℙ <: FLOAT}
     form::String
     name::String
     cpMod::SpecificHeat
