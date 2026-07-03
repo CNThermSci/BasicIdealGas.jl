@@ -191,9 +191,9 @@ function cp(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
     return C.FN(T) / divisor
 end
 
-function R(C::SpecificHeat, B::Symbol)
+function R(C::SpecificHeat{ℙ}, B::Symbol)::ℙ where {ℙ <: FLOAT}
     @assert B in (:MA, :MO)
-    divisor = B == :MA ? C.M : 1.0
+    divisor = B == :MA ? C.M : one(ℙ)
     return C.RU / divisor
 end
 
