@@ -7,7 +7,7 @@ struct IdealGas{ℙ <: FLOAT}
     form::String            # formula
     name::String            # name
     hmod::SpecificHeat{ℙ}   # heat model
-    Pref::ℙ                 # reference pressure
+    Pref::ℙ                 # reference pressure, kPa
     function IdealGas(
             FORM::AbstractString,
             NAME::AbstractString,
@@ -40,6 +40,26 @@ IdealGas(
     PREF::Real = one(ℙ)
 ) where {ℙ} = IdealGas{ℙ}(FORM, NAME, HMOD, PREF)
 
+# Set type with unit conversion and stripping / 2 indirections
+function IdealGas{ℙ}(
+    FORM::AbstractString,
+    NAME::AbstractString,
+    HMOD::SpecificHeat,
+    PREF::Union{Real, Quantity{<:Real, dimension(u"kPa")}} = one(ℙ) * u"kPa"
+) where {ℙ <: FLOAT}
+    return IdealGas{ℙ}(
+        FORM, NAME, HMOD,
+        PREF isa Quantity ? uconvert(u"kPa", Pref).val : Pref,
+    )
+end
+
+# Heat model type with unit conversion and stripping / 3 indirections
+IdealGas(
+    FORM::AbstractString,
+    NAME::AbstractString,
+    HMOD::SpecificHeat{ℙ},
+    PREF::Union{Real, Quantity{<:Real, dimension(u"kPa")}} = one(ℙ) * u"kPa"
+) where {ℙ} = IdealGas{ℙ}(FORM, NAME, HMOD, PREF)
 
 # Conversions
 # -----------
@@ -49,9 +69,7 @@ import Base: convert
 convert(::Type{IdealGas{ℙ}}, ξ::IdealGas{ℙ}) where {ℙ <: FLOAT} = ξ
 
 function convert(::Type{IdealGas{ℙ}}, ξ::IdealGas{ℚ}) where {ℙ <: FLOAT, ℚ <: FLOAT}
-    return IdealGas{ℙ}(
-        ξ.FN, ξ.MM, ξ.Tmin, ξ.Tref, ξ.Tmax, ξ.uref, ξ.sref, ξ.RU, :MO
-    )
+    return IdealGas{ℙ}(ξ.form, ξ.name, ξ.hmod, ξ.Pref)
 end
 
 import Base: Float16, Float32, Float64
@@ -73,6 +91,9 @@ end
 # ------
 
 export IdealGas
+
+# User-facing functions
+# ---------------------
 
 function Base.show(io::IO, G::IdealGas)
     return print(io, "$(G.form) gas with $(G.hmod)")
