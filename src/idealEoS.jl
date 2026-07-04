@@ -96,24 +96,24 @@ export IdealGas
 # ---------------------
 
 function Base.show(io::IO, G::IdealGas{ℙ}) where {ℙ <: FLOAT}
-    return print(io, "$(G.form)$(pDeco(ℙ)) gas")
+    return print(io, "$(G.form) gas, $(G.hmod)")
 end
 
 for FUNC in (:cp, :cv, :u, :h, :s0)
     @eval begin
-        $FUNC(G::IdealGas, T::Real, B::Symbol) = $FUNC(G.hmod, T, B)
+        ($FUNC(G::IdealGas{ℙ}, T::Real, B::Symbol)::ℙ) where {ℙ} = $FUNC(G.hmod, T, B)
     end
 end
 
 for FUNC in (:gamma,)
     @eval begin
-        $FUNC(G::IdealGas, T::Real) = $FUNC(G.hmod, T)
+        ($FUNC(G::IdealGas{ℙ}, T::Real)::ℙ) where {ℙ} = $FUNC(G.hmod, T)
     end
 end
 
 for FUNC in (:R,)
     @eval begin
-        $FUNC(G::IdealGas, B::Symbol) = $FUNC(G.hmod, B)
+        ($FUNC(G::IdealGas{ℙ}, B::Symbol)::ℙ) where {ℙ} = $FUNC(G.hmod, B)
     end
 end
 
