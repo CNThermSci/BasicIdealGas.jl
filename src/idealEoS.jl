@@ -42,11 +42,11 @@ IdealGas(
 
 # Set type with unit conversion and stripping / 2 indirections
 function IdealGas{ℙ}(
-    FORM::AbstractString,
-    NAME::AbstractString,
-    HMOD::SpecificHeat,
-    PREF::Union{Real, Quantity{<:Real, dimension(u"kPa")}} = one(ℙ) * u"kPa"
-) where {ℙ <: FLOAT}
+        FORM::AbstractString,
+        NAME::AbstractString,
+        HMOD::SpecificHeat,
+        PREF::Quantity{<:Real, dimension(u"kPa")} = one(ℙ) * u"kPa"
+    ) where {ℙ <: FLOAT}
     return IdealGas{ℙ}(
         FORM, NAME, HMOD,
         PREF isa Quantity ? uconvert(u"kPa", Pref).val : Pref,
@@ -118,42 +118,39 @@ for FUNC in (:R,)
 end
 
 # Internal, fast, positional, EoS functions
+(_P(G::IdealGas{ℙ}, T::Real, v::Real, B::Symbol)::ℙ) where {ℙ} = R(G, B) * ℙ(T / v)
 
-_P(G::IdealGas, T::Real, v::Real, B::Symbol) = R(G, B) * Float64(T) / Float64(v)
+(_T(G::IdealGas{ℙ}, P::Real, v::Real, B::Symbol)::ℙ) where {ℙ} = ℙ(P * v) / R(G, B)
 
-_T(G::IdealGas, P::Real, v::Real, B::Symbol) = Float64(P) * Float64(v) / R(G, B)
+(_v(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol)::ℙ) where {ℙ} = R(G, B) * ℙ(T / P)
 
-_v(G::IdealGas, P::Real, T::Real, B::Symbol) = R(G, B) * Float64(T) / Float64(P)
-
-_r(G::IdealGas, P::Real, T::Real, B::Symbol) = inv(_v(G, P, T, B))
+(_r(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol)::ℙ) where {ℙ} = inv(_v(G, P, T, B))
 
 # Keyworded, user-facing counterparts
+(P(G::IdealGas{ℙ}; T::Real, v::Real, B::Symbol = :MA)::ℙ) where {ℙ} = _P(G, T, v, B)
 
-P(G::IdealGas; T::Real, v::Real, B::Symbol = :MA) = _P(G, T, v, B)
+(T(G::IdealGas{ℙ}; P::Real, v::Real, B::Symbol = :MA)::ℙ) where {ℙ} = _T(G, P, v, B)
 
-T(G::IdealGas; P::Real, v::Real, B::Symbol = :MA) = _T(G, P, v, B)
+(v(G::IdealGas{ℙ}; P::Real, T::Real, B::Symbol = :MA)::ℙ) where {ℙ} = _v(G, P, T, B)
 
-v(G::IdealGas; P::Real, T::Real, B::Symbol = :MA) = _v(G, P, T, B)
-
-r(G::IdealGas; P::Real, T::Real, B::Symbol = :MA) = _r(G, P, T, B)
+(r(G::IdealGas{ℙ}; P::Real, T::Real, B::Symbol = :MA)::ℙ) where {ℙ} = _r(G, P, T, B)
 
 export P, T, v, r
 
 # Internal, fast, positional, entropy function
-
-function _s(G::IdealGas, P::Real, T::Real, B::Symbol)
-    return s0(G, T, B) - R(G, B) * log(Float64(P) / G.Pref)
+function _s(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol)::ℙ where {ℙ}
+    return s0(G, T, B) - R(G, B) * log(ℙ(P) / G.Pref)
 end
 
 # Keyworded, user-facing entropy
 
 function s(
-        G::IdealGas;
+        G::IdealGas{ℙ};
         P::Union{Missing, Real} = missing,
         T::Union{Missing, Real} = missing,
         v::Union{Missing, Real} = missing,
         B::Symbol = :MA
-    )
+    ) where {ℙ}
     @assert(
         count(x -> isa(x, Real), (P, T, v)) == 2,
         "exactly two P-T-v state functions must be specified!"
