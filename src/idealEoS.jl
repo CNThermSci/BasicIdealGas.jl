@@ -119,30 +119,39 @@ end
 
 # Internal, fast, positional, EoS functions
 (_P(G::IdealGas{ℙ}, T::Real, v::Real, B::Symbol)::ℙ) where {ℙ} = R(G, B) * ℙ(T / v)
-
 (_T(G::IdealGas{ℙ}, P::Real, v::Real, B::Symbol)::ℙ) where {ℙ} = ℙ(P * v) / R(G, B)
-
 (_v(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol)::ℙ) where {ℙ} = R(G, B) * ℙ(T / P)
+(_ρ(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol)::ℙ) where {ℙ} = inv(_v(G, P, T, B))
 
-(_r(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol)::ℙ) where {ℙ} = inv(_v(G, P, T, B))
+# NamedTuple arg, return type inferrable, user-facing EoS functions
+function P(
+    G::IdealGas{ℙ},
+    ζ::@NamedTuple{T::ℚ, v::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
+)::ℙ where {ℙ}
+    return _P(G, ζ.T, ζ.v, B)
+end
 
-# Keyworded, user-facing counterparts
-(P(G::IdealGas{ℙ}; T::Real, v::Real, B::Symbol = :MA)::ℙ) where {ℙ} = _P(G, T, v, B)
-
-(T(G::IdealGas{ℙ}; P::Real, v::Real, B::Symbol = :MA)::ℙ) where {ℙ} = _T(G, P, v, B)
-
-(v(G::IdealGas{ℙ}; P::Real, T::Real, B::Symbol = :MA)::ℙ) where {ℙ} = _v(G, P, T, B)
-
-(r(G::IdealGas{ℙ}; P::Real, T::Real, B::Symbol = :MA)::ℙ) where {ℙ} = _r(G, P, T, B)
-
-export P, T, v, r
+# Keyworded user-facing EoS functions
+P(G::IdealGas; T::Real, v::Real, B::Symbol = :MA) = _P(G, T, v, B)
+T(G::IdealGas; P::Real, v::Real, B::Symbol = :MA) = _T(G, P, v, B)
+v(G::IdealGas; P::Real, T::Real, B::Symbol = :MA) = _v(G, P, T, B)
+# "ρ" can be typed by \rho<tab>
+ρ(G::IdealGas; P::Real, T::Real, B::Symbol = :MA) = _ρ(G, P, T, B)
 
 # Internal, fast, positional, entropy function
 function _s(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol)::ℙ where {ℙ}
     return s0(G, T, B) - R(G, B) * log(ℙ(P) / G.Pref)
 end
 
-# Keyworded, user-facing entropy
+# NamedTuple arg, return type inferrable, user-facing EoS functions
+function s(
+    G::IdealGas{ℙ},
+    ζ::@NamedTuple{P::ℚ, T::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
+)::ℙ where {ℙ}
+    return _s(G, ζ.P, ζ.T, B)
+end
+
+# Keyworded, user-facing entropy functions
 
 function s(
         G::IdealGas{ℙ};
@@ -164,4 +173,5 @@ function s(
     end
 end
 
-export s
+# User-facing exports
+export P, T, v, ρ, s
