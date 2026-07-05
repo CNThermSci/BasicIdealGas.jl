@@ -9,5 +9,6 @@ using QuadGK
 include("common.jl")
 include("cpModel.jl")
 include("idealEoS.jl")
+include("idealState.jl")
 
 end
