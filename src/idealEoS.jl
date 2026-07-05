@@ -151,6 +151,20 @@ function s(
     return _s(G, ζ.P, ζ.T, B)
 end
 
+function s(
+    G::IdealGas{ℙ},
+    ζ::@NamedTuple{P::ℚ, v::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
+)::ℙ where {ℙ}
+    return _s(G, P, _T(G, P, v, B), B)
+end
+
+function s(
+    G::IdealGas{ℙ},
+    ζ::@NamedTuple{T::ℚ, v::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
+)::ℙ where {ℙ}
+    return _s(G, _P(G, T, v, B), T, B)
+end
+
 # Keyworded, user-facing entropy functions
 
 function s(
