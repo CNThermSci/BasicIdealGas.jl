@@ -4,18 +4,18 @@
 # ---------------------------
 
 struct SpecificHeat{ℙ <: FLOAT}
-    FN::Function
-    MM::ℙ        # kg/kmol
-    Tmin::ℙ     # K
-    Tref::ℙ     # K
-    Tmax::ℙ     # K
-    uref::ℙ     # kJ/kmol
-    sref::ℙ     # kJ/kmol⋅K
-    RU::ℙ       # kJ/kmol⋅K
+    𝑓::Function
+    MM::ℙ           # kg/kmol
+    Tmin::ℙ         # K
+    Tref::ℙ         # K
+    Tmax::ℙ         # K
+    uref::ℙ         # kJ/kmol
+    sref::ℙ         # kJ/kmol⋅K
+    RU::ℙ           # kJ/kmol⋅K
     # Internal constructors
     # Validating
     SpecificHeat(
-        FN::Function, MM::ℙ,
+        𝑓::Function, MM::ℙ,
         Tmin::ℙ, Tref::ℙ, Tmax::ℙ,
         uref::ℙ, sref::ℙ, RU::ℙ,
         B::Symbol
@@ -25,9 +25,9 @@ struct SpecificHeat{ℙ <: FLOAT}
         @assert(RU > zero(ℙ), "Error: RU <= 0")
         @assert(B in (:MA, :MO), "Error: B should be either :MA or :MO")
         return B == :MA ? (
-            new{ℙ}(ℙ ⊚ T -> FN(T) * MM, MM, Tmin, Tref, Tmax, uref * MM, sref * MM, RU)
+            new{ℙ}(ℙ ⊚ T -> 𝑓(T) * MM, MM, Tmin, Tref, Tmax, uref * MM, sref * MM, RU)
         ) : (
-            new{ℙ}(ℙ ⊚ FN, MM, Tmin, Tref, Tmax, uref, sref, RU)
+            new{ℙ}(ℙ ⊚ 𝑓, MM, Tmin, Tref, Tmax, uref, sref, RU)
         )
     end
 end
@@ -37,29 +37,29 @@ end
 
 # Set type conversion / 1 indirection
 function SpecificHeat{ℙ}(
-        FN::Function, MM::Real,
+        𝑓::Function, MM::Real,
         Tmin::Real, Tref::Real, Tmax::Real,
         uref::Real, sref::Real, RU::Real,
         B::Symbol
     ) where {ℙ <: FLOAT}
-    return SpecificHeat(ℙ ⊚ FN, ℙ.((MM, Tmin, Tref, Tmax, uref, sref, RU))..., B)
+    return SpecificHeat(ℙ ⊚ 𝑓, ℙ.((MM, Tmin, Tref, Tmax, uref, sref, RU))..., B)
 end
 
 # Promotion type conversion / 2 indirections
 function SpecificHeat(
-        FN::Function, MM::Real,
+        𝑓::Function, MM::Real,
         Tmin::Real, Tref::Real, Tmax::Real,
         uref::Real, sref::Real, RU::Real,
         B::Symbol
     )
     ℙ = promote_type(typeof.((MM, Tmin, Tref, Tmax, uref, sref, RU))...)
     ℙ = ℙ <: FLOAT ? ℙ : Float64
-    return SpecificHeat{ℙ}(FN, MM, Tmin, Tref, Tmax, uref, sref, RU, B)
+    return SpecificHeat{ℙ}(𝑓, MM, Tmin, Tref, Tmax, uref, sref, RU, B)
 end
 
 # Set type with unit conversion and stripping / 2 indirections
 function SpecificHeat{ℙ}(
-        FN::Function,
+        𝑓::Function,
         MM::Union{Real, Quantity{<:Real, dimension(u"kg/kmol")}},
         Tmin::Union{Real, Quantity{<:Real, dimension(u"K")}},
         Tref::Union{Real, Quantity{<:Real, dimension(u"K")}},
@@ -82,7 +82,7 @@ function SpecificHeat{ℙ}(
         uconvert(u"kJ/kmol/K", sref).val) : (
         uconvert(u"kJ/kg/K", sref).val * _M)
     return SpecificHeat{ℙ}(
-        FN, _MM,
+        𝑓, _MM,
         Tmin isa Quantity ? uconvert(u"K", Tmin).val : Tmin,
         Tref isa Quantity ? uconvert(u"K", Tref).val : Tref,
         Tmax isa Quantity ? uconvert(u"K", Tmax).val : Tmax,
@@ -93,7 +93,7 @@ end
 
 # Promotion type with unit conversion and stripping / 3 indirections
 function SpecificHeat(
-        FN::Function,
+        𝑓::Function,
         MM::Union{𝕄, Quantity{<:𝕄, dimension(u"kg/kmol")}},
         Tmin::Union{𝕀, Quantity{<:𝕀, dimension(u"K")}},
         Tref::Union{𝔸, Quantity{<:𝔸, dimension(u"K")}},
@@ -110,7 +110,7 @@ function SpecificHeat(
     ) where {𝕄 <: Real, 𝕀 <: Real, 𝔸 <: Real, 𝔼 <: Real, 𝕌 <: Real, 𝕊 <: Real, ℝ <: Real}
     ℙ = promote_type(𝕄, 𝕀, 𝔸, 𝔼, 𝕌, 𝕊, ℝ)
     ℙ = ℙ <: FLOAT ? ℙ : Float64
-    return SpecificHeat{ℙ}(FN, MM, Tmin, Tref, Tmax, uref, sref, RU)
+    return SpecificHeat{ℙ}(𝑓, MM, Tmin, Tref, Tmax, uref, sref, RU)
 end
 
 # Conversions
@@ -122,7 +122,7 @@ convert(::Type{SpecificHeat{ℙ}}, ξ::SpecificHeat{ℙ}) where {ℙ <: FLOAT} =
 
 function convert(::Type{SpecificHeat{ℙ}}, ξ::SpecificHeat{ℚ}) where {ℙ <: FLOAT, ℚ <: FLOAT}
     return SpecificHeat{ℙ}(
-        ξ.FN, ξ.MM, ξ.Tmin, ξ.Tref, ξ.Tmax, ξ.uref, ξ.sref, ξ.RU, :MO
+        ξ.𝑓, ξ.MM, ξ.Tmin, ξ.Tref, ξ.Tmax, ξ.uref, ξ.sref, ξ.RU, :MO
     )
 end
 
@@ -161,7 +161,7 @@ import Base: cp
 function cp(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
     @assert B in (:MA, :MO)
     @assert C.Tmin <= T <= C.Tmax
-    return B == :MO ? C.FN(T) : C.FN(T) / C.MM
+    return B == :MO ? C.𝑓(T) : C.𝑓(T) / C.MM
 end
 
 function R(C::SpecificHeat{ℙ}, B::Symbol)::ℙ where {ℙ <: FLOAT}
