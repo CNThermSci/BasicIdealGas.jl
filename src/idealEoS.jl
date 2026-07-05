@@ -125,17 +125,37 @@ end
 
 # NamedTuple arg, return type inferrable, user-facing EoS functions
 function P(
-    G::IdealGas{ℙ},
-    ζ::@NamedTuple{T::ℚ, v::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
-)::ℙ where {ℙ}
+        G::IdealGas{ℙ},
+        ζ::@NamedTuple{T::ℚ, v::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
+    )::ℙ where {ℙ}
     return _P(G, ζ.T, ζ.v, B)
+end
+
+function T(
+        G::IdealGas{ℙ},
+        ζ::@NamedTuple{P::ℚ, v::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
+    )::ℙ where {ℙ}
+    return _T(G, ζ.P, ζ.v, B)
+end
+
+function v(
+        G::IdealGas{ℙ},
+        ζ::@NamedTuple{P::ℚ, T::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
+    )::ℙ where {ℙ}
+    return _v(G, ζ.P, ζ.T, B)
+end
+
+function ρ( # "ρ" can be typed by \rho<tab>
+        G::IdealGas{ℙ},
+        ζ::@NamedTuple{P::ℚ, T::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
+    )::ℙ where {ℙ}
+    return _ρ(G, ζ.P, ζ.T, B)
 end
 
 # Keyworded user-facing EoS functions
 P(G::IdealGas; T::Real, v::Real, B::Symbol = :MA) = _P(G, T, v, B)
 T(G::IdealGas; P::Real, v::Real, B::Symbol = :MA) = _T(G, P, v, B)
 v(G::IdealGas; P::Real, T::Real, B::Symbol = :MA) = _v(G, P, T, B)
-# "ρ" can be typed by \rho<tab>
 ρ(G::IdealGas; P::Real, T::Real, B::Symbol = :MA) = _ρ(G, P, T, B)
 
 # Internal, fast, positional, entropy function
@@ -145,23 +165,23 @@ end
 
 # NamedTuple arg, return type inferrable, user-facing entropy functions
 function s(
-    G::IdealGas{ℙ},
-    ζ::@NamedTuple{P::ℚ, T::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
-)::ℙ where {ℙ}
+        G::IdealGas{ℙ},
+        ζ::@NamedTuple{P::ℚ, T::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
+    )::ℙ where {ℙ}
     return _s(G, ζ.P, ζ.T, B)
 end
 
 function s(
-    G::IdealGas{ℙ},
-    ζ::@NamedTuple{P::ℚ, v::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
-)::ℙ where {ℙ}
+        G::IdealGas{ℙ},
+        ζ::@NamedTuple{P::ℚ, v::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
+    )::ℙ where {ℙ}
     return _s(G, ζ.P, _T(G, ζ.P, ζ.v, B), B)
 end
 
 function s(
-    G::IdealGas{ℙ},
-    ζ::@NamedTuple{T::ℚ, v::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
-)::ℙ where {ℙ}
+        G::IdealGas{ℙ},
+        ζ::@NamedTuple{T::ℚ, v::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
+    )::ℙ where {ℙ}
     return _s(G, _P(G, ζ.T, ζ.v, B), ζ.T, B)
 end
 
