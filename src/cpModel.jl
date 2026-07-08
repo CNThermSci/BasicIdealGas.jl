@@ -191,10 +191,15 @@ function ∫cpdT(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FL
     return B == :MO ? IE[1] : IE[1] / C.𝑀
 end
 
-function u(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
+function ∫cvdT(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
     @assert B in (:MA, :MO)
     IE = quadgk(T -> cv(C, T, :MO), ℙ.((C.Tref, T))..., rtol = eps(ℙ) * 2 << 6)
-    return B == :MO ? IE[1] + C.uref : (IE[1] + C.uref) / C.𝑀
+    return B == :MO ? IE[1] : IE[1] / C.𝑀
+end
+
+function u(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
+    u0 = ∫cvdT(C, T, B)
+    return B == :MO ? u0 + C.uref : (u0 + C.uref) / C.𝑀
 end
 
 function h(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
