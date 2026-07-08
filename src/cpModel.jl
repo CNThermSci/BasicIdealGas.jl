@@ -157,7 +157,7 @@ export SpecificHeat
 # ----
 
 function Base.show(io::IO, S::SpecificHeat{ℙ}) where {ℙ <: FLOAT}
-    return print(io, "cp$(pDeco(ℙ))(T) model, $(S.Tmin) <= T <= $(S.Tmax)")
+    return print(io, "cp$(pDeco(ℙ))(T) [$(S.Tmin) $(S.Tmax)]")
 end
 
 # User-facing functions
@@ -192,24 +192,23 @@ function ∫cvdT(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FL
 end
 
 function u(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
-    u0 = ∫cvdT(C, T, B)
-    return B == :MO ? u0 + C.uref : (u0 + C.uref) / C.𝑀
+    u_ = ∫cvdT(C, T, B)
+    return B == :MO ? u_ + C.uref : (u_ + C.uref) / C.𝑀
 end
 
 function h(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
     return u(C, T, B) + R(C, B) * ℙ(T)
 end
 
-function ∫cp┆TdT(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
+function ∫cp╱TdT(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
     @assert B in (:MA, :MO)
     IE = quadgk(T -> cp(C, T, :MO) / ℙ(T), ℙ.((C.Tref, T))..., rtol = eps(ℙ) * 2 << 6)
     return B == :MO ? IE[1] : IE[1] / C.𝑀
 end
 
 function s0(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
-    @assert B in (:MA, :MO)
-    IE = quadgk(T -> cp(C, T, :MO) / ℙ(T), ℙ.((C.Tref, T))..., rtol = eps(ℙ) * 2 << 6)
-    return B == :MO ? IE[1] + C.sref : (IE[1] + C.sref) / C.𝑀
+    s_ = ∫cp╱TdT(C, T, B)
+    return B == :MO ? s_ + C.sref : (s_ + C.sref) / C.𝑀
 end
 
 export cp, cv, R, gamma, u, h, s0
