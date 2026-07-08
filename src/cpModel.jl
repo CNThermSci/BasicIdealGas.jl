@@ -185,12 +185,6 @@ function gamma(C::SpecificHeat{ℙ}, T::Real)::ℙ where {ℙ <: FLOAT}
     return cp(C, T, :MO) / cv(C, T, :MO)
 end
 
-function ∫cpdT(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
-    @assert B in (:MA, :MO)
-    IE = quadgk(T -> cp(C, T, :MO), ℙ.((C.Tref, T))..., rtol = eps(ℙ) * 2 << 6)
-    return B == :MO ? IE[1] : IE[1] / C.𝑀
-end
-
 function ∫cvdT(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
     @assert B in (:MA, :MO)
     IE = quadgk(T -> cv(C, T, :MO), ℙ.((C.Tref, T))..., rtol = eps(ℙ) * 2 << 6)
@@ -204,6 +198,12 @@ end
 
 function h(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
     return u(C, T, B) + R(C, B) * ℙ(T)
+end
+
+function ∫cp┆TdT(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
+    @assert B in (:MA, :MO)
+    IE = quadgk(T -> cp(C, T, :MO) / ℙ(T), ℙ.((C.Tref, T))..., rtol = eps(ℙ) * 2 << 6)
+    return B == :MO ? IE[1] : IE[1] / C.𝑀
 end
 
 function s0(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
