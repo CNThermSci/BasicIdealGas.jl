@@ -25,10 +25,10 @@ struct SpecificHeat{ℙ <: FLOAT}
         @assert(RU > zero(ℙ), "Error: RU <= 0")
         @assert(B in (:MA, :MO), "Error: B should be either :MA or :MO")
         return B == :MA ? (
-            new{ℙ}(ℙ ⊚ T -> 𝑓(T) * MM, MM, Tmin, Tref, Tmax, uref * MM, sref * MM, RU)
-        ) : (
-            new{ℙ}(ℙ ⊚ 𝑓, MM, Tmin, Tref, Tmax, uref, sref, RU)
-        )
+                new{ℙ}(ℙ ⊚ T -> 𝑓(T) * MM, MM, Tmin, Tref, Tmax, uref * MM, sref * MM, RU)
+            ) : (
+                new{ℙ}(ℙ ⊚ 𝑓, MM, Tmin, Tref, Tmax, uref, sref, RU)
+            )
     end
 end
 
@@ -76,11 +76,15 @@ function SpecificHeat{ℙ}(
     ) where {ℙ <: FLOAT}
     _MM = MM isa Quantity ? uconvert(u"kg/kmol", MM).val : MM
     _uMO = uref isa Quantity{<:Real, dimension(u"kJ/kmol")} ? (
-        uconvert(u"kJ/kmol", uref).val) : (
-        uconvert(u"kJ/kg", uref).val * _M)
+            uconvert(u"kJ/kmol", uref).val
+        ) : (
+            uconvert(u"kJ/kg", uref).val * _M
+        )
     _sMO = sref isa Quantity{<:Real, dimension(u"kJ/kmol/K")} ? (
-        uconvert(u"kJ/kmol/K", sref).val) : (
-        uconvert(u"kJ/kg/K", sref).val * _M)
+            uconvert(u"kJ/kmol/K", sref).val
+        ) : (
+            uconvert(u"kJ/kg/K", sref).val * _M
+        )
     return SpecificHeat{ℙ}(
         𝑓, _MM,
         Tmin isa Quantity ? uconvert(u"K", Tmin).val : Tmin,
@@ -137,7 +141,10 @@ Float64(ξ::SpecificHeat) = convert(SpecificHeat{Float64}, ξ)
 
 import Base: promote_rule
 
-function promote_rule(::Type{SpecificHeat{ℙ}}, ::Type{SpecificHeat{ℚ}}) where {ℙ <: FLOAT, ℚ <: FLOAT}
+function promote_rule(
+        ::Type{SpecificHeat{ℙ}},
+        ::Type{SpecificHeat{ℚ}}
+    ) where {ℙ <: FLOAT, ℚ <: FLOAT}
     return SpecificHeat{promote_type(ℙ, ℚ)}
 end
 
@@ -175,7 +182,7 @@ function cv(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
 end
 
 function gamma(C::SpecificHeat{ℙ}, T::Real)::ℙ where {ℙ <: FLOAT}
-    cp(C, T, :MO) / cv(C, T, :MO)
+    return cp(C, T, :MO) / cv(C, T, :MO)
 end
 
 function u(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
@@ -185,7 +192,7 @@ function u(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
 end
 
 function h(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
-    u(C, T, B) + R(C, B) * ℙ(T)
+    return u(C, T, B) + R(C, B) * ℙ(T)
 end
 
 function s0(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
