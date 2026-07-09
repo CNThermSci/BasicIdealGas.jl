@@ -167,6 +167,7 @@ import Base: cp
 
 cp┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = C.𝑓(T) / C.𝑅
 cv┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = cp┆R(C, T) - one(ℙ)
+ga(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = begin x = C.𝑓(T); x / (x - C.𝑅) end
 
 function R(C::SpecificHeat{ℙ}, B::Symbol)::ℙ where {ℙ <: FLOAT}
     @assert B in (:MA, :MO)
@@ -175,7 +176,10 @@ end
 
 cp(C::SpecificHeat{ℙ}, T::Real, B::Symbol) where {ℙ <: FLOAT} = cp┆R(C, T) * R(C, B)
 cv(C::SpecificHeat{ℙ}, T::Real, B::Symbol) where {ℙ <: FLOAT} = cv┆R(C, T) * R(C, B)
-ga(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = begin x = C.𝑓(T); x / (x - C.𝑅) end
+
+function ∫cp┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT}
+    return quadgk(C.𝑓, ℙ.((C.Tref, T))..., rtol = eps(ℙ) * 2 << 6)[1] / C.𝑅
+end
 
 #function u(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
 #    return ∫cv┆RdT(C, T) * R(C, B)
