@@ -167,7 +167,9 @@ bounds(C::SpecificHeat, T::Real) = @assert(C.Tmin <= T <= C.Tmax, "T out of boun
 
 import Base: cp
 
-cp┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = begin bounds(C, T); C.𝑓(T) / C.𝑅 end
+cp┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = begin
+    bounds(C, T); C.𝑓(T) / C.𝑅
+end
 cv┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = cp┆R(C, T) - one(ℙ)
 ga(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = begin
     bounds(C, T)
@@ -212,10 +214,7 @@ s0┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cp┆RT(C, T) + 
 export ∫cp┆RT, s0┆R
 
 s0(C::SpecificHeat{ℙ}, T::Real, B::Symbol) where {ℙ <: FLOAT} = s0┆R(C, T) * R(C, B)
+Pr(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = exp(∫cp┆RT(C, T))
+vr(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ℙ(T) / Pr(C, T)
 
-export s0
-
-#function s0(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
-#    s_ = ∫cp╱TdT(C, T)
-#    return B == :MO ? s_ + C.sref : (s_ + C.sref) / C.𝑀
-#end
+export s0, Pr, vr
