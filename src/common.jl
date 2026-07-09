@@ -4,6 +4,11 @@
 # IEEE-754 normalized floating point types of half, single, and double precision
 FLOAT = Base.IEEEFloat
 
+# Constants
+# ---------
+
+universal_R = 8.31447
+
 # Utilities
 # ---------
 
