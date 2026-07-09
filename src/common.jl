@@ -30,3 +30,17 @@ end
 pDeco(::Type{Float16}) = subscript(16)
 pDeco(::Type{Float32}) = subscript(32)
 pDeco(::Type{Float64}) = subscript(64)
+
+# Numerical integrator
+# --------------------
+
+function ∫(𝑔::Function, a::ℙ, b::ℙ) where {ℙ <: Union{Float32, Float64}}
+    return quadgk(𝑔, a, b, rtol = eps(ℙ) * 2 << 6)[1]
+end
+
+function ∫(𝑔::Function, a::Float16, b::Float16)
+    n = max(Int(ceil((b - a) / Float16(0.25))), 32)
+    x = range(a, step = (b - a) / n, length = n + 1) |> collect
+    y = map(𝑔, x)
+    return integrate(x, y, Trapezoidal())
+end
