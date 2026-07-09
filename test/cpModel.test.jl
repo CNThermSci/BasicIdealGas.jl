@@ -219,12 +219,45 @@ end
 end
 
 @testset "cpModel.test.jl: user-facing functions: thermodynamic consistencies       " begin
-    for ℙ in union2vec(Base.IEEEFloat)
-        for 𝔽 in (union2vec(Base.IEEEFloat)..., float)
-            𝑓 = 𝔽 ∘ T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
-            𝑀, Tmin, Tref, Tmax, uref, sref = 44.01, 273, 298, 1800, 6885, 213.685
-            C = SpecificHeat(:cubic, 𝑓, ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref))...)
-            @test C.𝑓(300) isa ℙ
+    for ℙ in (Float32, Float64)
+        𝑓 = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
+        𝑀, Tmin, Tref, Tmax, uref, sref = 44.01, 273, 298, 1800, 6885, 213.685
+        𝑅 = BasicIdealGas.universal_R
+        C = SpecificHeat{ℙ}(:cubic, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref)
+        G = SpecificHeat{ℙ}(:const, T -> (5/2) * 𝑅, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
+        for T in (C.Tmin, Int(round((C.Tmin + C.Tmax) / 2)), C.Tmax)
+            @test C.𝑓(T) isa ℙ
+            @test cp┆R(C, T) ≈ C.𝑓(T) / C.𝑅
+            @test cv┆R(C, T) ≈ (C.𝑓(T) - C.𝑅) / C.𝑅
+            @test ga(C, T) ≈ cp┆R(C, T) / cv┆R(C, T) ≈ cp(C, T) / cv(C, T)
+            @test R(C, :MO) == C.𝑅
+            @test R(C, :MA) ≈ C.𝑅 / C.𝑀
+            for B in (:MA, :MO)
+                @test cp(C, T, B) ≈ cp┆R(C, T) * R(C, B)
+                @test cv(C, T, B) ≈ cv┆R(C, T) * R(C, B)
+                @test cp(C, T, B) ≈ cv(C, T, B) + R(C, B)
+                @test ga(C, T) ≈ cp(C, T, B) / cv(C, T, B)
+            end
+            @test ∫cp┆R(G, T) ≈ (5/2) * (ℙ(T) - C.Tref)
+            @test ∫cv┆R(G, T) ≈ (3/2) * (ℙ(T) - C.Tref)
+            for H in (C, G)
+                @test ∫cv┆R(H, T) ≈ ∫cp┆R(H, T) - (ℙ(T) - C.Tref)
+                @test u┆R(H, T) ≈ ∫cv┆R(H, T) + C.uref / C.𝑅
+                @test h┆R(H, T) ≈ u┆R(H, T) + ℙ(T)
+            end
+            for B in (:MA, :MO)
+                @test u(C, T, B) ≈ u┆R(C, T) * R(C, B)
+                @test h(C, T, B) ≈ h┆R(C, T) * R(C, B)
+                @test h(C, T, B) ≈ u(C, T, B) + R(C, B) * ℙ(T)
+            end
+            @test ∫cp┆RT(G, T) ≈ (5/2) * log(ℙ(T) / C.Tref)
+            @test s0┆R(G, T) ≈ ∫cp┆RT(G, T) + C.sref / C.𝑅
+            for B in (:MA, :MO)
+                @test s0(C, T, B) ≈ s0┆R(C, T) * R(C, B)
+            end
+            @test Pr(C, C.Tref) ≈ one(ℙ)
+            @test Pr(C, T) ≈ exp(∫cp┆RT(C, T))
+            @test vr(C, T) * Pr(C, T) ≈ ℙ(T)
         end
     end
 end
