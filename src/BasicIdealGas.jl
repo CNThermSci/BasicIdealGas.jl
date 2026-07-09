@@ -8,7 +8,7 @@ using QuadGK
 # Includes
 include("common.jl")
 include("cpModel.jl")
-#include("idealEoS.jl")
+include("idealEoS.jl")
 #include("idealState.jl")
 
 end
