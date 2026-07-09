@@ -175,8 +175,7 @@ end
 
 cp(C::SpecificHeat{ℙ}, T::Real, B::Symbol) where {ℙ <: FLOAT} = cp┆R(C, T) * R(C, B)
 cv(C::SpecificHeat{ℙ}, T::Real, B::Symbol) where {ℙ <: FLOAT} = cv┆R(C, T) * R(C, B)
-γ(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = begin x = C.𝑓(T); x / (x - 1); end
-gamma = γ
+ga(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = begin x = C.𝑓(T); x / (x - C.𝑅) end
 
 #function u(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
 #    return ∫cv┆RdT(C, T) * R(C, B)
@@ -192,4 +191,4 @@ gamma = γ
 #    return B == :MO ? s_ + C.sref : (s_ + C.sref) / C.𝑀
 #end
 
-export cp, cv, R, γ, gamma#, u, h, s0
+export cp, cv, R, γ, ga
