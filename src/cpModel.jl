@@ -24,7 +24,7 @@ struct SpecificHeat{ℙ <: FLOAT}
         Tmax::ℙ,
         uref::ℙ,
         sref::ℙ,
-        𝑅::ℙ,
+        𝑅::ℙ = ℙ(universal_R),
         B::Symbol = :MO
     ) where {ℙ <: FLOAT} = begin
         @assert(ID != Symbol(""), "Error: Empty model ID")
@@ -53,7 +53,7 @@ function SpecificHeat{ℙ}(
         Tmax::Real,
         uref::Real,
         sref::Real,
-        𝑅::Real,
+        𝑅::Real = ℙ(universal_R),
         B::Symbol = :MO,
     ) where {ℙ <: FLOAT}
     return SpecificHeat(ID, ℙ ⊚ 𝑓, ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))..., B)
@@ -69,10 +69,10 @@ function SpecificHeat(
         Tmax::Real,
         uref::Real,
         sref::Real,
-        𝑅::Real,
+        𝑅::Real = universal_R,
         B::Symbol = :MO,
     )
-    ℙ = promote_type(typeof.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))...)
+    ℙ = promote_type(typeof.((𝑀, Tmin, Tref, Tmax, uref, sref))...) # Default 𝑅 left out
     ℙ = ℙ <: FLOAT ? ℙ : Float64
     return SpecificHeat{ℙ}(ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅, B)
 end
@@ -93,7 +93,7 @@ function SpecificHeat{ℙ}(
             Quantity{<:Real, dimension(u"kJ/kmol/K")},
             Quantity{<:Real, dimension(u"kJ/kg/K")},
         },
-        𝑅::Union{Real, Quantity{<:Real, dimension(u"kJ/kmol/K")}},
+        𝑅::Union{Real, Quantity{<:Real, dimension(u"kJ/kmol/K")}} = universal_R,
     ) where {ℙ <: FLOAT}
     _𝑀 = 𝑀 isa Quantity ? uconvert(u"kg/kmol", 𝑀).val : 𝑀
     _uMO = uref isa Quantity{<:Real, dimension(u"kJ/kmol")} ? (
@@ -136,9 +136,9 @@ function SpecificHeat(
             Quantity{<:𝕊, dimension(u"kJ/kmol/K")},
             Quantity{<:𝕊, dimension(u"kJ/kg/K")},
         },
-        𝑅::Union{ℝ, Quantity{<:ℝ, dimension(u"kJ/kmol/K")}},
-    ) where {𝕄 <: Real, 𝕀 <: Real, 𝔸 <: Real, 𝔼 <: Real, 𝕌 <: Real, 𝕊 <: Real, ℝ <: Real}
-    ℙ = promote_type(𝕄, 𝕀, 𝔸, 𝔼, 𝕌, 𝕊, ℝ)
+        𝑅::Union{Real, Quantity{<:ℝ, dimension(u"kJ/kmol/K")}} = universal_R,
+    ) where {𝕄 <: Real, 𝕀 <: Real, 𝔸 <: Real, 𝔼 <: Real, 𝕌 <: Real, 𝕊 <: Real}
+    ℙ = promote_type(𝕄, 𝕀, 𝔸, 𝔼, 𝕌, 𝕊) # Default R left out
     ℙ = ℙ <: FLOAT ? ℙ : Float64
     return SpecificHeat{ℙ}(ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
 end
