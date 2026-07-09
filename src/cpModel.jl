@@ -163,11 +163,17 @@ end
 # User-facing functions
 # ---------------------
 
+bounds(C::SpecificHeat, T::Real) = @assert(C.Tmin <= T <= C.Tmax, "T out of bounds")
+
 import Base: cp
 
-cp┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = C.𝑓(T) / C.𝑅
+cp┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = begin bounds(C, T); C.𝑓(T) / C.𝑅 end
 cv┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = cp┆R(C, T) - one(ℙ)
-ga(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = begin x = C.𝑓(T); x / (x - C.𝑅) end
+ga(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = begin
+    bounds(C, T)
+    x = C.𝑓(T)
+    x / (x - C.𝑅)
+end
 
 export cp┆R, cv┆R, ga
 
@@ -181,6 +187,7 @@ cv(C::SpecificHeat{ℙ}, T::Real, B::Symbol) where {ℙ <: FLOAT} = cv┆R(C, T)
 export R, cp, cv
 
 function ∫cp┆R(C::SpecificHeat{ℙ}, T::ℙ) where {ℙ <: FLOAT}
+    bounds(C, T)
     return quadgk(C.𝑓, C.Tref, T, rtol = eps(ℙ) * 2 << 6)[1] / C.𝑅
 end
 ∫cp┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cp┆R(C, ℙ(T))
@@ -196,6 +203,7 @@ h(C::SpecificHeat{ℙ}, T::Real, B::Symbol) where {ℙ <: FLOAT} = h┆R(C, T) *
 export u, h
 
 function ∫cp┆RT(C::SpecificHeat{ℙ}, T::ℙ) where {ℙ <: FLOAT}
+    bounds(C, T)
     return quadgk(T -> C.𝑓(T) / T, C.Tref, T, rtol = eps(ℙ) * 2 << 6)[1] / C.𝑅
 end
 ∫cp┆RT(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cp┆RT(C, ℙ(T))
