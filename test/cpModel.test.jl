@@ -197,7 +197,7 @@ end
         )
         @test_throws "T out of bounds" eval(
             quote
-                bounds = BasicIdealGas.bounds
+                bounds = BasicIdealGas.𝗯
                 ID, 𝑓 = :const, T -> 22.26
                 Tmin, Tref, Tmax = 273, 298, 1800
                 uref, sref, 𝑀 = 6885, 213.685, 44.01
@@ -207,7 +207,7 @@ end
         )
         @test_throws "T out of bounds" eval(
             quote
-                bounds = BasicIdealGas.bounds
+                bounds = BasicIdealGas.𝗯
                 ID, 𝑓 = :const, T -> 22.26
                 Tmin, Tref, Tmax = 273, 298, 1800
                 uref, sref, 𝑀 = 6885, 213.685, 44.01
@@ -219,7 +219,7 @@ end
 end
 
 @testset "cpModel.test.jl: user-facing functions: thermodynamic consistencies       " begin
-    for ℙ in (Float32, Float64)
+    for ℙ in union2vec(Base.IEEEFloat)
         𝑓 = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
         𝑀, Tmin, Tref, Tmax, uref, sref = 44.01, 273, 298, 1800, 6885, 213.685
         𝑅 = BasicIdealGas.universal_R
