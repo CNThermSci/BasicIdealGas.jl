@@ -13,13 +13,19 @@ end
 
 @testset "cpModel.test.jl: inner constructor return types                           " begin
     for ℙ in union2vec(Base.IEEEFloat)
-        for 𝔽 in (ℙ, float)
+        for 𝔽 in (union2vec(Base.IEEEFloat)..., float)
             ID, B = :cubic, :MO
-            𝑓 = T -> 𝔽(22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3)
+            𝑓 = 𝔽 ∘ T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
             Tmin, Tref, Tmax = 273, 298, 1800
             uref, sref, 𝑀, 𝑅 = 6885, 213.685, 44.01, ℙ(8.31447)
             pars = ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))
             @test SpecificHeat(ID, 𝑓, pars..., B) isa SpecificHeat{ℙ}
+            𝑓 = 𝔽 ∘ T -> ℙ(22.26) + ℙ(5.891e-2) * T - ℙ(3.501e-5) * T^2 + ℙ(7.469e-9) * T^3
+            # Constructor function smart composition simplifies 𝑓 away into a Function:
+            @test !(SpecificHeat(ID, 𝑓, pars..., B).𝑓 isa ComposedFunction)
+            # Inner 𝑓 not a float-returning function exception
+            𝑓 = 𝔽 ∘ T -> 22
+            @test SpecificHeat(ID, 𝑓, pars..., B).𝑓 isa ComposedFunction
         end
     end
 end
@@ -209,5 +215,16 @@ end
                 $FUNC(C, nextfloat(C.Tmax))
             end
         )
+    end
+end
+
+@testset "cpModel.test.jl: user-facing functions: thermodynamic consistencies       " begin
+    for ℙ in union2vec(Base.IEEEFloat)
+        for 𝔽 in (union2vec(Base.IEEEFloat)..., float)
+            𝑓 = 𝔽 ∘ T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
+            𝑀, Tmin, Tref, Tmax, uref, sref = 44.01, 273, 298, 1800, 6885, 213.685
+            C = SpecificHeat(:cubic, 𝑓, ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref))...)
+            @test C.𝑓(300) isa ℙ
+        end
     end
 end
