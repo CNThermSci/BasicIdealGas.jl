@@ -73,13 +73,13 @@ end
     uref, sref, 𝑀, 𝑅 = 6885, 213685//1000, 4401//100, 8.31447
     # Promotion type conversion / 2 indirections
     for ℙ in union2vec(Base.IEEEFloat)
-        pars = (ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref, ℙ(𝑅), B)
+        pars = (ID, 𝑓, ℙ(𝑀), Tmin, Tref, Tmax, uref, sref, 𝑅, B)
         @test SpecificHeat(pars...) isa SpecificHeat{ℙ}
     end
     # Promotion type with unit conversion and stripping / 3 indirections
     for ℙ in union2vec(Base.IEEEFloat)
-        pars = (ID, 𝑓, 𝑀*u"kg/kmol", Tmin, Tref, Tmax, uref*u"kJ/kmol", sref*u"kJ/kmol/K")
-        @test SpecificHeat(pars..., ℙ(𝑅)) isa SpecificHeat{ℙ}
+        pars = (ID, 𝑓, ℙ(𝑀*u"kg/kmol"), Tmin, Tref, Tmax, uref*u"kJ/kmol", sref*u"kJ/kmol/K")
+        @test SpecificHeat(pars..., 𝑅) isa SpecificHeat{ℙ}
     end
 end
 
@@ -87,16 +87,18 @@ end
     ID = :cubic
     𝑓 = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
     Tmin, Tref, Tmax = 273, 298, 1800
-    uref, sref, 𝑀, 𝑅 = 6885, 213685//1000, 4401//100, 8.31447
+    uref, sref, 𝑀, 𝑅 = 6885, 213685//1000, 4401//100, BasicIdealGas.universal_R
     # Promotion type conversion / 2 indirections
     for ℙ in union2vec(Base.IEEEFloat)
-        pars = (ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref, ℙ(𝑅))
+        pars = (ID, 𝑓, ℙ(𝑀), Tmin, Tref, Tmax, uref, sref, 𝑅)
         MOLR = SpecificHeat(pars..., :MO)
         MASS = SpecificHeat(pars..., :MA)
         AUTO = SpecificHeat(pars...)
         @test MOLR != MASS
         @test MOLR == AUTO
         @test MASS != AUTO
+        auto = SpecificHeat(pars[1:end-1]...)
+        @test auto == AUTO
     end
     # Set type conversion / 1 indirection
     for ℙ in union2vec(Base.IEEEFloat)
@@ -107,6 +109,8 @@ end
         @test MOLR != MASS
         @test MOLR == AUTO
         @test MASS != AUTO
+        auto = SpecificHeat{ℙ}(pars[1:end-1]...)
+        @test auto == AUTO
     end
     # Internal constructor / no indirection
     for ℙ in union2vec(Base.IEEEFloat)
@@ -117,6 +121,8 @@ end
         @test MOLR != MASS
         @test MOLR == AUTO
         @test MASS != AUTO
+        auto = SpecificHeat(pars[1:end-1]...)
+        @test auto == AUTO
     end
 end
 
