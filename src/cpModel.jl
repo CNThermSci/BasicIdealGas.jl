@@ -18,7 +18,7 @@ struct SpecificHeat{ℙ <: FLOAT}
         𝑓::Function, 𝑀::ℙ,
         Tmin::ℙ, Tref::ℙ, Tmax::ℙ,
         uref::ℙ, sref::ℙ, 𝑅::ℙ,
-        B::Symbol
+        B::Symbol = :MO
     ) where {ℙ <: FLOAT} = begin
         @assert(𝑀 > zero(ℙ), "Error: M <= 0")
         @assert(zero(ℙ) <= Tmin <= Tref < Tmax, "Error: Temperature values")
@@ -40,7 +40,7 @@ function SpecificHeat{ℙ}(
         𝑓::Function, 𝑀::Real,
         Tmin::Real, Tref::Real, Tmax::Real,
         uref::Real, sref::Real, 𝑅::Real,
-        B::Symbol
+        B::Symbol = :MO
     ) where {ℙ <: FLOAT}
     return SpecificHeat(ℙ ⊚ 𝑓, ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))..., B)
 end
@@ -50,7 +50,7 @@ function SpecificHeat(
         𝑓::Function, 𝑀::Real,
         Tmin::Real, Tref::Real, Tmax::Real,
         uref::Real, sref::Real, 𝑅::Real,
-        B::Symbol
+        B::Symbol = :MO
     )
     ℙ = promote_type(typeof.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))...)
     ℙ = ℙ <: FLOAT ? ℙ : Float64
@@ -126,7 +126,7 @@ convert(::Type{SpecificHeat{ℙ}}, ξ::SpecificHeat{ℙ}) where {ℙ <: FLOAT} =
 
 function convert(::Type{SpecificHeat{ℙ}}, ξ::SpecificHeat{ℚ}) where {ℙ <: FLOAT, ℚ <: FLOAT}
     return SpecificHeat{ℙ}(
-        ξ.𝑓, ξ.𝑀, ξ.Tmin, ξ.Tref, ξ.Tmax, ξ.uref, ξ.sref, ξ.𝑅, :MO
+        ξ.𝑓, ξ.𝑀, ξ.Tmin, ξ.Tref, ξ.Tmax, ξ.uref, ξ.sref, ξ.𝑅
     )
 end
 
