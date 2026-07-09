@@ -214,10 +214,7 @@ cv(C::SpecificHeat{ℙ}, T::Real, B::Symbol = :MO) where {ℙ <: FLOAT} = cv┆R
 
 export R, cp, cv
 
-function ∫cp┆R(C::SpecificHeat{ℙ}, T::ℙ) where {ℙ <: FLOAT}
-    bounds(C, T)
-    return quadgk(C.𝑓, C.Tref, T, rtol = eps(ℙ) * 2 << 6)[1] / C.𝑅
-end
+∫cp┆R(C::SpecificHeat{ℙ}, T::ℙ) where {ℙ <: FLOAT} = begin bounds(C, T); ∫(C.𝑓, C.Tref, T) end
 ∫cp┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cp┆R(C, ℙ(T))
 ∫cv┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cp┆R(C, T) - ℙ(T) + C.Tref
 u┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cv┆R(C, T) + C.uref / C.𝑅
