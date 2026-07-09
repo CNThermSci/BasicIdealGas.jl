@@ -16,7 +16,7 @@ end
         for 𝔽 in (ℙ, float)
             ID, B = :cubic, :MO
             𝑓 = T -> 𝔽(22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3)
-            Tmin, Tref, Tmax  = 273, 298, 1800
+            Tmin, Tref, Tmax = 273, 298, 1800
             uref, sref, 𝑀, 𝑅 = 6885, 213.685, 44.01, ℙ(8.31447)
             pars = ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))
             @test SpecificHeat(ID, 𝑓, pars..., B) isa SpecificHeat{ℙ}
@@ -26,7 +26,7 @@ end
 
 # Adjacent swaps of a tuple
 adjswp(t::Tuple) = [
-    ntuple(i -> i == j ? t[j+1] : i == j+1 ? t[j] : t[i], length(t)) for j in 1:length(t)-1
+    ntuple(i -> i == j ? t[j + 1] : i == j + 1 ? t[j] : t[i], length(t)) for j in 1:(length(t) - 1)
 ]
 
 @testset "cpModel.test.jl: inner constructor validations                            " begin
@@ -59,7 +59,7 @@ end
     ID, B = :cubic, :MO
     𝑓 = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
     Tmin, Tref, Tmax = 273, 298, 1800
-    uref, sref, 𝑀, 𝑅 = 6885, 213685//1000, BigFloat("44.01"), π
+    uref, sref, 𝑀, 𝑅 = 6885, 213685 // 1000, BigFloat("44.01"), π
     # Set type conversion / 1 indirection
     for ℙ in union2vec(Base.IEEEFloat)
         pars = (ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅, B)
@@ -67,10 +67,10 @@ end
     end
     # Set type with unit conversion and stripping / 2 indirections
     for ℙ in union2vec(Base.IEEEFloat)
-        pars = (ID, 𝑓, 𝑀*u"kg/kmol", Tmin, Tref, Tmax, uref*u"kJ/kmol", sref*u"kJ/kmol/K")
+        pars = (ID, 𝑓, 𝑀 * u"kg/kmol", Tmin, Tref, Tmax, uref * u"kJ/kmol", sref * u"kJ/kmol/K")
         @test SpecificHeat{ℙ}(pars..., 𝑅) isa SpecificHeat{ℙ}
     end
-    uref, sref, 𝑀, 𝑅 = 6885, 213685//1000, 4401//100, 8.31447
+    uref, sref, 𝑀, 𝑅 = 6885, 213685 // 1000, 4401 // 100, 8.31447
     # Promotion type conversion / 2 indirections
     for ℙ in union2vec(Base.IEEEFloat)
         pars = (ID, 𝑓, ℙ(𝑀), Tmin, Tref, Tmax, uref, sref, 𝑅, B)
@@ -78,7 +78,7 @@ end
     end
     # Promotion type with unit conversion and stripping / 3 indirections
     for ℙ in union2vec(Base.IEEEFloat)
-        pars = (ID, 𝑓, ℙ(𝑀*u"kg/kmol"), Tmin, Tref, Tmax, uref*u"kJ/kmol", sref*u"kJ/kmol/K")
+        pars = (ID, 𝑓, ℙ(𝑀 * u"kg/kmol"), Tmin, Tref, Tmax, uref * u"kJ/kmol", sref * u"kJ/kmol/K")
         @test SpecificHeat(pars..., 𝑅) isa SpecificHeat{ℙ}
     end
 end
@@ -87,7 +87,7 @@ end
     ID = :cubic
     𝑓 = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
     Tmin, Tref, Tmax = 273, 298, 1800
-    uref, sref, 𝑀, 𝑅 = 6885, 213685//1000, 4401//100, BasicIdealGas.universal_R
+    uref, sref, 𝑀, 𝑅 = 6885, 213685 // 1000, 4401 // 100, BasicIdealGas.universal_R
     # Promotion type conversion / 2 indirections
     for ℙ in union2vec(Base.IEEEFloat)
         pars = (ID, 𝑓, ℙ(𝑀), Tmin, Tref, Tmax, uref, sref, 𝑅)
@@ -97,7 +97,7 @@ end
         @test MOLR != MASS
         @test MOLR == AUTO
         @test MASS != AUTO
-        auto = SpecificHeat(pars[1:end-1]...)
+        auto = SpecificHeat(pars[1:(end - 1)]...)
         @test auto == AUTO
     end
     # Set type conversion / 1 indirection
@@ -109,7 +109,7 @@ end
         @test MOLR != MASS
         @test MOLR == AUTO
         @test MASS != AUTO
-        auto = SpecificHeat{ℙ}(pars[1:end-1]...)
+        auto = SpecificHeat{ℙ}(pars[1:(end - 1)]...)
         @test auto == AUTO
     end
     # Internal constructor / no indirection
@@ -121,7 +121,7 @@ end
         @test MOLR != MASS
         @test MOLR == AUTO
         @test MASS != AUTO
-        auto = SpecificHeat(pars[1:end-1]...)
+        auto = SpecificHeat(pars[1:(end - 1)]...)
         @test auto == AUTO
     end
 end
@@ -169,11 +169,45 @@ end
     # Promotions
     for orig in union2vec(Base.IEEEFloat)
         for dest in union2vec(Base.IEEEFloat)
-            @test all([
-                i isa SpecificHeat{promote_type(orig, dest)}
-                for i in promote(SH[orig], SH[dest])
-            ])
+            @test all(
+                [
+                    i isa SpecificHeat{promote_type(orig, dest)}
+                        for i in promote(SH[orig], SH[dest])
+                ]
+            )
         end
     end
 end
 
+@testset "cpModel.test.jl: user-facing functions: bound temperature intervals       " begin
+    # Bounds checks
+    for FUNC in (
+            :bounds, :cp┆R, :cv┆R, :ga,
+            :cp, :cv,
+            :∫cp┆R, :∫cv┆R, :u┆R, :h┆R,
+            :u, :h,
+            :∫cp┆RT, :s0┆R,
+            :s0, :Pr, :vr,
+        )
+        @test_throws "T out of bounds" eval(
+            quote
+                bounds = BasicIdealGas.bounds
+                ID, 𝑓 = :const, T -> 22.26
+                Tmin, Tref, Tmax = 273, 298, 1800
+                uref, sref, 𝑀 = 6885, 213.685, 44.01
+                C = SpecificHeat(ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref)
+                $FUNC(C, prevfloat(C.Tmin))
+            end
+        )
+        @test_throws "T out of bounds" eval(
+            quote
+                bounds = BasicIdealGas.bounds
+                ID, 𝑓 = :const, T -> 22.26
+                Tmin, Tref, Tmax = 273, 298, 1800
+                uref, sref, 𝑀 = 6885, 213.685, 44.01
+                C = SpecificHeat(ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref)
+                $FUNC(C, nextfloat(C.Tmax))
+            end
+        )
+    end
+end
