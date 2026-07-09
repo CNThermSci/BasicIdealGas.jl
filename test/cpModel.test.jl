@@ -83,6 +83,43 @@ end
     end
 end
 
+@testset "cpModel.test.jl: constructor's optional arguments                         " begin
+    ID = :cubic
+    𝑓 = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
+    Tmin, Tref, Tmax = 273, 298, 1800
+    uref, sref, 𝑀, 𝑅 = 6885, 213685//1000, 4401//100, 8.31447
+    # Promotion type conversion / 2 indirections
+    for ℙ in union2vec(Base.IEEEFloat)
+        pars = (ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref, ℙ(𝑅))
+        MOLR = SpecificHeat(pars..., :MO)
+        MASS = SpecificHeat(pars..., :MA)
+        AUTO = SpecificHeat(pars...)
+        @test MOLR != MASS
+        @test MOLR == AUTO
+        @test MASS != AUTO
+    end
+    # Set type conversion / 1 indirection
+    for ℙ in union2vec(Base.IEEEFloat)
+        pars = (ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
+        MOLR = SpecificHeat{ℙ}(pars..., :MO)
+        MASS = SpecificHeat{ℙ}(pars..., :MA)
+        AUTO = SpecificHeat{ℙ}(pars...)
+        @test MOLR != MASS
+        @test MOLR == AUTO
+        @test MASS != AUTO
+    end
+    # Internal constructor / no indirection
+    for ℙ in union2vec(Base.IEEEFloat)
+        pars = (ID, 𝑓, ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))...)
+        MOLR = SpecificHeat(pars..., :MO)
+        MASS = SpecificHeat(pars..., :MA)
+        AUTO = SpecificHeat(pars...)
+        @test MOLR != MASS
+        @test MOLR == AUTO
+        @test MASS != AUTO
+    end
+end
+
 @testset "cpModel.test.jl: type conversions                                         " begin
     ID, B = :cubic, :MO
     𝑓 = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
