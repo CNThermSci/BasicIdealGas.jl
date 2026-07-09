@@ -4,6 +4,7 @@
 # ---------------------------
 
 struct SpecificHeat{ℙ <: FLOAT}
+    ID::Symbol      # Model ID, as in :cubic, etc...
     𝑓::Function
     𝑀::ℙ            # kg/kmol
     Tmin::ℙ         # K
