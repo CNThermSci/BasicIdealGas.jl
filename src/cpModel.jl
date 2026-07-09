@@ -180,9 +180,10 @@ cv(C::SpecificHeat{ℙ}, T::Real, B::Symbol) where {ℙ <: FLOAT} = cv┆R(C, T)
 
 export R, cp, cv
 
-function ∫cp┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT}
-    return quadgk(C.𝑓, ℙ.((C.Tref, T))..., rtol = eps(ℙ) * 2 << 6)[1] / C.𝑅
+function ∫cp┆R(C::SpecificHeat{ℙ}, T::ℙ) where {ℙ <: FLOAT}
+    return quadgk(C.𝑓, C.Tref, T, rtol = eps(ℙ) * 2 << 6)[1] / C.𝑅
 end
+∫cp┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cp┆R(C, ℙ(T))
 ∫cv┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cp┆R(C, T) - ℙ(T) + C.Tref
 u┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cv┆R(C, T) + C.uref / C.𝑅
 h┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = u┆R(C, T) + ℙ(T)
@@ -193,6 +194,18 @@ u(C::SpecificHeat{ℙ}, T::Real, B::Symbol) where {ℙ <: FLOAT} = u┆R(C, T) *
 h(C::SpecificHeat{ℙ}, T::Real, B::Symbol) where {ℙ <: FLOAT} = h┆R(C, T) * R(C, B)
 
 export u, h
+
+function ∫cp┆RT(C::SpecificHeat{ℙ}, T::ℙ) where {ℙ <: FLOAT}
+    return quadgk(T -> C.𝑓(T) / T, C.Tref, T, rtol = eps(ℙ) * 2 << 6)[1] / C.𝑅
+end
+∫cp┆RT(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cp┆RT(C, ℙ(T))
+s0┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cp┆RT(C, T) + C.sref / C.𝑅
+
+export ∫cp┆RT, s0┆R
+
+s0(C::SpecificHeat{ℙ}, T::Real, B::Symbol) where {ℙ <: FLOAT} = s0┆R(C, T) * R(C, B)
+
+export s0
 
 #function s0(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
 #    s_ = ∫cp╱TdT(C, T)
