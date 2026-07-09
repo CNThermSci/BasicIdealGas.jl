@@ -165,50 +165,31 @@ end
 
 import Base: cp
 
-function cp(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
-    @assert B in (:MA, :MO)
-    @assert C.Tmin <= T <= C.Tmax
-    return B == :MO ? C.𝑓(T) : C.𝑓(T) / C.𝑀
-end
+cp┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = C.𝑓(T) / C.𝑅
+cv┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = cp┆R(C, T) - one(ℙ)
 
 function R(C::SpecificHeat{ℙ}, B::Symbol)::ℙ where {ℙ <: FLOAT}
     @assert B in (:MA, :MO)
-    divisor = B == :MA ? C.𝑀 : one(ℙ)
     return B == :MO ? C.𝑅 : C.𝑅 / C.𝑀
 end
 
-function cv(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
-    return cp(C, T, B) - R(C, B)
-end
+cp(C::SpecificHeat{ℙ}, T::Real, B::Symbol) where {ℙ <: FLOAT} = cp┆R(C, T) * R(C, B)
+cv(C::SpecificHeat{ℙ}, T::Real, B::Symbol) where {ℙ <: FLOAT} = cv┆R(C, T) * R(C, B)
+γ(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = begin x = C.𝑓(T); x / (x - 1); end
+gamma = γ
 
-function gamma(C::SpecificHeat{ℙ}, T::Real)::ℙ where {ℙ <: FLOAT}
-    return cp(C, T, :MO) / cv(C, T, :MO)
-end
+#function u(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
+#    return ∫cv┆RdT(C, T) * R(C, B)
+#    return B == :MO ? u_ + C.uref : (u_ + C.uref) / C.𝑀
+#end
 
-function ∫cvdT(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
-    @assert B in (:MA, :MO)
-    IE = quadgk(T -> cv(C, T, :MO), ℙ.((C.Tref, T))..., rtol = eps(ℙ) * 2 << 6)
-    return B == :MO ? IE[1] : IE[1] / C.𝑀
-end
+#function h(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
+#    return u(C, T, B) + R(C, B) * ℙ(T)
+#end
 
-function u(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
-    u_ = ∫cvdT(C, T, B)
-    return B == :MO ? u_ + C.uref : (u_ + C.uref) / C.𝑀
-end
+#function s0(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
+#    s_ = ∫cp╱TdT(C, T)
+#    return B == :MO ? s_ + C.sref : (s_ + C.sref) / C.𝑀
+#end
 
-function h(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
-    return u(C, T, B) + R(C, B) * ℙ(T)
-end
-
-function ∫cp╱TdT(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
-    @assert B in (:MA, :MO)
-    IE = quadgk(T -> cp(C, T, :MO) / ℙ(T), ℙ.((C.Tref, T))..., rtol = eps(ℙ) * 2 << 6)
-    return B == :MO ? IE[1] : IE[1] / C.𝑀
-end
-
-function s0(C::SpecificHeat{ℙ}, T::Real, B::Symbol)::ℙ where {ℙ <: FLOAT}
-    s_ = ∫cp╱TdT(C, T, B)
-    return B == :MO ? s_ + C.sref : (s_ + C.sref) / C.𝑀
-end
-
-export cp, cv, R, gamma, u, h, s0
+export cp, cv, R, γ, gamma#, u, h, s0
