@@ -136,7 +136,7 @@ function SpecificHeat(
             Quantity{<:𝕊, dimension(u"kJ/kmol/K")},
             Quantity{<:𝕊, dimension(u"kJ/kg/K")},
         },
-        𝑅::Union{Real, Quantity{<:ℝ, dimension(u"kJ/kmol/K")}} = universal_R,
+        𝑅::Union{Real, Quantity{<:Real, dimension(u"kJ/kmol/K")}} = universal_R,
     ) where {𝕄 <: Real, 𝕀 <: Real, 𝔸 <: Real, 𝔼 <: Real, 𝕌 <: Real, 𝕊 <: Real}
     ℙ = promote_type(𝕄, 𝕀, 𝔸, 𝔼, 𝕌, 𝕊) # Default R left out
     ℙ = ℙ <: FLOAT ? ℙ : Float64
