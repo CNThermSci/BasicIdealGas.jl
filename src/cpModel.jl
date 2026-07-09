@@ -205,12 +205,12 @@ end
 
 export cp┆R, cv┆R, ga
 
-function R(C::SpecificHeat{ℙ}, B::Symbol)::ℙ where {ℙ <: FLOAT}
+function R(C::SpecificHeat{ℙ}, B::Symbol = :MO)::ℙ where {ℙ <: FLOAT}
     @assert B in (:MA, :MO)
     return B == :MO ? C.𝑅 : C.𝑅 / C.𝑀
 end
-cp(C::SpecificHeat{ℙ}, T::Real, B::Symbol) where {ℙ <: FLOAT} = cp┆R(C, T) * R(C, B)
-cv(C::SpecificHeat{ℙ}, T::Real, B::Symbol) where {ℙ <: FLOAT} = cv┆R(C, T) * R(C, B)
+cp(C::SpecificHeat{ℙ}, T::Real, B::Symbol = :MO) where {ℙ <: FLOAT} = cp┆R(C, T) * R(C, B)
+cv(C::SpecificHeat{ℙ}, T::Real, B::Symbol = :MO) where {ℙ <: FLOAT} = cv┆R(C, T) * R(C, B)
 
 export R, cp, cv
 
@@ -225,8 +225,8 @@ h┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = u┆R(C, T) + ℙ(T)
 
 export ∫cp┆R, ∫cv┆R, u┆R, h┆R
 
-u(C::SpecificHeat{ℙ}, T::Real, B::Symbol) where {ℙ <: FLOAT} = u┆R(C, T) * R(C, B)
-h(C::SpecificHeat{ℙ}, T::Real, B::Symbol) where {ℙ <: FLOAT} = h┆R(C, T) * R(C, B)
+u(C::SpecificHeat{ℙ}, T::Real, B::Symbol = :MO) where {ℙ <: FLOAT} = u┆R(C, T) * R(C, B)
+h(C::SpecificHeat{ℙ}, T::Real, B::Symbol = :MO) where {ℙ <: FLOAT} = h┆R(C, T) * R(C, B)
 
 export u, h
 
@@ -239,7 +239,7 @@ s0┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cp┆RT(C, T) + 
 
 export ∫cp┆RT, s0┆R
 
-s0(C::SpecificHeat{ℙ}, T::Real, B::Symbol) where {ℙ <: FLOAT} = s0┆R(C, T) * R(C, B)
+s0(C::SpecificHeat{ℙ}, T::Real, B::Symbol = :MO) where {ℙ <: FLOAT} = s0┆R(C, T) * R(C, B)
 Pr(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = exp(∫cp┆RT(C, T))
 vr(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ℙ(T) / Pr(C, T)
 
