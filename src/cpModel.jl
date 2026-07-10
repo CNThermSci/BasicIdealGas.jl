@@ -189,7 +189,7 @@ end
 # SpecificHeat Helper functions
 # -----------------------------
 
-∫┆T(C::SpecificHeat{ℙ}, T::ℙ) where {ℙ <: FLOAT} = ∫(T -> C.𝑓(T) / T, C.Tref, T)
+∫┆T(C::SpecificHeat, T::Real) = ∫(T -> C.𝑓(T) / T, C.Tref, T)
 
 # User-facing functions
 # ---------------------
@@ -226,8 +226,7 @@ h(C::SpecificHeat{ℙ}, T::Real, B::Symbol = :MO) where {ℙ <: FLOAT} = h┆R(C
 
 export u, h
 
-∫cp┆RT(C::SpecificHeat{ℙ}, T::ℙ) where {ℙ <: FLOAT} = (𝗯(C, T); ∫┆T(C, T) / C.𝑅)
-∫cp┆RT(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cp┆RT(C, ℙ(T))
+∫cp┆RT(C::SpecificHeat, T::Real) = (𝗯(C, T); ∫┆T(C, T) / C.𝑅)
 s0┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cp┆RT(C, T) + C.sref / C.𝑅
 
 export ∫cp┆RT, s0┆R

@@ -224,8 +224,8 @@ end
         𝑀, Tmin, Tref, Tmax, uref, sref = 44.01, 273, 298, 1800, 6885, 213.685
         𝑅 = BasicIdealGas.universal_R
         C = SpecificHeat{ℙ}(:cubic, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref)
-        G = SpecificHeat{ℙ}(:const, T -> (5/2) * 𝑅, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
-        for T in (C.Tmin, Int(round((C.Tmin + C.Tmax) / 2)), C.Tmax)
+        G = SpecificHeat{ℙ}(:const, T -> (5 / 2) * 𝑅, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
+        for T in (Tmin, Int(round((Tmin + Tmax) / 2)), Tmax)
             @test C.𝑓(T) isa ℙ
             @test cp┆R(C, T) ≈ C.𝑓(T) / C.𝑅
             @test cv┆R(C, T) ≈ (C.𝑓(T) - C.𝑅) / C.𝑅
@@ -238,8 +238,8 @@ end
                 @test cp(C, T, B) ≈ cv(C, T, B) + R(C, B)
                 @test ga(C, T) ≈ cp(C, T, B) / cv(C, T, B)
             end
-            @test ∫cp┆R(G, T) ≈ (5/2) * (ℙ(T) - C.Tref)
-            @test ∫cv┆R(G, T) ≈ (3/2) * (ℙ(T) - C.Tref)
+            @test ∫cp┆R(G, T) ≈ (5 // 2) * (ℙ(T) - C.Tref)
+            @test ∫cv┆R(G, T) ≈ (3 // 2) * (ℙ(T) - C.Tref)
             for H in (C, G)
                 @test ∫cv┆R(H, T) ≈ ∫cp┆R(H, T) - (ℙ(T) - C.Tref)
                 @test u┆R(H, T) ≈ ∫cv┆R(H, T) + C.uref / C.𝑅
@@ -250,7 +250,7 @@ end
                 @test h(C, T, B) ≈ h┆R(C, T) * R(C, B)
                 @test h(C, T, B) ≈ u(C, T, B) + R(C, B) * ℙ(T)
             end
-            @test ∫cp┆RT(G, T) ≈ (5/2) * log(ℙ(T) / C.Tref)
+            @test ∫cp┆RT(G, T) ≈ (5 // 2) * log(ℙ(T) / C.Tref)
             @test s0┆R(G, T) ≈ ∫cp┆RT(G, T) + C.sref / C.𝑅
             for B in (:MA, :MO)
                 @test s0(C, T, B) ≈ s0┆R(C, T) * R(C, B)

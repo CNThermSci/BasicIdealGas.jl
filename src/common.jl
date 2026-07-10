@@ -38,9 +38,14 @@ function ∫(𝑔::Function, a::ℙ, b::ℙ) where {ℙ <: Union{Float32, Float6
     return quadgk(𝑔, a, b, rtol = eps(ℙ) * 2 << 6)[1]
 end
 
-function ∫(𝑔::Function, a::Float16, b::Float16)
-    n = max(Int(ceil((b - a) / Float16(0.25))), 32)
-    x = range(a, step = (b - a) / n, length = n + 1) |> collect
-    y = map(𝑔, x)
-    return integrate(x, y, Trapezoidal())
+function ∫(
+        𝑔::Function,
+        a::Union{Float16, Integer, Rational},
+        b::Union{Float16, Integer, Rational},
+    )
+    a32, b32 = Float32.((a, b))
+    n = max(Int(ceil((b32 - a32) / 0.25f0)), 32)
+    x32 = range(a32, step = (b32 - a32) / n, length = n + 1) |> collect
+    y32 = map(𝑔, x32)
+    return Float16(integrate(x32, y32, Trapezoidal()))
 end
