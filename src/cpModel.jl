@@ -204,7 +204,7 @@ ga(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = (𝗯(C, T); x = C.𝑓
 
 export cp┆R, cv┆R, ga
 
-function R(C::SpecificHeat{ℙ}, B::Symbol = :MO)::ℙ where {ℙ <: FLOAT}
+function R(C::SpecificHeat, B::Symbol = :MO)
     @assert B in (:MA, :MO)
     return B == :MO ? C.𝑅 : C.𝑅 / C.𝑀
 end
