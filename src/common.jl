@@ -39,6 +39,7 @@ function ∫(
         a::Union{Float32, Float64, Integer, Rational},
         b::Union{Float32, Float64, Integer, Rational},
     )
+    ℙ = typeof(promote(a, b))
     return quadgk(𝑔, a, b, rtol = eps(ℙ) * 2 << 6)[1]
 end
 
