@@ -118,10 +118,10 @@ for FUNC in (:cp, :cv, :u, :h, :s0)
 end
 
 # Internal, fast, positional, EoS functions
-_P(G::IdealGas{ℙ}, T::Real, v::Real, B::Symbol) where {ℙ} = R(G, B) * ℙ(T / v)
-_T(G::IdealGas{ℙ}, P::Real, v::Real, B::Symbol) where {ℙ} = ℙ(P * v) / R(G, B)
-_v(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol) where {ℙ} = R(G, B) * ℙ(T / P)
-_ρ(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol) where {ℙ} = inv(_v(G, P, T, B))
+_P(G::IdealGas{ℙ}, T::Real, v::Real, B::Symbol = :MO) where {ℙ} = R(G, B) * ℙ(T / v)
+_T(G::IdealGas{ℙ}, P::Real, v::Real, B::Symbol = :MO) where {ℙ} = ℙ(P * v) / R(G, B)
+_v(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MO) where {ℙ} = R(G, B) * ℙ(T / P)
+_ρ(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MO) where {ℙ} = inv(_v(G, P, T, B))
 
 # NamedTuple arg, return type inferrable, user-facing EoS functions
 function P(
@@ -153,13 +153,13 @@ function ρ( # "ρ" can be typed by \rho<tab>
 end
 
 # Keyworded user-facing EoS functions
-P(G::IdealGas; T::Real, v::Real, B::Symbol = :MA) = _P(G, T, v, B)
-T(G::IdealGas; P::Real, v::Real, B::Symbol = :MA) = _T(G, P, v, B)
-v(G::IdealGas; P::Real, T::Real, B::Symbol = :MA) = _v(G, P, T, B)
-ρ(G::IdealGas; P::Real, T::Real, B::Symbol = :MA) = _ρ(G, P, T, B)
+P(G::IdealGas; T::Real, v::Real, B::Symbol = :MO) = _P(G, T, v, B)
+T(G::IdealGas; P::Real, v::Real, B::Symbol = :MO) = _T(G, P, v, B)
+v(G::IdealGas; P::Real, T::Real, B::Symbol = :MO) = _v(G, P, T, B)
+ρ(G::IdealGas; P::Real, T::Real, B::Symbol = :MO) = _ρ(G, P, T, B)
 
 # Internal, fast, positional, entropy function
-function _s(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol)::ℙ where {ℙ}
+function _s(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MO)::ℙ where {ℙ}
     return s0(G, T, B) - R(G, B) * log(ℙ(P) / G.Pref)
 end
 
