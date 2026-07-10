@@ -99,100 +99,100 @@ function Base.show(io::IO, G::IdealGas{ℙ}) where {ℙ <: FLOAT}
     return print(io, "$(G.form) gas, $(G.hmod)")
 end
 
-for FUNC in (:cp, :cv, :u, :h, :s0)
-    @eval begin
-        ($FUNC(G::IdealGas{ℙ}, T::Real, B::Symbol)::ℙ) where {ℙ} = $FUNC(G.hmod, T, B)
-    end
-end
-
-for FUNC in (:gamma,)
-    @eval begin
-        ($FUNC(G::IdealGas{ℙ}, T::Real)::ℙ) where {ℙ} = $FUNC(G.hmod, T)
-    end
-end
-
 for FUNC in (:R,)
     @eval begin
-        ($FUNC(G::IdealGas{ℙ}, B::Symbol)::ℙ) where {ℙ} = $FUNC(G.hmod, B)
+        $FUNC(G::IdealGas, B::Symbol = :MO) = $FUNC(G.hmod, B)
+    end
+end
+
+for FUNC in (:cp┆R, :cv┆R, :ga, :∫cp┆R, :∫cv┆R, :u┆R, :h┆R, :∫cp┆RT, :s0┆R, :Pr, :vr)
+    @eval begin
+        $FUNC(G::IdealGas, T::Real) = $FUNC(G.hmod, T)
+    end
+end
+
+for FUNC in (:cp, :cv, :u, :h, :s0)
+    @eval begin
+        $FUNC(G::IdealGas, T::Real, B::Symbol = :MO) = $FUNC(G.hmod, T, B)
     end
 end
 
 # Internal, fast, positional, EoS functions
-(_P(G::IdealGas{ℙ}, T::Real, v::Real, B::Symbol)::ℙ) where {ℙ} = R(G, B) * ℙ(T / v)
-(_T(G::IdealGas{ℙ}, P::Real, v::Real, B::Symbol)::ℙ) where {ℙ} = ℙ(P * v) / R(G, B)
-(_v(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol)::ℙ) where {ℙ} = R(G, B) * ℙ(T / P)
-(_ρ(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol)::ℙ) where {ℙ} = inv(_v(G, P, T, B))
+_P(G::IdealGas{ℙ}, T::Real, v::Real, B::Symbol = :MO) where {ℙ} = R(G, B) * ℙ(T / v)
+_T(G::IdealGas{ℙ}, P::Real, v::Real, B::Symbol = :MO) where {ℙ} = ℙ(P * v) / R(G, B)
+_v(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MO) where {ℙ} = R(G, B) * ℙ(T / P)
+_ρ(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MO) where {ℙ} = inv(_v(G, P, T, B))
 
 # NamedTuple arg, return type inferrable, user-facing EoS functions
 function P(
-        G::IdealGas{ℙ},
+        G::IdealGas,
         ζ::@NamedTuple{T::ℚ, v::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
-    )::ℙ where {ℙ}
+    )
     return _P(G, ζ.T, ζ.v, B)
 end
 
 function T(
-        G::IdealGas{ℙ},
+        G::IdealGas,
         ζ::@NamedTuple{P::ℚ, v::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
-    )::ℙ where {ℙ}
+    )
     return _T(G, ζ.P, ζ.v, B)
 end
 
 function v(
-        G::IdealGas{ℙ},
+        G::IdealGas,
         ζ::@NamedTuple{P::ℚ, T::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
-    )::ℙ where {ℙ}
+    )
     return _v(G, ζ.P, ζ.T, B)
 end
 
 function ρ( # "ρ" can be typed by \rho<tab>
-        G::IdealGas{ℙ},
+        G::IdealGas,
         ζ::@NamedTuple{P::ℚ, T::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
-    )::ℙ where {ℙ}
+    )
     return _ρ(G, ζ.P, ζ.T, B)
 end
 
 # Keyworded user-facing EoS functions
-P(G::IdealGas; T::Real, v::Real, B::Symbol = :MA) = _P(G, T, v, B)
-T(G::IdealGas; P::Real, v::Real, B::Symbol = :MA) = _T(G, P, v, B)
-v(G::IdealGas; P::Real, T::Real, B::Symbol = :MA) = _v(G, P, T, B)
-ρ(G::IdealGas; P::Real, T::Real, B::Symbol = :MA) = _ρ(G, P, T, B)
+P(G::IdealGas; T::Real, v::Real, B::Symbol = :MO) = _P(G, T, v, B)
+T(G::IdealGas; P::Real, v::Real, B::Symbol = :MO) = _T(G, P, v, B)
+v(G::IdealGas; P::Real, T::Real, B::Symbol = :MO) = _v(G, P, T, B)
+ρ(G::IdealGas; P::Real, T::Real, B::Symbol = :MO) = _ρ(G, P, T, B)
 
 # Internal, fast, positional, entropy function
-function _s(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol)::ℙ where {ℙ}
+function _s(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MO)::ℙ where {ℙ}
     return s0(G, T, B) - R(G, B) * log(ℙ(P) / G.Pref)
 end
 
 # NamedTuple arg, return type inferrable, user-facing entropy functions
 function s(
-        G::IdealGas{ℙ},
+        G::IdealGas,
         ζ::@NamedTuple{P::ℚ, T::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
-    )::ℙ where {ℙ}
+    )
     return _s(G, ζ.P, ζ.T, B)
 end
 
 function s(
-        G::IdealGas{ℙ},
+        G::IdealGas,
         ζ::@NamedTuple{P::ℚ, v::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
-    )::ℙ where {ℙ}
+    )
     return _s(G, ζ.P, _T(G, ζ.P, ζ.v, B), B)
 end
 
 function s(
-        G::IdealGas{ℙ},
+        G::IdealGas,
         ζ::@NamedTuple{T::ℚ, v::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
-    )::ℙ where {ℙ}
+    )
     return _s(G, _P(G, ζ.T, ζ.v, B), ζ.T, B)
 end
 
 # Keyworded, user-facing entropy functions
 function s(
-        G::IdealGas{ℙ};
+        G::IdealGas;
         P::Union{Missing, Real} = missing,
         T::Union{Missing, Real} = missing,
         v::Union{Missing, Real} = missing,
         B::Symbol = :MA
-    ) where {ℙ}
+    )
     @assert(
         count(x -> isa(x, Real), (P, T, v)) == 2,
         "exactly two P-T-v state functions must be specified!"
