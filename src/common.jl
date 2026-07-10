@@ -30,3 +30,27 @@ end
 pDeco(::Type{Float16}) = subscript(16)
 pDeco(::Type{Float32}) = subscript(32)
 pDeco(::Type{Float64}) = subscript(64)
+
+# Numerical integrator
+# --------------------
+
+function ∫(
+        𝑔::Function,
+        a::Union{Float32, Float64, Integer, Rational},
+        b::Union{Float32, Float64, Integer, Rational},
+    )
+    ℙ = typeof(promote(a, b)[1])
+    return quadgk(𝑔, a, b, rtol = eps(ℙ) * 2 << 6)[1]
+end
+
+function ∫(
+        𝑔::Function,
+        a::Union{Float16, Integer, Rational},
+        b::Union{Float16, Integer, Rational},
+    )
+    a32, b32 = Float32.((a, b))
+    n = max(Int(ceil((b32 - a32) / 0.25f0)), 32)
+    x32 = range(a32, step = (b32 - a32) / n, length = n + 1) |> collect
+    y32 = map(𝑔, x32)
+    return Float16(integrate(x32, y32, Trapezoidal()))
+end

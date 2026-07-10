@@ -4,6 +4,7 @@ module BasicIdealGas
 using Reexport
 @reexport using Unitful
 using QuadGK
+using NumericalIntegration
 
 # Includes
 include("common.jl")
