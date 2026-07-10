@@ -219,7 +219,8 @@ end
 end
 
 @testset "cpModel.test.jl: user-facing functions: thermodynamic consistencies       " begin
-    for ℙ in union2vec(Base.IEEEFloat)
+    # Float16 are tested but may overflow depending on model function form and argument type
+    for ℙ in [Float32, Float64]
         𝑓 = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
         𝑀, Tmin, Tref, Tmax, uref, sref = 44.01, 273, 298, 1800, 6885, 213.685
         𝑅 = BasicIdealGas.universal_R
