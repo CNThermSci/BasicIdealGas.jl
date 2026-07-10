@@ -34,7 +34,11 @@ pDeco(::Type{Float64}) = subscript(64)
 # Numerical integrator
 # --------------------
 
-function ∫(𝑔::Function, a::ℙ, b::ℙ) where {ℙ <: Union{Float32, Float64}}
+function ∫(
+        𝑔::Function,
+        a::Union{Float32, Float64, Integer, Rational},
+        b::Union{Float32, Float64, Integer, Rational},
+    )
     return quadgk(𝑔, a, b, rtol = eps(ℙ) * 2 << 6)[1]
 end
 
