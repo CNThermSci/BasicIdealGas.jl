@@ -18,6 +18,7 @@ struct IdealState{ℙ <: FLOAT}
     cv::Quantity{ℙ, dimension(u"kJ/kg/K"), typeof(u"kJ/kg/K")}
     Pr::ℙ
     vr::ℙ
+    # Internal, validating constructors
 end
 
 # "ﬆ" is U+FB06
