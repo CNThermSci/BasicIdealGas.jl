@@ -5,8 +5,8 @@
 
 struct IdealState{ℙ <: FLOAT}
     𝐺::IdealGas{ℙ}
-    𝑃::ℙ
-    𝑇::ℙ
+    𝑃::ℙ                # kPa
+    𝑇::ℙ                # K
     # Internal, validating constructors
     function IdealState(
             G::IdealGas{ℙ},
@@ -16,6 +16,74 @@ struct IdealState{ℙ <: FLOAT}
         return new{ℙ}(G, P, T)
     end
 end
+
+# External constructors
+# ---------------------
+
+# Set type conversion / 1 indirection
+IdealState{ℙ}(
+    G::IdealGas,
+    P::Real,
+    T::Real,
+) where {ℙ} = IdealState(ℙ.((G, P, T))...)
+
+# Ideal gas model type conversion / 2 indirections
+IdealState(
+    G::IdealGas{ℙ},
+    P::Real,
+    T::Real,
+) where {ℙ} = IdealState{ℙ}(G, P, T)
+
+# Set type with unit conversion and stripping / 2 indirections
+function IdealState{ℙ}(
+        G::IdealGas,
+        P::Union{Real, Quantity{<:Real, dimension(u"kPa")}},
+        T::Union{Real, Quantity{<:Real, dimension(u"K")}},
+    ) where {ℙ <: FLOAT}
+    return IdealState{ℙ}(
+        G,
+        P isa Quantity ? uconvert(u"kPa", P).val : P,
+        T isa Quantity ? uconvert(u"K", T).val : T,
+    )
+end
+
+# Heat model type with unit conversion and stripping / 3 indirections
+IdealState(
+    G::IdealGas{ℙ},
+    P::Union{Real, Quantity{<:Real, dimension(u"kPa")}},
+    T::Union{Real, Quantity{<:Real, dimension(u"K")}},
+) where {ℙ <: FLOAT} = IdealState{ℙ}(G, P, T)
+
+# Conversions
+# -----------
+
+import Base: convert
+
+convert(::Type{IdealState{ℙ}}, ξ::IdealState{ℙ}) where {ℙ <: FLOAT} = ξ
+
+function convert(::Type{IdealState{ℙ}}, ξ::IdealState{ℚ}) where {ℙ <: FLOAT, ℚ <: FLOAT}
+    return IdealState{ℙ}(ξ.𝐺, ξ.𝑃, ξ.𝑇)
+end
+
+import Base: Float16, Float32, Float64
+
+Float16(ξ::IdealState) = convert(IdealState{Float16}, ξ)
+Float32(ξ::IdealState) = convert(IdealState{Float32}, ξ)
+Float64(ξ::IdealState) = convert(IdealState{Float64}, ξ)
+
+# Promotions
+# ----------
+
+import Base: promote_rule
+
+function promote_rule(::Type{IdealState{ℙ}}, ::Type{IdealState{ℚ}}) where {ℙ <: FLOAT, ℚ <: FLOAT}
+    return IdealState{promote_type(ℙ, ℚ)}
+end
+
+# Export
+# ------
+
+export IdealState
 
 # Base.getproperty
 # ----------------
@@ -81,11 +149,6 @@ Base.propertynames(::IdealState) = (
     :v, :vMO, :ρ, :ρMO, :cp, :cpMO, :cv, :cvMO,
     :u, :uMO, :h, :hMO, :s0, :s0MO, :Pr, :vr,
 )
-
-# Export
-# ------
-
-export IdealState
 
 # User-facing functions
 # ---------------------
