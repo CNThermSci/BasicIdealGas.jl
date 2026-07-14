@@ -236,3 +236,45 @@ Pr(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = exp(∫cp┆RT(C, T))
 vr(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ℙ(T) / Pr(C, T)
 
 export s0, Pr, vr
+
+# Base.getproperty
+# ----------------
+
+import Base: getproperty, propertynames
+
+function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
+    # Raw fields
+    if sy in fieldnames(SpecificHeat) return getfield(ξ, sy) end
+    # Convenience accessors/transformers
+    if sy in (:f, :mod, :modMO)
+        return getfield(ξ, :𝑓)
+    elseif sy in (:fMA, :modMA)
+        return T -> getfield(ξ, :𝑓)(T) / getfield(ξ, :𝑀)
+    end
+    # Porcelain accessors (with units)
+    if sy == :M
+        return getfield(ξ, :𝑀) * u"kg/kmol"
+    elseif sy in (:R, :RMA)
+        return R(ξ, :MA) * u"kJ/kg/K"
+    elseif sy in (:RU, :RMO)
+        return getfield(ξ, :𝑅) * u"kJ/kmol/K"
+    end
+    # Pretty print
+    if sy == :view
+        xmin, xmax = getfield(ξ, :Tmin), getfield(ξ, :Tmax)
+        x = range(xmin, stop = xmax, length = 33)
+        y = map(T -> cp(ξ, T, :MA), x)
+        plt = lineplot(
+            x, y, xlabel = "T [K]", ylabel = "cp (T)", name = "⠤⠤⠤⠤ [kJ/kg·K]",
+            xlim = (xmin, xmax), width = 32, height = 6,
+            border = :ascii, color = :white, compact_labels = true,
+        )
+        print(join([repr(ξ), string(plt)], "\n"))
+    end
+end
+
+Base.propertynames(::SpecificHeat) = (
+    :ID, :𝑓, :𝑀, :Tmin, :Tmax, :Tref, :uref, :sref, :𝑅,
+    :f, :mod, :modMO, :fMA, :modMA, :M, :R, :RMA, :RU, :RMO,
+    :view,
+)
