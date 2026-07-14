@@ -131,5 +131,52 @@ julia> a[1] === a[3]
 true
 ```
 
+*Usage:*
 
+```julia
+julia> C.view
+cubic cp₆₄(T) [273.0 1800.0]
+          +--------------------------------+
+      1.4 |⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⣀⣀⣠| ⠤⠤⠤⠤ [kJ/kg·K]
+          |⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⠤⠤⠔⠒⠒⠒⠉⠉⠉⠉⠁⠀⠀⠀⠀⠀|
+   cp (T) |⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⠤⠒⠊⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀|
+          |⠀⠀⠀⠀⠀⣀⠤⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀|
+          |⠀⠀⢀⠔⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀|
+      0.8 |⡠⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀|
+          +--------------------------------+
+          ⠀273⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀T [K]⠀⠀⠀⠀⠀⠀⠀⠀⠀1 800⠀
+julia> cp(C, 1800) # Defaults to mass base
+1.327534832992502
 
+julia> cp(C, 1800, :MO) # Molar base
+58.424808000000006
+
+julia> cv(C, 1800, :MO)
+50.110338000000006
+
+julia> ga(C, 1800) # γ = cp/cv
+1.1659232472149759
+
+julia> u(C, 1800) # Specific internal energy, mass base
+1647.0341409742273
+
+julia> h(C, 1800) # Specific enthalpy, mass base
+1987.0942636736138
+
+julia> s0(C, 1800) # Ideal gas partial entropy, mass base
+6.850566852042051
+
+julia> Pr(C, 1800) # Relative pressure, Pr = 1 at reference temperature
+38596.5956535214
+
+julia> vr(C, 1800) # Relative volume
+0.04663623745882819
+```
+
+### Example 2 – `IdealGas`
+
+*Instantiation:*
+
+```julia
+
+```
