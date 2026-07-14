@@ -19,6 +19,11 @@ struct IdealState{ℙ <: FLOAT}
     Pr::ℙ
     vr::ℙ
     # Internal, validating constructors
+#    function IdealState(
+#            G::IdealGas{ℙ},
+#        ) where {ℙ <: FLOAT}
+#        new{ℙ}{G, }
+#    end
 end
 
 # "ﬆ" is U+FB06
