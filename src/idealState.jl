@@ -29,7 +29,7 @@ function Base.getproperty(st::IdealState, sy::Symbol)
         return getfield(st, :𝐺)
     elseif sy == :M
         return getfield(st, :𝐺).hmod.𝑀 * u"kg/kmol"
-    elseif s in (:RMO, :RU, :Ru)
+    elseif sy in (:RMO, :RU, :Ru)
         return getfield(st, :𝐺).hmod.𝑅 * u"kJ/kmol/K"
     elseif sy == :P
         return getfield(st, :𝑃) * u"kPa"
@@ -39,7 +39,7 @@ function Base.getproperty(st::IdealState, sy::Symbol)
     GAS, P, T = map(sy -> getfield(st, sy), (:𝐺, :𝑃, :𝑇))
     if sy == :R
         return R(GAS, :MA) * u"kJ/kg/K"
-    elseif s in (:γ, :ga, :gamma)
+    elseif sy in (:γ, :ga)
         return ga(GAS, T)
     elseif sy == :v
         return _v(GAS, P, T, :MA) * u"m^3/kg"
@@ -73,7 +73,7 @@ function Base.getproperty(st::IdealState, sy::Symbol)
 end
 
 Base.propertynames(::IdealState) = (
-    :gas, :M, :R, :Ru, :RU, :P, :T,
+    :gas, :M, :R, :Ru, :RU, :P, :T, :γ, :ga,
     :v, :vMO, :ρ, :ρMO, :cp, :cpMO, :cv, :cvMO,
     :u, :uMO, :h, :hMO, :s0, :s0MO,
 )
