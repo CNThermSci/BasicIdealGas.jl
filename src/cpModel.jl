@@ -236,3 +236,38 @@ Pr(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = exp(∫cp┆RT(C, T))
 vr(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ℙ(T) / Pr(C, T)
 
 export s0, Pr, vr
+
+# Base.getproperty
+# ----------------
+
+import Base: getproperty, propertynames
+
+function Base.getproperty(sh::SpecificHeat, sy::Symbol)
+    # Raw fields
+    if sy in (:ID, :𝑓, :𝑀, :Tmin, :Tmax, :Tref, :uref, :sref, :𝑅)
+        return getfield(sh, sy)
+        # Convenience accessors, transformers
+    elseif sy == :mod
+        return getfield(sh, :𝑓)
+    elseif sy == :modMA
+        return T -> getfield(sh, :𝑓) / getfield(sh, :𝑀)
+    elseif sy == :modMO
+        return getfield(sh, :𝑓)
+        # Porcelain accessors (with units)
+    elseif sy == :M
+        return getfield(sh, :𝑀) * u"kg/kmol"
+    elseif sy == :R
+        return R(sh, :MA) * u"kJ/kg/K"
+    elseif sy == :RMA
+        return R(sh, :MA) * u"kJ/kg/K"
+    elseif sy == :RU
+        return getfield(sh, :𝑅) * u"kJ/kmol/K"
+    elseif sy == :RMO
+        return getfield(sh, :𝑅) * u"kJ/kmol/K"
+    end
+end
+
+Base.propertynames(::SpecificHeat) = (
+    :ID, :𝑓, :𝑀, :Tmin, :Tmax, :Tref, :uref, :sref, :𝑅,
+    :mod, :modMA, :modMO, :M, :R, :RMA, :RU, :RMO,
+)
