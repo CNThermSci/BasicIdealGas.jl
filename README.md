@@ -17,11 +17,16 @@ Basic ideal gas models in engineering thermodynamics.
   member, including the ideal gas $P$-$T$-$v$ behavior, as well as entropy, $s:s(P, T)$, ones.
 
 - `IdealState{ℙ <: Base.IEEEFloat}`: A precision-parametric type for an ideal gas at a
-  determined `(P, T)` state.
+  determined `(P, T)` state. Since here the state is known, `IdealState` object instances are
+  able to return ideal gas properties (in the Thermodynamic sense) through properties (in the
+  julia language sense).
 
 ## Common Design Choices
 
 - All data fields are stored as plain `ℙ <: Base.IEEEFloat` types;
+
+- It is _assumed_ that values are in kSI system, i.e., energy in $kJ$, temperatures in $K$,
+  pressure in $kPa$, specific volumes in $m³/kg$ (mass base) or $m³/kmol$ (molar base);
 
 - Instantiated `SpecificHeat` objects store caloric data in the molar base, `:MO`;
 
