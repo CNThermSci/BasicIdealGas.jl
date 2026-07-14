@@ -4,36 +4,41 @@
 # ---------------------------
 
 struct IdealState{ℙ <: FLOAT}
-    G::IdealGas{ℙ}
-    P::Quantity{ℙ, dimension(u"kPa"), typeof(u"kPa")}
-    T::Quantity{ℙ, dimension(u"K"), typeof(u"K")}
-    # v::Quantity{ℙ, dimension(u"m^3/kg"), typeof(u"m^3/kg")}
-    # ρ::Quantity{ℙ, dimension(u"kg/m^3"), typeof(u"kg/m^3")}
-    # u::Quantity{ℙ, dimension(u"kJ/kg"), typeof(u"kJ/kg")}
-    # h::Quantity{ℙ, dimension(u"kJ/kg"), typeof(u"kJ/kg")}
-    # s::Quantity{ℙ, dimension(u"kJ/kg/K"), typeof(u"kJ/kg/K")}
-    # cp::Quantity{ℙ, dimension(u"kJ/kg/K"), typeof(u"kJ/kg/K")}
-    # cv::Quantity{ℙ, dimension(u"kJ/kg/K"), typeof(u"kJ/kg/K")}
-    # Pr::ℙ
-    # vr::ℙ
+    𝐺::IdealGas{ℙ}
+    𝑃::ℙ
+    𝑇::ℙ
     # Internal, validating constructors
     function IdealState(
             G::IdealGas{ℙ},
-            P::Quantity{ℙ, dimension(u"kPa"), typeof(u"kPa")},
-            T::Quantity{ℙ, dimension(u"K"), typeof(u"K")},
-            # v::Quantity{ℙ, dimension(u"m^3/kg"), typeof(u"m^3/kg")},
-            # ρ::Quantity{ℙ, dimension(u"kg/m^3"), typeof(u"kg/m^3")},
-            # u::Quantity{ℙ, dimension(u"kJ/kg"), typeof(u"kJ/kg")},
-            # h::Quantity{ℙ, dimension(u"kJ/kg"), typeof(u"kJ/kg")},
-            # s::Quantity{ℙ, dimension(u"kJ/kg/K"), typeof(u"kJ/kg/K")},
-            # cp::Quantity{ℙ, dimension(u"kJ/kg/K"), typeof(u"kJ/kg/K")},
-            # cv::Quantity{ℙ, dimension(u"kJ/kg/K"), typeof(u"kJ/kg/K")},
-            # Pr::ℙ,
-            # vr::ℙ,
+            P::ℙ,
+            T::ℙ,
         ) where {ℙ <: FLOAT}
-        # new{ℙ}(G, P, T, v, ρ, u, h, s, cp, cv, Pr, vr)
         new{ℙ}(G, P, T)
     end
 end
+
+# Base.getproperty
+# ----------------
+
+import Base: getproperty, propertynames
+
+function Base.getproperty(obj::IdealState, s::Symbol)
+    if s in (:𝐺, :𝑃, :𝑇)
+        return getfield(obj, s)
+    elseif s == :gas
+        return obj.𝐺
+    elseif s == :P
+        return obj.𝑃
+    elseif s == :T
+        return obj.𝑇
+    end
+end
+
+Base.propertynames(::IdealState) = (:gas, :P, :T)
+
+# Export
+# ------
+
+export IdealState
 
 # "ﬆ" is U+FB06
