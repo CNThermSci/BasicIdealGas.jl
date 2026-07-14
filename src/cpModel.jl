@@ -265,10 +265,20 @@ function Base.getproperty(sh::SpecificHeat, sy::Symbol)
     end
     # Pretty print
     if sy == :view
+        xmin, xmax = getfield(sh, :Tmin), getfield(sh, :Tmax)
+        x = range(xmin, stop = xmax, length = 33)
+        y = map(T -> cp(sh, T, :MA), x)
+        plt = lineplot(
+            x, y, xlabel = "T [K]", ylabel = "cp (T)", name = "⠤⠤⠤⠤ [kJ/kg·K]",
+            xlim = (xmin, xmax), width = 32, height = 6,
+            border = :ascii, color = :white, compact_labels = true,
+        )
+        print(join([repr(sh), string(plt)], "\n"))
     end
 end
 
 Base.propertynames(::SpecificHeat) = (
     :ID, :𝑓, :𝑀, :Tmin, :Tmax, :Tref, :uref, :sref, :𝑅,
     :mod, :modMA, :modMO, :M, :R, :RMA, :RU, :RMO,
+    :view,
 )
