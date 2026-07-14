@@ -13,7 +13,7 @@ struct IdealState{ℙ <: FLOAT}
             P::ℙ,
             T::ℙ,
         ) where {ℙ <: FLOAT}
-        @assert(G.hmod.Tmin <= T <= G.hmod.Tmax, "T out of range")
+        @assert(G.hmod.Tmin <= T <= G.hmod.Tmax, "T = $(T) out of range for $(G.hmod)")
         return new{ℙ}(G, P, T)
     end
 end
@@ -51,8 +51,8 @@ end
 # Heat model type with unit conversion and stripping / 3 indirections
 IdealState(
     G::IdealGas{ℙ},
-    P::Union{Real, Quantity{<:Real, dimension(u"kPa")}},
-    T::Union{Real, Quantity{<:Real, dimension(u"K")}},
+    P::Quantity{<:Real, dimension(u"kPa")},
+    T::Quantity{<:Real, dimension(u"K")},
 ) where {ℙ <: FLOAT} = IdealState{ℙ}(G, P, T)
 
 # Conversions
