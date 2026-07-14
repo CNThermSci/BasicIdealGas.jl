@@ -138,6 +138,10 @@ function Base.getproperty(st::IdealState, sy::Symbol)
         return s0(GAS, T, :MA) * u"kJ/kg/K"
     elseif sy == :s0MO
         return s0(GAS, T, :MO) * u"kJ/kmol/K"
+    elseif sy == :s
+        return _s(GAS, P, T, :MA) * u"kJ/kg/K"
+    elseif sy == :sMO
+        return _s(GAS, P, T, :MO) * u"kJ/kmol/K"
     elseif sy == :Pr
         return Pr(GAS, T)
     elseif sy == :vr
@@ -148,7 +152,8 @@ end
 Base.propertynames(::IdealState) = (
     :gas, :M, :R, :Ru, :RU, :P, :T, :γ, :ga,
     :v, :vMO, :ρ, :ρMO, :cp, :cpMO, :cv, :cvMO,
-    :u, :uMO, :h, :hMO, :s0, :s0MO, :Pr, :vr,
+    :u, :uMO, :h, :hMO, :s0, :s0MO, :s, :sMO,
+    :Pr, :vr,
 )
 
 # User-facing functions
