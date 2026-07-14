@@ -246,15 +246,17 @@ function Base.getproperty(sh::SpecificHeat, sy::Symbol)
     # Raw fields
     if sy in (:ID, :𝑓, :𝑀, :Tmin, :Tmax, :Tref, :uref, :sref, :𝑅)
         return getfield(sh, sy)
-        # Convenience accessors, transformers
-    elseif sy == :mod
+    end
+    # Convenience accessors/transformers
+    if sy == :mod
         return getfield(sh, :𝑓)
     elseif sy == :modMA
         return T -> getfield(sh, :𝑓) / getfield(sh, :𝑀)
     elseif sy == :modMO
         return getfield(sh, :𝑓)
-        # Porcelain accessors (with units)
-    elseif sy == :M
+    end
+    # Porcelain accessors (with units)
+    if sy == :M
         return getfield(sh, :𝑀) * u"kg/kmol"
     elseif sy == :R
         return R(sh, :MA) * u"kJ/kg/K"
@@ -264,6 +266,9 @@ function Base.getproperty(sh::SpecificHeat, sy::Symbol)
         return getfield(sh, :𝑅) * u"kJ/kmol/K"
     elseif sy == :RMO
         return getfield(sh, :𝑅) * u"kJ/kmol/K"
+    end
+    # Pretty print
+    if sy == :view
     end
 end
 
