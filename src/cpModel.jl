@@ -258,13 +258,9 @@ function Base.getproperty(sh::SpecificHeat, sy::Symbol)
     # Porcelain accessors (with units)
     if sy == :M
         return getfield(sh, :𝑀) * u"kg/kmol"
-    elseif sy == :R
+    elseif sy in (:R, :RMA)
         return R(sh, :MA) * u"kJ/kg/K"
-    elseif sy == :RMA
-        return R(sh, :MA) * u"kJ/kg/K"
-    elseif sy == :RU
-        return getfield(sh, :𝑅) * u"kJ/kmol/K"
-    elseif sy == :RMO
+    elseif sy in (:RU, :RMO)
         return getfield(sh, :𝑅) * u"kJ/kmol/K"
     end
     # Pretty print
