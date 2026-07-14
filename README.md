@@ -26,12 +26,21 @@ Basic ideal gas models in engineering thermodynamics.
 - All data fields are stored as plain `ℙ <: Base.IEEEFloat` types;
 
 - It is _assumed_ that values are in kSI system, i.e., energy in $kJ$, temperatures in $K$,
-  pressure in $kPa$, specific volumes in $m³/kg$ (mass base) or $m³/kmol$ (molar base);
+  pressure in $kPa$, specific volumes in $m³/kmol$ (molar base, `:MO`) or $m³/kg$ (mass base, `:MA`);
 
-- Instantiated `SpecificHeat` objects store caloric data in the molar base, `:MO`;
+- Instantiated `SpecificHeat` object fields store base-dependent data in the molar base;
 
 - `SpecificHeat` functions that return based amounts default to the mass base, `:MA`, due to
   the envisioned engineering applications; however, based amount calculating functions accept a
   `Symbol`ic base argument---either `:MA`, or `:MO`.
 
-- 
+- Constructors accept any unambiguous combination of `Real` and `Quantity{<:Real}` arguments;
+
+- User-facing outputs are frequently accessed through fields and properties (in the julia
+  langauge sense);
+
+## Examples
+
+### Example 1 – `SpecificHeat`
+
+
