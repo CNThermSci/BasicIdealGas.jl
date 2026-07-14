@@ -208,3 +208,22 @@ end
 
 # User-facing exports
 export P, T, v, ρ, s
+
+# Base.getproperty
+# ----------------
+
+import Base: getproperty, propertynames
+
+function Base.getproperty(ig::IdealGas, sy::Symbol)
+    # Raw fields
+    if sy in fieldnames(IdealGas) return getfield(ig, sy) end
+    # Short-circuit SpecificHeat model accessors
+    if sy in propertynames(getfield(ig, :hmod))
+        return getproperty(getfield(ig, :hmod), sy)
+    end
+end
+
+Base.propertynames(ξ::IdealGas) = (
+    :form, :name, :hmod, :Pref,
+    propertynames(getfield(ξ, :hmod))...
+)
