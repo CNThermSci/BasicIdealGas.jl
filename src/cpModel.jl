@@ -251,7 +251,7 @@ function Base.getproperty(sh::SpecificHeat, sy::Symbol)
     if sy == :mod
         return getfield(sh, :𝑓)
     elseif sy == :modMA
-        return T -> getfield(sh, :𝑓) / getfield(sh, :𝑀)
+        return T -> getfield(sh, :𝑓)(T) / getfield(sh, :𝑀)
     elseif sy == :modMO
         return getfield(sh, :𝑓)
     end
