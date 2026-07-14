@@ -91,25 +91,26 @@ export IdealState
 
 import Base: getproperty, propertynames
 
-function Base.getproperty(st::IdealState, sy::Symbol)
-    if sy in (:𝐺, :𝑃, :𝑇)
-        return getfield(st, sy)
-    elseif sy == :gas
-        return getfield(st, :𝐺)
-    elseif sy == :M
-        return getfield(st, :𝐺).hmod.𝑀 * u"kg/kmol"
-    elseif sy in (:RMO, :RU, :Ru)
-        return getfield(st, :𝐺).hmod.𝑅 * u"kJ/kmol/K"
-    elseif sy == :P
-        return getfield(st, :𝑃) * u"kPa"
-    elseif sy == :T
-        return getfield(st, :𝑇) * u"K"
+function Base.getproperty(ξ::IdealState, sy::Symbol)
+    # Raw fields
+    if sy in fieldnames(IdealGas) return getfield(ξ, sy) end
+    # Short-circuit IdealGas accessors
+    if sy in propertynames(getfield(ξ, :𝐺))
+        return getproperty(getfield(ξ, :𝐺), sy)
     end
-    GAS, P, T = map(sy -> getfield(st, sy), (:𝐺, :𝑃, :𝑇))
-    if sy == :R
-        return R(GAS, :MA) * u"kJ/kg/K"
-    elseif sy in (:γ, :ga)
-        return ga(GAS, T)
+    # Convenience accessors/transformers
+    if sy == :gas
+        return getfield(ξ, :𝐺)
+    elseif sy == :P
+        return getfield(ξ, :𝑃) * u"kPa"
+    elseif sy == :T
+        return getfield(ξ, :𝑇) * u"K"
+    end
+    # User-facing state function accessors (with units)
+    GAS, P, T = map(sy -> getfield(ξ, sy), (:𝐺, :𝑃, :𝑇))
+    MOD = getfield(GAS, :hmod)
+    if sy in (:γ, :ga)
+        return ga(MOD, T)
     elseif sy == :v
         return _v(GAS, P, T, :MA) * u"m^3/kg"
     elseif sy == :vMO
@@ -119,41 +120,42 @@ function Base.getproperty(st::IdealState, sy::Symbol)
     elseif sy == :ρMO
         return _ρ(GAS, P, T, :MO) * u"kmol/m^3"
     elseif sy == :cp
-        return cp(GAS, T, :MA) * u"kJ/kg/K"
+        return cp(MOD, T, :MA) * u"kJ/kg/K"
     elseif sy == :cpMO
-        return cp(GAS, T, :MO) * u"kJ/kmol/K"
+        return cp(MOD, T, :MO) * u"kJ/kmol/K"
     elseif sy == :cv
-        return cv(GAS, T, :MA) * u"kJ/kg/K"
+        return cv(MOD, T, :MA) * u"kJ/kg/K"
     elseif sy == :cvMO
-        return cv(GAS, T, :MO) * u"kJ/kmol/K"
+        return cv(MOD, T, :MO) * u"kJ/kmol/K"
     elseif sy == :u
-        return u(GAS, T, :MA) * u"kJ/kg"
+        return u(MOD, T, :MA) * u"kJ/kg"
     elseif sy == :uMO
-        return u(GAS, T, :MO) * u"kJ/kmol"
+        return u(MOD, T, :MO) * u"kJ/kmol"
     elseif sy == :h
-        return h(GAS, T, :MA) * u"kJ/kg"
+        return h(MOD, T, :MA) * u"kJ/kg"
     elseif sy == :hMO
-        return h(GAS, T, :MO) * u"kJ/kmol"
+        return h(MOD, T, :MO) * u"kJ/kmol"
     elseif sy == :s0
-        return s0(GAS, T, :MA) * u"kJ/kg/K"
+        return s0(MOD, T, :MA) * u"kJ/kg/K"
     elseif sy == :s0MO
-        return s0(GAS, T, :MO) * u"kJ/kmol/K"
+        return s0(MOD, T, :MO) * u"kJ/kmol/K"
     elseif sy == :s
         return _s(GAS, P, T, :MA) * u"kJ/kg/K"
     elseif sy == :sMO
         return _s(GAS, P, T, :MO) * u"kJ/kmol/K"
     elseif sy == :Pr
-        return Pr(GAS, T)
+        return Pr(MOD, T)
     elseif sy == :vr
-        return vr(GAS, T)
+        return vr(MOD, T)
     end
 end
 
-Base.propertynames(::IdealState) = (
+Base.propertynames(ξ::IdealState) = (
     :gas, :M, :R, :Ru, :RU, :P, :T, :γ, :ga,
     :v, :vMO, :ρ, :ρMO, :cp, :cpMO, :cv, :cvMO,
     :u, :uMO, :h, :hMO, :s0, :s0MO, :s, :sMO,
     :Pr, :vr,
+    propertynames(getfield(ξ, :𝐺))...
 )
 
 # User-facing functions
