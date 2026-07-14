@@ -244,13 +244,11 @@ import Base: getproperty, propertynames
 
 function Base.getproperty(sh::SpecificHeat, sy::Symbol)
     # Raw fields
-    if sy in (:ID, :𝑓, :𝑀, :Tmin, :Tmax, :Tref, :uref, :sref, :𝑅)
-        return getfield(sh, sy)
-    end
+    if sy in fieldnames(SpecificHeat) return getfield(sh, sy) end
     # Convenience accessors/transformers
     if sy in (:f, :mod, :modMO)
         return getfield(sh, :𝑓)
-    elseif sy == (:fMA, :modMA)
+    elseif sy in (:fMA, :modMA)
         return T -> getfield(sh, :𝑓)(T) / getfield(sh, :𝑀)
     end
     # Porcelain accessors (with units)
