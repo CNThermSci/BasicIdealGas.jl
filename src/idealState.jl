@@ -13,6 +13,7 @@ struct IdealState{ℙ <: FLOAT}
             P::ℙ,
             T::ℙ,
         ) where {ℙ <: FLOAT}
+        @assert(G.hmod.Tmin <= T <= G.hmod.Tmax, "T out of range")
         return new{ℙ}(G, P, T)
     end
 end
@@ -37,8 +38,8 @@ IdealState(
 # Set type with unit conversion and stripping / 2 indirections
 function IdealState{ℙ}(
         G::IdealGas,
-        P::Union{Real, Quantity{<:Real, dimension(u"kPa")}},
-        T::Union{Real, Quantity{<:Real, dimension(u"K")}},
+        P::Quantity{<:Real, dimension(u"kPa")},
+        T::Quantity{<:Real, dimension(u"K")},
     ) where {ℙ <: FLOAT}
     return IdealState{ℙ}(
         G,
