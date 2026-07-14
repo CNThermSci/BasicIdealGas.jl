@@ -74,8 +74,11 @@ SpecificHeat{Float64}
   sref: Float64 213.685
   𝑅: Float64 8.31447
 
-julia> C.f(300)
+julia> C.𝑓(300)
 36.983763
+
+julia> typeof(ans)
+Float64
 ```
 
 It is worth noting that (i) each specific heat model may have it's own gas constant—this is so
