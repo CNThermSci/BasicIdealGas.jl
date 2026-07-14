@@ -48,7 +48,10 @@ Basic ideal gas models in engineering thermodynamics.
 ```julia
 julia> using BasicIdealGas
 
-julia> C = SpecificHeat(:cubic, T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3, 44.01, 273, 298, 1800, 6885, 213.685)
+julia> C = SpecificHeat(
+    :cubic,
+    T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3,
+    44.01, 273, 298, 1800, 6885, 213.685)
 cubic cp₆₄(T) [273.0 1800.0]
 
 julia> dump(C)
