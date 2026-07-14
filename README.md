@@ -49,9 +49,16 @@ Basic ideal gas models in engineering thermodynamics.
 julia> using BasicIdealGas
 
 julia> C = SpecificHeat(
-    :cubic,
-    T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3,
-    44.01, 273, 298, 1800, 6885, 213.685)
+    :cubic,             # model ID
+    # molar cp(T) model
+    T -> 22.26 +5.891e-2*T -3.501e-5*T^2 +7.469e-9*T^3,
+    44.01,              # Molecular weight in kg/kmol
+    273,                # Minimum T in K
+    298,                # Reference T in K
+    1800,               # Maximum T in K
+    6885,               # Ref internal energy in kJ/kmol
+    213.685             # Ref entropy in kJ/kmol/K
+    )
 cubic cp₆₄(T) [273.0 1800.0]
 
 julia> dump(C)
