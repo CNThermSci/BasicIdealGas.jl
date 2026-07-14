@@ -26,11 +26,11 @@ function Base.getproperty(obj::IdealState, s::Symbol)
     if s in (:𝐺, :𝑃, :𝑇)
         return getfield(obj, s)
     elseif s == :gas
-        return obj.𝐺
+        return getfield(obj, :𝐺)
     elseif s == :P
-        return obj.𝑃
+        return getfield(obj, :𝑃) * u"kPa"
     elseif s == :T
-        return obj.𝑇
+        return getfield(obj, :𝑇) * u"K"
     end
 end
 
