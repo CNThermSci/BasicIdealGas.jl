@@ -22,19 +22,40 @@ end
 
 import Base: getproperty, propertynames
 
-function Base.getproperty(obj::IdealState, s::Symbol)
+function Base.getproperty(st::IdealState, s::Symbol)
     if s in (:𝐺, :𝑃, :𝑇)
-        return getfield(obj, s)
+        return getfield(st, s)
     elseif s == :gas
-        return getfield(obj, :𝐺)
+        return getfield(st, :𝐺)
     elseif s == :P
-        return getfield(obj, :𝑃) * u"kPa"
+        return getfield(st, :𝑃) * u"kPa"
     elseif s == :T
-        return getfield(obj, :𝑇) * u"K"
+        return getfield(st, :𝑇) * u"K"
+    end
+    GAS, P, T = map(fi -> getfield(st, fi), (:𝐺, :𝑃, :𝑇))
+    if s == :v
+        return _v(GAS, P, T, :MA) * u"m^3/kg"
+    elseif s == :vMO
+        return _v(GAS, P, T, :MO) * u"m^3/kmol"
+    elseif s == :ρ
+        return _ρ(GAS, P, T, :MA) * u"kg/m^3"
+    elseif s == :ρMO
+        return _ρ(GAS, P, T, :MO) * u"kmol/m^3"
+    elseif s == :cp
+        return cp(GAS, T, :MA) * u"kJ/kg/K"
+    elseif s == :cpMO
+        return cp(GAS, T, :MO) * u"kJ/kmol/K"
+    elseif s == :cv
+        return cv(GAS, T, :MA) * u"kJ/kg/K"
+    elseif s == :cvMO
+        return cv(GAS, T, :MO) * u"kJ/kmol/K"
     end
 end
 
-Base.propertynames(::IdealState) = (:gas, :P, :T)
+Base.propertynames(::IdealState) = (
+    :gas, :P, :T,
+    :v, :vMO, :ρ, :ρMO, :cp, :cpMO, :cv, :cvMO,
+)
 
 # Export
 # ------
