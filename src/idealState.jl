@@ -13,7 +13,7 @@ struct IdealState{ℙ <: FLOAT}
             P::ℙ,
             T::ℙ,
         ) where {ℙ <: FLOAT}
-        new{ℙ}(G, P, T)
+        return new{ℙ}(G, P, T)
     end
 end
 
@@ -41,4 +41,9 @@ Base.propertynames(::IdealState) = (:gas, :P, :T)
 
 export IdealState
 
-# "ﬆ" is U+FB06
+# User-facing functions
+# ---------------------
+
+function Base.show(io::IO, st::IdealState{ℙ}) where {ℙ <: FLOAT}
+    return print(io, "$(st.gas) at ($(st.P), $(st.T))")
+end
