@@ -58,6 +58,7 @@ julia> C = SpecificHeat(
     1800,               # Maximum T in K
     6885,               # Ref internal energy in kJ/kmol
     213.685             # Ref entropy in kJ/kmol/K
+    # Omitted molar gas constant (defaults to universal one)
     )
 cubic cp₆₄(T) [273.0 1800.0]
 
