@@ -5,37 +5,34 @@
 
 struct IdealState{ℙ <: FLOAT}
     G::IdealGas{ℙ}
-    M::Quantity{ℙ, dimension(u"kg/kmol"), typeof(u"kg/kmol")}
-    R::Quantity{ℙ, dimension(u"kJ/kg/K"), typeof(u"kJ/kg/K")}
     P::Quantity{ℙ, dimension(u"kPa"), typeof(u"kPa")}
     T::Quantity{ℙ, dimension(u"K"), typeof(u"K")}
-    v::Quantity{ℙ, dimension(u"m^3/kg"), typeof(u"m^3/kg")}
-    ρ::Quantity{ℙ, dimension(u"kg/m^3"), typeof(u"kg/m^3")}
-    u::Quantity{ℙ, dimension(u"kJ/kg"), typeof(u"kJ/kg")}
-    h::Quantity{ℙ, dimension(u"kJ/kg"), typeof(u"kJ/kg")}
-    s::Quantity{ℙ, dimension(u"kJ/kg/K"), typeof(u"kJ/kg/K")}
-    cp::Quantity{ℙ, dimension(u"kJ/kg/K"), typeof(u"kJ/kg/K")}
-    cv::Quantity{ℙ, dimension(u"kJ/kg/K"), typeof(u"kJ/kg/K")}
-    Pr::ℙ
-    vr::ℙ
+    # v::Quantity{ℙ, dimension(u"m^3/kg"), typeof(u"m^3/kg")}
+    # ρ::Quantity{ℙ, dimension(u"kg/m^3"), typeof(u"kg/m^3")}
+    # u::Quantity{ℙ, dimension(u"kJ/kg"), typeof(u"kJ/kg")}
+    # h::Quantity{ℙ, dimension(u"kJ/kg"), typeof(u"kJ/kg")}
+    # s::Quantity{ℙ, dimension(u"kJ/kg/K"), typeof(u"kJ/kg/K")}
+    # cp::Quantity{ℙ, dimension(u"kJ/kg/K"), typeof(u"kJ/kg/K")}
+    # cv::Quantity{ℙ, dimension(u"kJ/kg/K"), typeof(u"kJ/kg/K")}
+    # Pr::ℙ
+    # vr::ℙ
     # Internal, validating constructors
     function IdealState(
             G::IdealGas{ℙ},
-            M::Quantity{ℙ, dimension(u"kg/kmol"), typeof(u"kg/kmol")},
-            R::Quantity{ℙ, dimension(u"kJ/kg/K"), typeof(u"kJ/kg/K")},
             P::Quantity{ℙ, dimension(u"kPa"), typeof(u"kPa")},
             T::Quantity{ℙ, dimension(u"K"), typeof(u"K")},
-            v::Quantity{ℙ, dimension(u"m^3/kg"), typeof(u"m^3/kg")},
-            ρ::Quantity{ℙ, dimension(u"kg/m^3"), typeof(u"kg/m^3")},
-            u::Quantity{ℙ, dimension(u"kJ/kg"), typeof(u"kJ/kg")},
-            h::Quantity{ℙ, dimension(u"kJ/kg"), typeof(u"kJ/kg")},
-            s::Quantity{ℙ, dimension(u"kJ/kg/K"), typeof(u"kJ/kg/K")},
-            cp::Quantity{ℙ, dimension(u"kJ/kg/K"), typeof(u"kJ/kg/K")},
-            cv::Quantity{ℙ, dimension(u"kJ/kg/K"), typeof(u"kJ/kg/K")},
-            Pr::ℙ,
-            vr::ℙ,
+            # v::Quantity{ℙ, dimension(u"m^3/kg"), typeof(u"m^3/kg")},
+            # ρ::Quantity{ℙ, dimension(u"kg/m^3"), typeof(u"kg/m^3")},
+            # u::Quantity{ℙ, dimension(u"kJ/kg"), typeof(u"kJ/kg")},
+            # h::Quantity{ℙ, dimension(u"kJ/kg"), typeof(u"kJ/kg")},
+            # s::Quantity{ℙ, dimension(u"kJ/kg/K"), typeof(u"kJ/kg/K")},
+            # cp::Quantity{ℙ, dimension(u"kJ/kg/K"), typeof(u"kJ/kg/K")},
+            # cv::Quantity{ℙ, dimension(u"kJ/kg/K"), typeof(u"kJ/kg/K")},
+            # Pr::ℙ,
+            # vr::ℙ,
         ) where {ℙ <: FLOAT}
-        new{ℙ}(G, M, R, P, T, v, ρ, u, h, s, cp, cv, Pr, vr)
+        # new{ℙ}(G, P, T, v, ρ, u, h, s, cp, cv, Pr, vr)
+        new{ℙ}(G, P, T)
     end
 end
 
