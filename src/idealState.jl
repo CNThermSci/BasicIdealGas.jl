@@ -49,12 +49,21 @@ function Base.getproperty(st::IdealState, s::Symbol)
         return cv(GAS, T, :MA) * u"kJ/kg/K"
     elseif s == :cvMO
         return cv(GAS, T, :MO) * u"kJ/kmol/K"
+    elseif s == :u
+        return u(GAS, T, :MA) * u"kJ/kg"
+    elseif s == :uMO
+        return u(GAS, T, :MO) * u"kJ/kmol"
+    elseif s == :h
+        return h(GAS, T, :MA) * u"kJ/kg"
+    elseif s == :hMO
+        return h(GAS, T, :MO) * u"kJ/kmol"
     end
 end
 
 Base.propertynames(::IdealState) = (
     :gas, :P, :T,
     :v, :vMO, :ρ, :ρMO, :cp, :cpMO, :cv, :cvMO,
+    :u, :uMO, :h, :hMO, :s0, 
 )
 
 # Export
