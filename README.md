@@ -107,10 +107,15 @@ render multiple conversions lossless, i.e., if a `SpecificHeat{Float64}` is conv
 original model:
 
 ```julia
+julia> a = [ C.𝑓, Float32(C).𝑓, Float64(Float32(C)).𝑓 ]
+3-element Vector{Function}:
+ #2 (generic function with 1 method)
+ Float32 ∘ var"#2#3"()
+ #2 (generic function with 1 method)
+
+julia> a[1] === a[3]
+true
 ```
-
-Precision conversion on the `SpecificHeat` funcional form—the $c_p(T)$ model—is lossless
-
 
 
 
