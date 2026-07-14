@@ -155,5 +155,5 @@ Base.propertynames(::IdealState) = (
 # ---------------------
 
 function Base.show(io::IO, st::IdealState{ℙ}) where {ℙ <: FLOAT}
-    return print(io, "$(st.gas) at ($(st.P), $(st.T))")
+    return print(io, "$(st.gas) @($(st.P), $(st.T))")
 end
