@@ -212,4 +212,59 @@ CO2 gas, cubic cp₆₄(T) [273.0 1800.0] @(100.0 kPa, 300.0 K)
 
 ```
 
-Since the state is already known, 
+Since the state is already known, user-facing convenience accessors are implemented for all
+the usual thermodynamic state function (thermodynamic properties) through julia properties
+"syntactic sugar", such as `st1.v` (mass-based specific volume) and `st1.vMO` (molar-based
+specific volume):
+
+```julia
+julia> st1.<tab>
+ID     M      P      Pr     Pref   R      RMA    RMO    RU     Ru
+T      Tmax   Tmin   Tref   cp     cpMO   cv     cvMO   f      fMA
+form   ga     gas    h      hMO    hmod   mod    modMA  modMO  name
+s      s0     s0MO   sMO    sref   u      uMO    uref   v      vMO
+view   vr     γ      ρ      ρMO    𝑀      𝑅      𝑓
+
+```
+
+The user-facing convenience accessors through julia properties return amounts with units, while
+"raw" object fields are returned as stored:
+
+```julia
+julia> sample_properties = [ st1.v, st1.vMO, st1.u, st1.s ]
+4-element Vector{Quantity{Float64}}:
+   0.5667668711656442 m^3 kg^-1
+  24.94341 m^3 kmol^-1
+ 157.74275549365427 kJ kg^-1
+   3.9909694845958117 kJ kg^-1 K^-1
+
+julia> sample_fields = [ st1.𝑀, st1.𝑅, st1.uref, st1.sref ]
+4-element Vector{Float64}:
+   44.01
+    8.31447
+ 6885.0
+  213.685
+```
+
+## Author
+
+Prof. C. Naaktgeboren, PhD. [Lattes](http://lattes.cnpq.br/8621139258082919).
+
+Hermann von Helmholtz Energy Research Group
+[DGP](http://dgp.cnpq.br/dgp/espelhogrupo/8462486184187645).
+
+Federal University of Technology, Paraná
+[(site)](https://www.utfpr.edu.br/english), Guarapuava Campus.
+
+`NaaktgeborenC <dot!> PhD {at!} gmail [dot!] com`
+
+
+## License
+
+This project is [licensed](https://github.com/CNThermSci/BasicIdealGas.jl/blob/main/LICENSE)
+under the MIT license.
+
+
+## Citations
+
+Please, refer to the `CITATION.bib` file on how to cite this project.
