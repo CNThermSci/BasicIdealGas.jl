@@ -93,8 +93,8 @@ import Base: getproperty, propertynames
 
 function Base.getproperty(ξ::IdealState, sy::Symbol)
     # Raw fields
-    if sy in fieldnames(IdealGas) return getfield(ξ, sy) end
-    # Short-circuit IdealGas accessors
+    if sy in fieldnames(IdealState) return getfield(ξ, sy) end
+    # Short-circuit IdealState accessors
     if sy in propertynames(getfield(ξ, :𝐺))
         return getproperty(getfield(ξ, :𝐺), sy)
     end
