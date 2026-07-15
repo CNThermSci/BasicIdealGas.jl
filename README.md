@@ -175,8 +175,41 @@ julia> vr(C, 1800) # Relative volume
 
 ### Example 2 – `IdealGas`
 
-*Instantiation:*
+`IdealGas` objects adds formula, name, and reference pressure data beyond the specific heat model, thus allowing for ideal gas $P$-$T$-$v$ and entropy calculations. Since these calculations require multiple input parameters, keyword argument versions are provided:
 
 ```julia
+julia> CO2 = IdealGas("CO2", "Carbon Dioxide", C)
+CO2 gas, cubic cp₆₄(T) [273.0 1800.0]
+
+julia> s(CO2, P=100, T=300)
+3.9909694845958117
+
+julia> CO2.Pref
+1.0
+
+julia> P(CO2, T=300, v=1.2, B=:MA) # v taken in mass base
+47.23057259713702
+
+julia> P(CO2, T=300, v=1.2) # If omitted, base defaults to mass
+47.23057259713702
+
+julia> P(CO2, T=300.0, v=1.2, B=:MO) # v taken in molar base
+2078.6175
+
+julia> v(CO2, P=47, T=300)
+1.2058869599269026
+```
+
+### Example 3 – `IdealState`
+
+`IdealState` objects adds state information to `IdealGas`.
+
+Currently only $(P, T)$, positional constructors are implemented:
+
+```julia
+julia> st1 = IdealState(CO2, 100, 300)
+CO2 gas, cubic cp₆₄(T) [273.0 1800.0] @(100.0 kPa, 300.0 K)
 
 ```
+
+Since the state is already known, 
