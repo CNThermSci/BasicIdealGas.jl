@@ -86,8 +86,8 @@ end
 
 function (ξ::IdealState{ℙ})(
     ;
-    P::Union{Real, Missing} = missing,
-    T::Union{Real, Missing} = missing,
+    P::Union{Missing, Real, Quantity{<:Real, dimension(u"kPa")}} = missing,
+    T::Union{Missing, Real, Quantity{<:Real, dimension(u"K")}} = missing,
 ) where {ℙ}
     return if count(x -> !isa(x, Missing), (P, T)) == 0
         # named tuple variant
@@ -110,8 +110,8 @@ function (ξ::IdealState{ℙ})(
         # copy-edit variant
         IdealState{ℙ}(
             ξ.𝐺,
-            P isa Missing ? ξ.𝑃 : P,
-            T isa Missing ? ξ.𝑇 : T,
+            P isa Missing ? ξ.𝑃 : P isa Quantity ? uconvert(u"kPa", P).val : P,
+            T isa Missing ? ξ.𝑇 : T isa Quantity ? uconvert(u"K", T).val : T,
         )
     end
 end
