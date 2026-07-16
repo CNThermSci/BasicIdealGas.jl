@@ -172,40 +172,25 @@ cp┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = (𝗯(C, T); C.𝑓
 cv┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = cp┆R(C, T) - one(ℙ)
 ga(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = (𝗯(C, T); x = C.𝑓(T); x / (x - C.𝑅))
 
-# export cp┆R, cv┆R, ga
-
 function R(C::SpecificHeat, B::Symbol = :MA)
     @assert B in (:MA, :MO)
     return B == :MO ? C.𝑅 : C.𝑅 / C.𝑀
 end
+
 cp(C::SpecificHeat{ℙ}, T::Real, B::Symbol = :MA) where {ℙ <: FLOAT} = cp┆R(C, T) * R(C, B)
 cv(C::SpecificHeat{ℙ}, T::Real, B::Symbol = :MA) where {ℙ <: FLOAT} = cv┆R(C, T) * R(C, B)
-
-# export R, cp, cv
-
 ∫cp┆R(C::SpecificHeat{ℙ}, T::ℙ) where {ℙ <: FLOAT} = (𝗯(C, T); ∫(C.𝑓, C.Tref, T) / C.𝑅)
 ∫cp┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cp┆R(C, ℙ(T))
 ∫cv┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cp┆R(C, T) - ℙ(T) + C.Tref
 u┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cv┆R(C, T) + C.uref / C.𝑅
 h┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = u┆R(C, T) + ℙ(T)
-
-# export ∫cp┆R, ∫cv┆R, u┆R, h┆R
-
 u(C::SpecificHeat{ℙ}, T::Real, B::Symbol = :MA) where {ℙ <: FLOAT} = u┆R(C, T) * R(C, B)
 h(C::SpecificHeat{ℙ}, T::Real, B::Symbol = :MA) where {ℙ <: FLOAT} = h┆R(C, T) * R(C, B)
-
-# export u, h
-
 ∫cp┆RT(C::SpecificHeat, T::Real) = (𝗯(C, T); ∫┆T(C, T) / C.𝑅)
 s0┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cp┆RT(C, T) + C.sref / C.𝑅
-
-# export ∫cp┆RT, s0┆R
-
 s0(C::SpecificHeat{ℙ}, T::Real, B::Symbol = :MA) where {ℙ <: FLOAT} = s0┆R(C, T) * R(C, B)
 Pr(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = exp(∫cp┆RT(C, T))
 vr(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ℙ(T) / Pr(C, T)
-
-# export s0, Pr, vr
 
 # Base.getproperty
 # ----------------
@@ -232,7 +217,7 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
         return getfield(ξ, :𝑅) * u"kJ/kmol/K"
     end
     # Pretty print
-    return if sy == :view
+    if sy == :view
         xmin, xmax = getfield(ξ, :Tmin), getfield(ξ, :Tmax)
         x = range(xmin, stop = xmax, length = 33)
         y = map(T -> cp(ξ, T, :MA), x)
@@ -241,7 +226,15 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
             xlim = (xmin, xmax), width = 32, height = 6,
             border = :ascii, color = :white, compact_labels = true,
         )
-        print(join([repr(ξ), string(plt)], "\n"))
+        return print(join([repr(ξ), string(plt)], "\n"))
+    end
+    # OOP-style covenience functions (formerly exported ones)
+    oop_style_funcs = (
+        :cp┆R, :cv┆R, :ga, :R, :cp, :cv, :∫cp┆R, :∫cv┆R,
+        :u┆R, :h┆R, :u, :h, :∫cp┆RT, :s0┆R, :s0, :Pr, :vr,
+    )
+    if sy in oop_style_funcs
+        return T -> eval(sy)(ξ, T)
     end
 end
 
@@ -249,4 +242,6 @@ Base.propertynames(::SpecificHeat) = (
     :ID, :𝑓, :𝑀, :Tmin, :Tmax, :Tref, :uref, :sref, :𝑅,
     :f, :mod, :modMO, :fMA, :modMA, :M, :R, :RMA, :RU, :RMO,
     :view,
+    :cp┆R, :cv┆R, :ga, :R, :cp, :cv, :∫cp┆R, :∫cv┆R,
+    :u┆R, :h┆R, :u, :h, :∫cp┆RT, :s0┆R, :s0, :Pr, :vr,
 )
