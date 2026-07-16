@@ -20,23 +20,11 @@ isoT_s(ξ::IdealState, s::Real, B::Symbol) =
 
 function isoT(
         ξ::IdealState;
-        P::Union{
-            Missing,
-            Quantity{<:Real, dimension(u"kPa")},
-            Real,
-        } = missing,
+        P::Union{Missing, Quantity{<:Real, dimension(u"kPa")}, Real} = missing,
         v::Union{
-            Missing,
-            Quantity{<:Real, dimension(u"m^3/kg")},
-            Quantity{<:Real, dimension(u"m^3/kmol")},
-            Tuple{<:Real, Symbol},
+            Missing, Quantity{<:Real, dimension(u"m^3/kg")}, Quantity{<:Real, dimension(u"m^3/kmol")}, Tuple{<:Real, Symbol},
         } = missing,
-        s::Union{
-            Missing,
-            Quantity{<:Real, dimension(u"kJ/kg/K")},
-            Quantity{<:Real, dimension(u"kJ/kmol/K")},
-            Tuple{<:Real, Symbol},
-        } = missing,
+        s::Union{Missing, Quantity{<:Real, dimension(u"kJ/kg/K")}, Quantity{<:Real, dimension(u"kJ/kmol/K")}, Tuple{<:Real, Symbol}} = missing,
     )
     @assert(
         count(x -> !isa(x, Missing), (P, v, s)) == 1,
@@ -45,9 +33,9 @@ function isoT(
     return if !ismissing(P)
         isoT_P(ξ, P)
     elseif !ismissing(v)
-        isoT_v(ξ, v)
+        v isa Tuple ? isoT_v(ξ, v...) : isoT_v(ξ, v)
     elseif !ismissing(s)
-        isoT_s(ξ, s)
+        s isa Tuple ? isoT_s(ξ, s...) : isoT_s(ξ, s)
     end
 end
 
