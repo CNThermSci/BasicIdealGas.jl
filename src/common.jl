@@ -20,6 +20,24 @@ ENTR = Union{
     Quantity{ℙ, dimension(u"kJ/kg/K")},
     Quantity{ℙ, dimension(u"kJ/kmol/K")},
 } where {ℙ <: Real}
+DENS = Union{
+    Quantity{ℙ, dimension(u"kg/m^3")},
+    Quantity{ℙ, dimension(u"kmol/m^3")},
+} where {ℙ <: Real}
+
+# Termodynamic base Unions
+MASS = Union{
+    Quantity{ℙ, dimension(u"m^3/kg")},
+    Quantity{ℙ, dimension(u"kJ/kg")},
+    Quantity{ℙ, dimension(u"kJ/kg/K")},
+    Quantity{ℙ, dimension(u"kg/m^3")},
+}
+MOLR = Union{
+    Quantity{ℙ, dimension(u"m^3/kmol")},
+    Quantity{ℙ, dimension(u"kJ/kmol")},
+    Quantity{ℙ, dimension(u"kJ/kmol/K")},
+    Quantity{ℙ, dimension(u"kmol/m^3")},
+}
 
 # Constants
 # ---------
