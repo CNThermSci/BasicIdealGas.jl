@@ -81,6 +81,19 @@ function promote_rule(::Type{IdealState{ℙ}}, ::Type{IdealState{ℚ}}) where {�
     return IdealState{promote_type(ℙ, ℚ)}
 end
 
+# Functor
+# -------
+
+(ξ::IdealState{ℙ})(
+    ;
+    P::Union{Real, Missing} = missing,
+    T::Union{Real, Missing} = missing,
+) where {ℙ} = IdealState{ℙ}(
+    ξ.𝐺,
+    P isa Missing ? ξ.𝑃 : P,
+    T isa Missing ? ξ.𝑇 : T,
+)
+
 # Export
 # ------
 
@@ -93,7 +106,9 @@ import Base: getproperty, propertynames
 
 function Base.getproperty(ξ::IdealState, sy::Symbol)
     # Raw fields
-    if sy in fieldnames(IdealState) return getfield(ξ, sy) end
+    if sy in fieldnames(IdealState)
+        return getfield(ξ, sy)
+    end
     # Short-circuit IdealState accessors
     if sy in propertynames(getfield(ξ, :𝐺))
         return getproperty(getfield(ξ, :𝐺), sy)
@@ -155,7 +170,7 @@ Base.propertynames(ξ::IdealState) = (
     :v, :vMO, :ρ, :ρMO, :cp, :cpMO, :cv, :cvMO,
     :u, :uMO, :h, :hMO, :s0, :s0MO, :s, :sMO,
     :Pr, :vr,
-    propertynames(getfield(ξ, :𝐺))...
+    propertynames(getfield(ξ, :𝐺))...,
 )
 
 # User-facing functions
