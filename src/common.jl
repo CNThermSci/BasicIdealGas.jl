@@ -31,13 +31,13 @@ MASS = Union{
     Quantity{ℙ, dimension(u"kJ/kg")},
     Quantity{ℙ, dimension(u"kJ/kg/K")},
     Quantity{ℙ, dimension(u"kg/m^3")},
-}
+} where {ℙ <: Real}
 MOLR = Union{
     Quantity{ℙ, dimension(u"m^3/kmol")},
     Quantity{ℙ, dimension(u"kJ/kmol")},
     Quantity{ℙ, dimension(u"kJ/kmol/K")},
     Quantity{ℙ, dimension(u"kmol/m^3")},
-}
+} where {ℙ <: Real}
 
 # Thermodynamic unit conversion/stripping
 kSI(x::Real) = x
