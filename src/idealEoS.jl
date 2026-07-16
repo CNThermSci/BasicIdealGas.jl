@@ -96,7 +96,7 @@ export IdealGas
 # ---------------------
 
 function Base.show(io::IO, G::IdealGas{ℙ}) where {ℙ <: FLOAT}
-    return print(io, "$(G.form) gas, $(G.hmod)")
+    return print(io, "$(G.form)$(pDeco(ℙ)) gas")
 end
 
 for FUNC in (:R,)
