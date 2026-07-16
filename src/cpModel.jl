@@ -89,29 +89,10 @@ function SpecificHeat{ℙ}(
         sref::ENTR,
         𝑅::Union{Real, ENTR} = universal_R,
     ) where {ℙ <: FLOAT}
-    _𝑀 = 𝑀 isa Quantity ? uconvert(u"kg/kmol", 𝑀).val : 𝑀
-    _uMO = uref isa Quantity{<:Real, dimension(u"kJ/kmol")} ? (
-            uconvert(u"kJ/kmol", uref).val
-        ) : (
-            uconvert(u"kJ/kg", uref).val * _M
-        )
-    _sMO = sref isa Quantity{<:Real, dimension(u"kJ/kmol/K")} ? (
-            uconvert(u"kJ/kmol/K", sref).val
-        ) : (
-            uconvert(u"kJ/kg/K", sref).val * _M
-        )
-    return SpecificHeat{ℙ}(
-        ID,
-        𝑓,
-        _𝑀,
-        Tmin isa Quantity ? uconvert(u"K", Tmin).val : Tmin,
-        Tref isa Quantity ? uconvert(u"K", Tref).val : Tref,
-        Tmax isa Quantity ? uconvert(u"K", Tmax).val : Tmax,
-        _uMO,
-        _sMO,
-        𝑅 isa Quantity ? uconvert(u"kJ/kmol/K", 𝑅).val : 𝑅,
-        :MO,
-    )
+    uref = uref isa MASS ? kSI(uref) * kSI(𝑀) : kSI(uref)
+    sref = sref isa MASS ? kSI(sref) * kSI(𝑀) : kSI(sref)
+    𝑅    = 𝑅    isa MASS ? kSI(𝑅   ) * kSI(𝑀) : kSI(𝑅)
+    return SpecificHeat{ℙ}(ID, 𝑓, kSI.((𝑀, Tmin, Tref, Tmax))..., uref, sref, R, :MO)
 end
 
 # Promotion type with unit conversion and stripping / 3 indirections
@@ -239,7 +220,9 @@ import Base: getproperty, propertynames
 
 function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
     # Raw fields
-    if sy in fieldnames(SpecificHeat) return getfield(ξ, sy) end
+    if sy in fieldnames(SpecificHeat)
+        return getfield(ξ, sy)
+    end
     # Convenience accessors/transformers
     if sy in (:f, :mod, :modMO)
         return getfield(ξ, :𝑓)
@@ -255,7 +238,7 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
         return getfield(ξ, :𝑅) * u"kJ/kmol/K"
     end
     # Pretty print
-    if sy == :view
+    return if sy == :view
         xmin, xmax = getfield(ξ, :Tmin), getfield(ξ, :Tmax)
         x = range(xmin, stop = xmax, length = 33)
         y = map(T -> cp(ξ, T, :MA), x)
