@@ -71,8 +71,9 @@ function isoP(
         end
     elseif !ismissing(s)
         if dimension(s) == dimension(u"kJ/kg/K")
-            # FR(T = )
+            FR(T = find_zero(T -> FR(T=T).s - s), (FR.Tmin, FR.Tmax), Bisection())
         else
+            FR(T = find_zero(T -> FR(T=T).sMO - s), (FR.Tmin, FR.Tmax), Bisection())
         end
     end
 end
