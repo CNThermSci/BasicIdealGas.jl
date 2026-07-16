@@ -3,9 +3,10 @@ module BasicIdealGas
 # Imports
 using Reexport
 @reexport using Unitful
-@reexport using UnicodePlots
-@reexport using Printf
-@reexport using Roots
+
+using UnicodePlots
+using Printf
+using Roots
 using QuadGK
 using NumericalIntegration
 
