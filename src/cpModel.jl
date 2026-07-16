@@ -92,7 +92,7 @@ function SpecificHeat{ℙ}(
     uref = uref isa MASS ? kSI(uref) * kSI(𝑀) : kSI(uref)
     sref = sref isa MASS ? kSI(sref) * kSI(𝑀) : kSI(sref)
     𝑅    = 𝑅    isa MASS ? kSI(𝑅   ) * kSI(𝑀) : kSI(𝑅)
-    return SpecificHeat{ℙ}(ID, 𝑓, kSI.((𝑀, Tmin, Tref, Tmax))..., uref, sref, R, :MO)
+    return SpecificHeat{ℙ}(ID, 𝑓, kSI.((𝑀, Tmin, Tref, Tmax))..., uref, sref, 𝑅, :MO)
 end
 
 # Promotion type with unit conversion and stripping / 3 indirections
