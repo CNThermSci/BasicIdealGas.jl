@@ -81,19 +81,13 @@ end
 function SpecificHeat{ℙ}(
         ID::Symbol,
         𝑓::Function,
-        𝑀::Union{Real, Quantity{<:Real, dimension(u"kg/kmol")}},
-        Tmin::Union{Real, Quantity{<:Real, dimension(u"K")}},
-        Tref::Union{Real, Quantity{<:Real, dimension(u"K")}},
-        Tmax::Union{Real, Quantity{<:Real, dimension(u"K")}},
-        uref::Union{
-            Quantity{<:Real, dimension(u"kJ/kmol")},
-            Quantity{<:Real, dimension(u"kJ/kg")},
-        },
-        sref::Union{
-            Quantity{<:Real, dimension(u"kJ/kmol/K")},
-            Quantity{<:Real, dimension(u"kJ/kg/K")},
-        },
-        𝑅::Union{Real, Quantity{<:Real, dimension(u"kJ/kmol/K")}} = universal_R,
+        𝑀::Union{Real, MWGT},
+        Tmin::Union{Real, TEMP},
+        Tref::Union{Real, TEMP},
+        Tmax::Union{Real, TEMP},
+        uref::ENER,
+        sref::ENTR
+        𝑅::Union{Real, ENTR} = universal_R,
     ) where {ℙ <: FLOAT}
     _𝑀 = 𝑀 isa Quantity ? uconvert(u"kg/kmol", 𝑀).val : 𝑀
     _uMO = uref isa Quantity{<:Real, dimension(u"kJ/kmol")} ? (
