@@ -18,28 +18,22 @@ function isoT(
         } = missing,
     ) where {ℙ}
     @assert(
-        count(x -> !isa(x, Missing), (P, v)) == 1,
-        "exactly one P-T-v state function must be specified!"
+        count(x -> !isa(x, Missing), (P, v, s)) == 1,
+        "exactly one end-state function must be specified!"
     )
     return if !ismissing(P)
-        IdealState{ℙ}(FR.gas, uconvert(u"kPa", P).val, FR.𝑇)
+        FR(P = uconvert(u"kPa", ℙ(P)).val)
     elseif !ismissing(v)
         if dimension(v) == dimension(u"m^3/kg")
-            IdealState{ℙ}(
-                FR.gas,
-                _P(FR.gas, FR.𝑇, uconvert(u"m^3/kg", v).val, :MA),
-                FR.𝑇
-            )
+            FR(P = _P(FR.gas, FR.𝑇, uconvert(u"m^3/kg", ℙ(v)).val, :MA))
         else
-            IdealState{ℙ}(
-                FR.gas,
-                _P(FR.gas, FR.𝑇, uconvert(u"m^3/kmol", v).val, :MO),
-                FR.𝑇
-            )
+            FR(P = _P(FR.gas, FR.𝑇, uconvert(u"m^3/kmol", ℙ(v)).val, :MO))
         end
     elseif !ismissing(s)
         if dimension(s) == dimension(u"kJ/kg/K")
+            FR(P = FR.P * exp((FR.s - ℙ(s)) / FR.R))
         else
+            FR(P = FR.P * exp((FR.sMO - ℙ(s)) / FR.RMO))
         end
     end
 end
