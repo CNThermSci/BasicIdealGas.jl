@@ -187,38 +187,33 @@ end
 
 @testset "cpModel.test.jl: user-facing functions: bound temperature intervals       " begin
     # Bounds checks
-    for FUNC in (
-            :bounds, :cp┆R, :cv┆R, :ga,
-            :cp, :cv,
-            :∫cp┆R, :∫cv┆R, :u┆R, :h┆R,
-            :u, :h,
-            :∫cp┆RT, :s0┆R,
-            :s0, :Pr, :vr,
-        )
-        @test_throws "T out of bounds" eval(
-            quote
-                bounds = BasicIdealGas.𝗯
-                ID, 𝑓 = :const, T -> 22.26
-                Tmin, Tref, Tmax = 273, 298, 1800
-                uref, sref, 𝑀 = 6885, 213.685, 44.01
-                C = SpecificHeat(ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref)
-                $FUNC(C, prevfloat(C.Tmin))
-            end
-        )
-        @test_throws "T out of bounds" eval(
-            quote
-                bounds = BasicIdealGas.𝗯
-                ID, 𝑓 = :const, T -> 22.26
-                Tmin, Tref, Tmax = 273, 298, 1800
-                uref, sref, 𝑀 = 6885, 213.685, 44.01
-                C = SpecificHeat(ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref)
-                $FUNC(C, nextfloat(C.Tmax))
-            end
-        )
-    end
+    bounds = BasicIdealGas.𝗯
+    ID, 𝑓 = :const, T -> 22.26
+    Tmin, Tref, Tmax = 273, 298, 1800
+    uref, sref, 𝑀 = 6885, 213.685, 44.01
+    C = SpecificHeat(ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref)
+    @test_throws "T out of bounds" bounds(C, prevfloat(C.Tmin))
+    @test_throws "T out of bounds" bounds(C, nextfloat(C.Tmax))
 end
 
 @testset "cpModel.test.jl: user-facing functions: thermodynamic consistencies       " begin
+    cp┆R = BasicIdealGas.cp┆R
+    cv┆R = BasicIdealGas.cv┆R
+    ga = BasicIdealGas.ga
+    R = BasicIdealGas.R
+    cp = BasicIdealGas.cp
+    cv = BasicIdealGas.cv
+    ∫cp┆R = BasicIdealGas.∫cp┆R
+    ∫cv┆R = BasicIdealGas.∫cv┆R
+    u┆R = BasicIdealGas.u┆R
+    h┆R = BasicIdealGas.h┆R
+    u = BasicIdealGas.u
+    h = BasicIdealGas.h
+    ∫cp┆RT = BasicIdealGas.∫cp┆RT
+    s0┆R = BasicIdealGas.s0┆R
+    s0 = BasicIdealGas.s0
+    Pr = BasicIdealGas.Pr
+    vr = BasicIdealGas.vr
     # Float16 are tested but may overflow depending on model function form and argument type
     for ℙ in [Float32, Float64]
         𝑓 = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
