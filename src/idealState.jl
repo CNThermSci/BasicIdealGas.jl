@@ -84,15 +84,37 @@ end
 # Functor
 # -------
 
-(ξ::IdealState{ℙ})(
+function (ξ::IdealState{ℙ})(
     ;
     P::Union{Real, Missing} = missing,
     T::Union{Real, Missing} = missing,
-) where {ℙ} = IdealState{ℙ}(
-    ξ.𝐺,
-    P isa Missing ? ξ.𝑃 : P,
-    T isa Missing ? ξ.𝑇 : T,
-)
+) where {ℙ}
+    return if count(x -> !isa(x, Missing), (P, T)) == 0
+        # named tuple variant
+        (
+            M = ξ.M,
+            RMO = ξ.RMO,
+            R = ξ.R,
+            P = ξ.P,
+            T = ξ.T,
+            v = ξ.v,
+            vMO = ξ.vMO,
+            u = ξ.u,
+            uMO = ξ.uMO,
+            h = ξ.h,
+            hMO = ξ.hMO,
+            s = ξ.s,
+            sMO = ξ.sMO,
+        )
+    else
+        # copy-edit variant
+        IdealState{ℙ}(
+            ξ.𝐺,
+            P isa Missing ? ξ.𝑃 : P,
+            T isa Missing ? ξ.𝑇 : T,
+        )
+    end
+end
 
 # Export
 # ------
