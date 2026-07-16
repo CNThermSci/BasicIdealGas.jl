@@ -15,11 +15,11 @@ isoT_s(ξ::IdealState{ℙ}, s::Quantity{<:Real, dimension(u"kJ/kg/K")}) where {�
     ξ(P = ξ.P * exp((ξ.s - ℙ(s)) / ξ.R))
 isoT_s(ξ::IdealState{ℙ}, s::Quantity{<:Real, dimension(u"kJ/kmol/K")}) where {ℙ} =
     ξ(P = ξ.P * exp((ξ.sMO - ℙ(s)) / ξ.RMO))
-isoT_s(ξ::IdealState, s::Real, B::Symbol) = 
+isoT_s(ξ::IdealState, s::Real, B::Symbol) =
     B == :MA ? isoT_s(ξ, s * u"kJ/kg/K") : isoT_s(ξ, s * u"kJ/kmol/K")
 
 function isoT(
-        FR::IdealState;
+        ξ::IdealState;
         P::Union{
             Missing,
             Quantity{<:Real, dimension(u"kPa")},
