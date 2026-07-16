@@ -161,6 +161,10 @@ Base.propertynames(ξ::IdealState) = (
 # User-facing functions
 # ---------------------
 
+using Printf
+
 function Base.show(io::IO, st::IdealState{ℙ}) where {ℙ <: FLOAT}
-    return print(io, "$(st.gas) @($(st.P), $(st.T))")
+    pstr = @sprintf("%.*g", 5, st.𝑃)
+    tstr = @sprintf("%.*g", 5, st.𝑇)
+    return print(io, "$(st.gas.form)$(pDeco(ℙ)) gas @($(pstr) kPa, $(tstr) K)")
 end
