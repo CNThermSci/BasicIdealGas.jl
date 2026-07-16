@@ -5,6 +5,7 @@ using Reexport
 @reexport using Unitful
 @reexport using UnicodePlots
 @reexport using Printf
+@reexport using Roots
 using QuadGK
 using NumericalIntegration
 
