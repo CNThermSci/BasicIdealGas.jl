@@ -81,12 +81,12 @@ end
 function SpecificHeat{ℙ}(
         ID::Symbol,
         𝑓::Function,
-        𝑀::Union{Real, MWGT},
+        𝑀::Union{Real, MOLW},
         Tmin::Union{Real, TEMP},
         Tref::Union{Real, TEMP},
         Tmax::Union{Real, TEMP},
         uref::ENER,
-        sref::ENTR
+        sref::ENTR,
         𝑅::Union{Real, ENTR} = universal_R,
     ) where {ℙ <: FLOAT}
     _𝑀 = 𝑀 isa Quantity ? uconvert(u"kg/kmol", 𝑀).val : 𝑀
