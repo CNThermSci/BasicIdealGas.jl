@@ -4,21 +4,22 @@
 # IEEE-754 normalized floating point types of half, single, and double precision
 FLOAT = Base.IEEEFloat
 
-# Thermodynamic state functions
-PRES = Quantity{<:Real, dimension(u"kPa")}
-TEMP = Quantity{<:Real, dimension(u"K")}
+# Thermodynamic state function Quantity type alias
+PRES = Quantity{ℙ, dimension(u"kPa")} where {ℙ <: Real}
+TEMP = Quantity{ℙ, dimension(u"K")} where {ℙ <: Real}
+MOLW = Quantity{ℙ, dimension(u"kg/kmol")} where {ℙ <: Real}
 VOLU = Union{
-    Quantity{<:Real, dimension(u"m^3/kg")},
-    Quantity{<:Real, dimension(u"m^3/kmol")},
-}
+    Quantity{ℙ, dimension(u"m^3/kg")},
+    Quantity{ℙ, dimension(u"m^3/kmol")},
+} where {ℙ <: Real}
 ENER = Union{
-    Quantity{<:Real, dimension(u"kJ/kg")},
-    Quantity{<:Real, dimension(u"kJ/kmol")},
-}
+    Quantity{ℙ, dimension(u"kJ/kg")},
+    Quantity{ℙ, dimension(u"kJ/kmol")},
+} where {ℙ <: Real}
 ENTR = Union{
-    Quantity{<:Real, dimension(u"kJ/kg/K")},
-    Quantity{<:Real, dimension(u"kJ/kmol/K")},
-}
+    Quantity{ℙ, dimension(u"kJ/kg/K")},
+    Quantity{ℙ, dimension(u"kJ/kmol/K")},
+} where {ℙ <: Real}
 
 # Constants
 # ---------
