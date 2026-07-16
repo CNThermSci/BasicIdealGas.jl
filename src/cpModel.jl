@@ -183,7 +183,8 @@ export SpecificHeat
 # ----
 
 function Base.show(io::IO, S::SpecificHeat{ℙ}) where {ℙ <: FLOAT}
-    return print(io, "$(S.ID) cp$(pDeco(ℙ))(T) [$(S.Tmin) $(S.Tmax)]")
+    rng = "[$(@sprintf("%.*g K", 5, S.Tmin)) $(@sprintf("%.*g K", 5, S.Tmax))]"
+    return print(io, "$(S.ID) cp$(pDeco(ℙ))(T) $(rng)")
 end
 
 # SpecificHeat Helper functions
