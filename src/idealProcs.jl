@@ -37,6 +37,10 @@ function isoT(
                 FR.𝑇
             )
         end
+    elseif !ismissing(s)
+        if dimension(s) == dimension(u"kJ/kg/K")
+        else
+        end
     end
 end
 
