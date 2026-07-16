@@ -71,6 +71,7 @@ function isoP(
         end
     elseif !ismissing(s)
         if dimension(s) == dimension(u"kJ/kg/K")
+            # FR(T = )
         else
         end
     end
