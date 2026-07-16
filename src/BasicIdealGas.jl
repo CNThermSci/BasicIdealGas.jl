@@ -4,6 +4,7 @@ module BasicIdealGas
 using Reexport
 @reexport using Unitful
 @reexport using UnicodePlots
+@reexport using Printf
 using QuadGK
 using NumericalIntegration
 
