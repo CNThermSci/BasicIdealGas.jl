@@ -81,6 +81,41 @@ function promote_rule(::Type{IdealState{ℙ}}, ::Type{IdealState{ℚ}}) where {�
     return IdealState{promote_type(ℙ, ℚ)}
 end
 
+# Functor
+# -------
+
+function (ξ::IdealState{ℙ})(
+    ;
+    P::Union{Missing, Real, Quantity{<:Real, dimension(u"kPa")}} = missing,
+    T::Union{Missing, Real, Quantity{<:Real, dimension(u"K")}} = missing,
+) where {ℙ}
+    return if count(x -> !isa(x, Missing), (P, T)) == 0
+        # named tuple variant
+        (
+            M = ξ.M,
+            RMO = ξ.RMO,
+            R = ξ.R,
+            P = ξ.P,
+            T = ξ.T,
+            v = ξ.v,
+            vMO = ξ.vMO,
+            u = ξ.u,
+            uMO = ξ.uMO,
+            h = ξ.h,
+            hMO = ξ.hMO,
+            s = ξ.s,
+            sMO = ξ.sMO,
+        )
+    else
+        # copy-edit variant
+        IdealState{ℙ}(
+            ξ.𝐺,
+            P isa Missing ? ξ.𝑃 : P isa Quantity ? uconvert(u"kPa", P).val : P,
+            T isa Missing ? ξ.𝑇 : T isa Quantity ? uconvert(u"K", T).val : T,
+        )
+    end
+end
+
 # Export
 # ------
 
@@ -93,23 +128,26 @@ import Base: getproperty, propertynames
 
 function Base.getproperty(ξ::IdealState, sy::Symbol)
     # Raw fields
-    if sy in fieldnames(IdealGas) return getfield(ξ, sy) end
-    # Short-circuit IdealGas accessors
-    if sy in propertynames(getfield(ξ, :𝐺))
-        return getproperty(getfield(ξ, :𝐺), sy)
-    end
-    # Convenience accessors/transformers
-    if sy == :gas
-        return getfield(ξ, :𝐺)
-    elseif sy == :P
-        return getfield(ξ, :𝑃) * u"kPa"
-    elseif sy == :T
-        return getfield(ξ, :𝑇) * u"K"
+    if sy in fieldnames(IdealState)
+        return getfield(ξ, sy)
+    elseif sy in fieldnames(IdealGas)
+        return getfield(getfield(ξ, :𝐺), sy)
+    elseif sy in fieldnames(SpecificHeat)
+        return getfield(getfield(getfield(ξ, :𝐺), :hmod), sy)
     end
     # User-facing state function accessors (with units)
     GAS, P, T = map(sy -> getfield(ξ, sy), (:𝐺, :𝑃, :𝑇))
     MOD = getfield(GAS, :hmod)
-    if sy in (:γ, :ga)
+    # SpecificHeat convenience/porcelain
+    if sy in (:f, :fMA, :M, :R, :RMA)
+        return getproperty(MOD, sy)
+    elseif sy == :gas
+        return GAS
+    elseif sy == :P
+        return getfield(ξ, :𝑃) * u"kPa"
+    elseif sy == :T
+        return getfield(ξ, :𝑇) * u"K"
+    elseif sy in (:γ, :ga)
         return ga(MOD, T)
     elseif sy == :v
         return _v(GAS, P, T, :MA) * u"m^3/kg"
@@ -151,16 +189,21 @@ function Base.getproperty(ξ::IdealState, sy::Symbol)
 end
 
 Base.propertynames(ξ::IdealState) = (
-    :gas, :M, :R, :Ru, :RU, :P, :T, :γ, :ga,
-    :v, :vMO, :ρ, :ρMO, :cp, :cpMO, :cv, :cvMO,
-    :u, :uMO, :h, :hMO, :s0, :s0MO, :s, :sMO,
-    :Pr, :vr,
-    propertynames(getfield(ξ, :𝐺))...
+    fieldnames(IdealState)...,
+    fieldnames(IdealGas)...,
+    fieldnames(SpecificHeat)...,
+    :f, :fMA, :M, :R, :RMA,
+    :gas, :P, :T, :γ, :ga, :v, :vMO, :ρ, :ρMO, :cp, :cpMO,
+    :cv, :cvMO, :u, :uMO, :h, :hMO, :s0, :s0MO, :s, :sMO, :Pr, :vr,
 )
 
 # User-facing functions
 # ---------------------
 
-function Base.show(io::IO, st::IdealState{ℙ}) where {ℙ <: FLOAT}
-    return print(io, "$(st.gas) @($(st.P), $(st.T))")
+function Base.show(io::IO, ::MIME"text/plain", st::IdealState{ℙ}) where {ℙ <: FLOAT}
+    return print(
+        io,
+        repr(MIME"text/plain"(), st.gas),
+        " @($(@sprintf("%.*g", 5, st.𝑃)) kPa, $(@sprintf("%.*g", 5, st.𝑇)) K)"
+    )
 end

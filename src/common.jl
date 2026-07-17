@@ -4,6 +4,71 @@
 # IEEE-754 normalized floating point types of half, single, and double precision
 FLOAT = Base.IEEEFloat
 
+# Thermodynamic state function Quantity type alias
+PRES = Quantity{ℙ, dimension(u"kPa")} where {ℙ <: Real}
+TEMP = Quantity{ℙ, dimension(u"K")} where {ℙ <: Real}
+MOLW = Quantity{ℙ, dimension(u"kg/kmol")} where {ℙ <: Real}
+VOLU = Union{
+    Quantity{ℙ, dimension(u"m^3/kg")},
+    Quantity{ℙ, dimension(u"m^3/kmol")},
+} where {ℙ <: Real}
+ENER = Union{
+    Quantity{ℙ, dimension(u"kJ/kg")},
+    Quantity{ℙ, dimension(u"kJ/kmol")},
+} where {ℙ <: Real}
+ENTR = Union{
+    Quantity{ℙ, dimension(u"kJ/kg/K")},
+    Quantity{ℙ, dimension(u"kJ/kmol/K")},
+} where {ℙ <: Real}
+DENS = Union{
+    Quantity{ℙ, dimension(u"kg/m^3")},
+    Quantity{ℙ, dimension(u"kmol/m^3")},
+} where {ℙ <: Real}
+
+# Termodynamic base Unions
+MASS = Union{
+    Quantity{ℙ, dimension(u"m^3/kg")},
+    Quantity{ℙ, dimension(u"kJ/kg")},
+    Quantity{ℙ, dimension(u"kJ/kg/K")},
+    Quantity{ℙ, dimension(u"kg/m^3")},
+} where {ℙ <: Real}
+MOLR = Union{
+    Quantity{ℙ, dimension(u"m^3/kmol")},
+    Quantity{ℙ, dimension(u"kJ/kmol")},
+    Quantity{ℙ, dimension(u"kJ/kmol/K")},
+    Quantity{ℙ, dimension(u"kmol/m^3")},
+} where {ℙ <: Real}
+
+# Thermodynamic unit conversion/stripping
+kSI(x::Real) = x
+kSI(x::PRES) = uconvert(u"kPa", x).val
+kSI(x::TEMP) = uconvert(u"K", x).val
+kSI(x::MOLW) = uconvert(u"kg/kmol", x).val
+
+function kSI(x::MASS)
+    return if x isa VOLU
+        uconvert(u"m^3/kg", x).val
+    elseif x isa ENER
+        uconvert(u"kJ/kg", x).val
+    elseif x isa ENTR
+        uconvert(u"kJ/kg/K", x).val
+    elseif x isa DENS
+        uconvert(u"kg/m^3", x).val
+    end
+end
+
+function kSI(x::MOLR)
+    return if x isa VOLU
+        uconvert(u"m^3/kmol", x).val
+    elseif x isa ENER
+        uconvert(u"kJ/kmol", x).val
+    elseif x isa ENTR
+        uconvert(u"kJ/kmol/K", x).val
+    elseif x isa DENS
+        uconvert(u"kmol/m^3", x).val
+    end
+end
+
 # Constants
 # ---------
 

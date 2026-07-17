@@ -29,7 +29,7 @@ IdealGas{ℙ}(
     FORM::AbstractString,
     NAME::AbstractString,
     HMOD::SpecificHeat,
-    PREF::Real = one(ℙ)
+    PREF::Real = one(ℙ),
 ) where {ℙ} = IdealGas(FORM, NAME, ℙ(HMOD), ℙ(PREF))
 
 # Heat model type conversion / 2 indirections
@@ -37,7 +37,7 @@ IdealGas(
     FORM::AbstractString,
     NAME::AbstractString,
     HMOD::SpecificHeat{ℙ},
-    PREF::Real = one(ℙ)
+    PREF::Real = one(ℙ),
 ) where {ℙ} = IdealGas{ℙ}(FORM, NAME, HMOD, PREF)
 
 # Set type with unit conversion and stripping / 2 indirections
@@ -45,12 +45,9 @@ function IdealGas{ℙ}(
         FORM::AbstractString,
         NAME::AbstractString,
         HMOD::SpecificHeat,
-        PREF::Quantity{<:Real, dimension(u"kPa")} = one(ℙ) * u"kPa"
+        PREF::PRES = one(ℙ) * u"kPa",
     ) where {ℙ <: FLOAT}
-    return IdealGas{ℙ}(
-        FORM, NAME, HMOD,
-        PREF isa Quantity ? uconvert(u"kPa", Pref).val : Pref,
-    )
+    return IdealGas{ℙ}(FORM, NAME, HMOD, kSI(PREF))
 end
 
 # Heat model type with unit conversion and stripping / 3 indirections
@@ -58,7 +55,7 @@ IdealGas(
     FORM::AbstractString,
     NAME::AbstractString,
     HMOD::SpecificHeat{ℙ},
-    PREF::Quantity{<:Real, dimension(u"kPa")}
+    PREF::PRES,
 ) where {ℙ} = IdealGas{ℙ}(FORM, NAME, HMOD, PREF)
 
 # Conversions
@@ -95,8 +92,12 @@ export IdealGas
 # User-facing functions
 # ---------------------
 
-function Base.show(io::IO, G::IdealGas{ℙ}) where {ℙ <: FLOAT}
-    return print(io, "$(G.form) gas, $(G.hmod)")
+function Base.show(io::IO, ::MIME"text/plain", G::IdealGas{ℙ}) where {ℙ <: FLOAT}
+    return print(
+        io,
+        "$(G.form)$(pDeco(ℙ)) gas, ",
+        repr(MIME"text/plain"(), G.hmod),
+    )
 end
 
 for FUNC in (:R,)
@@ -123,91 +124,10 @@ _T(G::IdealGas{ℙ}, P::Real, v::Real, B::Symbol = :MA) where {ℙ} = ℙ(P * v)
 _v(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA) where {ℙ} = R(G, B) * ℙ(T / P)
 _ρ(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA) where {ℙ} = inv(_v(G, P, T, B))
 
-# NamedTuple arg, return type inferrable, user-facing EoS functions
-function P(
-        G::IdealGas,
-        ζ::@NamedTuple{T::ℚ, v::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
-    )
-    return _P(G, ζ.T, ζ.v, B)
-end
-
-function T(
-        G::IdealGas,
-        ζ::@NamedTuple{P::ℚ, v::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
-    )
-    return _T(G, ζ.P, ζ.v, B)
-end
-
-function v(
-        G::IdealGas,
-        ζ::@NamedTuple{P::ℚ, T::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
-    )
-    return _v(G, ζ.P, ζ.T, B)
-end
-
-function ρ( # "ρ" can be typed by \rho<tab>
-        G::IdealGas,
-        ζ::@NamedTuple{P::ℚ, T::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
-    )
-    return _ρ(G, ζ.P, ζ.T, B)
-end
-
-# Keyworded user-facing EoS functions
-P(G::IdealGas; T::Real, v::Real, B::Symbol = :MA) = _P(G, T, v, B)
-T(G::IdealGas; P::Real, v::Real, B::Symbol = :MA) = _T(G, P, v, B)
-v(G::IdealGas; P::Real, T::Real, B::Symbol = :MA) = _v(G, P, T, B)
-ρ(G::IdealGas; P::Real, T::Real, B::Symbol = :MA) = _ρ(G, P, T, B)
-
 # Internal, fast, positional, entropy function
 function _s(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA)::ℙ where {ℙ}
     return s0(G, T, B) - R(G, B) * log(ℙ(P) / G.Pref)
 end
-
-# NamedTuple arg, return type inferrable, user-facing entropy functions
-function s(
-        G::IdealGas,
-        ζ::@NamedTuple{P::ℚ, T::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
-    )
-    return _s(G, ζ.P, ζ.T, B)
-end
-
-function s(
-        G::IdealGas,
-        ζ::@NamedTuple{P::ℚ, v::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
-    )
-    return _s(G, ζ.P, _T(G, ζ.P, ζ.v, B), B)
-end
-
-function s(
-        G::IdealGas,
-        ζ::@NamedTuple{T::ℚ, v::ℝ, B::Symbol} where {ℚ <: Real, ℝ <: Real}
-    )
-    return _s(G, _P(G, ζ.T, ζ.v, B), ζ.T, B)
-end
-
-# Keyworded, user-facing entropy functions
-function s(
-        G::IdealGas;
-        P::Union{Missing, Real} = missing,
-        T::Union{Missing, Real} = missing,
-        v::Union{Missing, Real} = missing,
-        B::Symbol = :MA
-    )
-    @assert(
-        count(x -> isa(x, Real), (P, T, v)) == 2,
-        "exactly two P-T-v state functions must be specified!"
-    )
-    return if ismissing(P)
-        _s(G, _P(G, T, v, B), T, B)
-    elseif ismissing(T)
-        _s(G, P, _T(G, P, v, B), B)
-    else
-        _s(G, P, T, B)
-    end
-end
-
-# User-facing exports
-export P, T, v, ρ, s
 
 # Base.getproperty
 # ----------------
@@ -216,14 +136,45 @@ import Base: getproperty, propertynames
 
 function Base.getproperty(ξ::IdealGas, sy::Symbol)
     # Raw fields
-    if sy in fieldnames(IdealGas) return getfield(ξ, sy) end
+    if sy in fieldnames(IdealGas)
+        return getfield(ξ, sy)
+    end
     # Short-circuit SpecificHeat model accessors
     if sy in propertynames(getfield(ξ, :hmod))
         return getproperty(getfield(ξ, :hmod), sy)
+    end
+    # OOP-style covenience functions (formerly exported ones)
+    if sy == :P
+        return (; T::Real, v::Real, B::Symbol = :MA) -> _P(ξ, T, v, B)
+    elseif sy == :T
+        return (; P::Real, v::Real, B::Symbol = :MA) -> _T(ξ, P, v, B)
+    elseif sy == :v
+        return (; P::Real, T::Real, B::Symbol = :MA) -> _v(ξ, P, T, B)
+    elseif sy == :ρ
+        return (; P::Real, T::Real, B::Symbol = :MA) -> _ρ(ξ, P, T, B)
+    elseif sy == :s
+        return (;
+            P::Union{Real, Missing} = missing,
+            T::Union{Real, Missing} = missing,
+            v::Union{Real, Missing} = missing,
+            B::Symbol = :MA,
+        ) -> begin
+            @assert(
+                count(x -> isa(x, Real), (P, T, v)) == 2,
+                "exactly two P-T-v state functions must be specified!"
+            )
+            return if ismissing(P)
+                _s(ξ, _P(ξ, T, v, B), T, B)
+            elseif ismissing(T)
+                _s(ξ, P, _T(ξ, P, v, B), B)
+            else
+                _s(ξ, P, T, B)
+            end
+        end
     end
 end
 
 Base.propertynames(ξ::IdealGas) = (
     :form, :name, :hmod, :Pref,
-    propertynames(getfield(ξ, :hmod))...
+    propertynames(getfield(ξ, :hmod))...,
 )
