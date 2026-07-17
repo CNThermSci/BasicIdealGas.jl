@@ -1,9 +1,6 @@
 # idealProcs.jl - Ideal Gas Processes
 
-isoT_P(
-    ξ::IdealState,
-    P::Union{Missing, Real, Quantity{<:Real, dimension(u"kPa")}},
-) = ξ(P = P)
+isoT_P(ξ::IdealState, P::Union{Missing, Real, PRES}) = ξ(P = P)
 
 isoT_v(ξ::IdealState, v::Real, B::Symbol) = ξ(P = _P(ξ.gas, ξ.𝑇, v, B))
 isoT_v(ξ::IdealState, v::Quantity{<:Real, dimension(u"m^3/kg")}) =
