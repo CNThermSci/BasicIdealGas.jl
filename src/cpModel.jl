@@ -209,18 +209,18 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
         return getfield(ξ, sy)
     end
     # Convenience accessors/transformers
-    if sy in (:f, :mod, :modMO)
+    if sy == :f
         return getfield(ξ, :𝑓)
-    elseif sy in (:fMA, :modMA)
+    elseif sy == :fMA
         return T -> getfield(ξ, :𝑓)(T) / getfield(ξ, :𝑀)
     end
     # Porcelain accessors (with units)
     if sy == :M
         return getfield(ξ, :𝑀) * u"kg/kmol"
-    elseif sy in (:R, :RMA)
-        return R(ξ, :MA) * u"kJ/kg/K"
-    elseif sy in (:RU, :RMO)
+    elseif sy == :R
         return getfield(ξ, :𝑅) * u"kJ/kmol/K"
+    elseif sy == :RMA
+        return R(ξ, :MA) * u"kJ/kg/K"
     end
     # Pretty print
     if sy == :view
@@ -251,8 +251,7 @@ end
 
 Base.propertynames(::SpecificHeat) = (
     :ID, :𝑓, :𝑀, :Tmin, :Tmax, :Tref, :uref, :sref, :𝑅,
-    :f, :mod, :modMO, :fMA, :modMA, :M, :R, :RMA, :RU, :RMO,
-    :view,
+    :f, :fMA, :M, :R, :RMA, :view,
     :cp┆R, :cv┆R, :ga, :R, :∫cp┆R, :∫cv┆R,
     :u┆R, :h┆R, :∫cp┆RT, :s0┆R, :Pr, :vr,
     :cp, :cv, :u, :h, :s0,
