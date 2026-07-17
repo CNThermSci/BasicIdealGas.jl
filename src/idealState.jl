@@ -188,11 +188,11 @@ function Base.getproperty(ξ::IdealState, sy::Symbol)
 end
 
 Base.propertynames(ξ::IdealState) = (
-    :gas, :M, :R, :Ru, :RU, :P, :T, :γ, :ga,
-    :v, :vMO, :ρ, :ρMO, :cp, :cpMO, :cv, :cvMO,
-    :u, :uMO, :h, :hMO, :s0, :s0MO, :s, :sMO,
-    :Pr, :vr,
-    propertynames(getfield(ξ, :𝐺))...,
+    fieldnames(IdealState)...,
+    fieldnames(IdealGas)...,
+    fieldnames(SpecificHeat)...,
+    :gas, :mod, :P, :T, :γ, :ga, :v, :vMO, :ρ, :ρMO, :cp, :cpMO,
+    :cv, :cvMO, :u, :uMO, :h, :hMO, :s0, :s0MO, :s, :sMO, :Pr, :vr,
 )
 
 # User-facing functions
