@@ -138,10 +138,11 @@ function Base.getproperty(ξ::IdealState, sy::Symbol)
     # User-facing state function accessors (with units)
     GAS, P, T = map(sy -> getfield(ξ, sy), (:𝐺, :𝑃, :𝑇))
     MOD = getfield(GAS, :hmod)
-    if sy == :gas
+    # SpecificHeat convenience/porcelain
+    if sy in (:f, :fMA, :M, :R, :RMA)
+        return getproperty(MOD, sy)
+    elseif sy == :gas
         return GAS
-    elseif sy == :mod
-        return MOD
     elseif sy == :P
         return getfield(ξ, :𝑃) * u"kPa"
     elseif sy == :T
@@ -191,7 +192,8 @@ Base.propertynames(ξ::IdealState) = (
     fieldnames(IdealState)...,
     fieldnames(IdealGas)...,
     fieldnames(SpecificHeat)...,
-    :gas, :mod, :P, :T, :γ, :ga, :v, :vMO, :ρ, :ρMO, :cp, :cpMO,
+    :f, :fMA, :M, :R, :RMA,
+    :gas, :P, :T, :γ, :ga, :v, :vMO, :ρ, :ρMO, :cp, :cpMO,
     :cv, :cvMO, :u, :uMO, :h, :hMO, :s0, :s0MO, :s, :sMO, :Pr, :vr,
 )
 
