@@ -130,23 +130,23 @@ function Base.getproperty(ξ::IdealState, sy::Symbol)
     # Raw fields
     if sy in fieldnames(IdealState)
         return getfield(ξ, sy)
-    end
-    # Short-circuit IdealState accessors
-    if sy in propertynames(getfield(ξ, :𝐺))
-        return getproperty(getfield(ξ, :𝐺), sy)
-    end
-    # Convenience accessors/transformers
-    if sy == :gas
-        return getfield(ξ, :𝐺)
-    elseif sy == :P
-        return getfield(ξ, :𝑃) * u"kPa"
-    elseif sy == :T
-        return getfield(ξ, :𝑇) * u"K"
+    elseif sy in fieldnames(IdealGas)
+        return getfield(getfield(ξ, :𝐺), sy)
+    elseif sy in fieldnames(SpecificHeat)
+        return getfield(getfield(getfield(ξ, :𝐺), :hmod), sy)
     end
     # User-facing state function accessors (with units)
     GAS, P, T = map(sy -> getfield(ξ, sy), (:𝐺, :𝑃, :𝑇))
     MOD = getfield(GAS, :hmod)
-    if sy in (:γ, :ga)
+    if sy == :gas
+        return GAS
+    elseif sy == :mod
+        return MOD
+    elseif sy == :P
+        return getfield(ξ, :𝑃) * u"kPa"
+    elseif sy == :T
+        return getfield(ξ, :𝑇) * u"K"
+    elseif sy in (:γ, :ga)
         return ga(MOD, T)
     elseif sy == :v
         return _v(GAS, P, T, :MA) * u"m^3/kg"
