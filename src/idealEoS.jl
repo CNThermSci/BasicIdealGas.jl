@@ -92,8 +92,12 @@ export IdealGas
 # User-facing functions
 # ---------------------
 
-function Base.show(io::IO, G::IdealGas{ℙ}) where {ℙ <: FLOAT}
-    return print(io, "$(G.form)$(pDeco(ℙ)) gas")
+function Base.show(io::IO, ::MIME"text/plain", G::IdealGas{ℙ}) where {ℙ <: FLOAT}
+    return print(
+        io,
+        "$(G.form)$(pDeco(ℙ)) gas, ",
+        repr(MIME"text/plain"(), G.hmod),
+    )
 end
 
 for FUNC in (:R,)
