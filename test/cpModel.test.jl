@@ -192,8 +192,8 @@ end
     Tmin, Tref, Tmax = 273, 298, 1800
     uref, sref, 𝑀 = 6885, 213.685, 44.01
     C = SpecificHeat(ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref)
-    @test_throws "T out of bounds" bounds(C, prevfloat(C.Tmin))
-    @test_throws "T out of bounds" bounds(C, nextfloat(C.Tmax))
+    @test_throws AssertionError bounds(C, prevfloat(C.Tmin))
+    @test_throws AssertionError bounds(C, nextfloat(C.Tmax))
 end
 
 @testset "cpModel.test.jl: user-facing functions: thermodynamic consistencies       " begin
