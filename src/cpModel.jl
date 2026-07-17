@@ -164,7 +164,10 @@ end
 # User-facing functions
 # ---------------------
 
-𝗯(C::SpecificHeat, T::Real) = @assert(C.Tmin <= T <= C.Tmax, "T out of bounds")
+𝗯(C::SpecificHeat, T::Real) = begin
+    msg = "T = $(@sprintf("%.*g K", 5, T)) out of bounds"
+    @assert(C.Tmin <= T <= C.Tmax, msg)
+end
 
 import Base: cp
 
