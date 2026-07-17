@@ -198,10 +198,10 @@ Base.propertynames(ξ::IdealState) = (
 # User-facing functions
 # ---------------------
 
-using Printf
-
-function Base.show(io::IO, st::IdealState{ℙ}) where {ℙ <: FLOAT}
-    pstr = @sprintf("%.*g", 5, st.𝑃)
-    tstr = @sprintf("%.*g", 5, st.𝑇)
-    return print(io, "$(st.gas) @($(pstr) kPa, $(tstr) K)")
+function Base.show(io::IO, ::MIME"text/plain", st::IdealState{ℙ}) where {ℙ <: FLOAT}
+    return print(
+        io,
+        repr(MIME"text/plain"(), st.gas),
+        " @($(@sprintf("%.*g", 5, st.𝑃)) kPa, $(@sprintf("%.*g", 5, st.𝑇)) K)"
+    )
 end
