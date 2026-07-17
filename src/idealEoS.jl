@@ -139,6 +139,35 @@ function Base.getproperty(ξ::IdealGas, sy::Symbol)
     if sy in propertynames(getfield(ξ, :hmod))
         return getproperty(getfield(ξ, :hmod), sy)
     end
+    # OOP-style covenience functions (formerly exported ones)
+    if sy == :P
+        return (; T::Real, v::Real, B::Symbol = :MA) -> _P(ξ, T, v, B)
+    elseif sy == :T
+        return (; P::Real, v::Real, B::Symbol = :MA) -> _T(ξ, P, v, B)
+    elseif sy == :v
+        return (; P::Real, T::Real, B::Symbol = :MA) -> _v(ξ, P, T, B)
+    elseif sy == :ρ
+        return (; P::Real, T::Real, B::Symbol = :MA) -> _ρ(ξ, P, T, B)
+    elseif sy == :s
+        return (;
+            P::Union{Real, Missing} = missing,
+            T::Union{Real, Missing} = missing,
+            v::Union{Real, Missing} = missing,
+            B::Symbol = :MA,
+        ) -> begin
+            @assert(
+                count(x -> isa(x, Real), (P, T, v)) == 2,
+                "exactly two P-T-v state functions must be specified!"
+            )
+            return if ismissing(P)
+                _s(ξ, _P(ξ, T, v, B), T, B)
+            elseif ismissing(T)
+                _s(ξ, P, _T(ξ, P, v, B), B)
+            else
+                _s(ξ, P, T, B)
+            end
+        end
+    end
 end
 
 Base.propertynames(ξ::IdealGas) = (
