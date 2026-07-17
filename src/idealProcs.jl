@@ -1,27 +1,22 @@
 # idealProcs.jl - Ideal Gas Processes
 
+# Isothermal processes
+# --------------------
+
 isoT_P(ξ::IdealState, P::Union{Missing, Real, PRES}) = ξ(P = P)
 
 isoT_v(ξ::IdealState, v::Real, B::Symbol) = ξ(P = _P(ξ.gas, ξ.𝑇, v, B))
 isoT_v(ξ::IdealState, v::VOLU) = isoT_v(ξ, kSI(v), v isa MOLR ? :MO : :MA)
 
-isoT_s(ξ::IdealState, s::Real, B::Symbol) = begin
-    factor = B == :MO ? (kSI(ξ.sMO) - s) / ξ.R : 0
-    ξ(P = ξ.𝑃 * exp((kSI(B == :MO ? ξ.sMO : ξ.s) - s) / ξ.𝑅))
-end
-
-isoT_s(ξ::IdealState{ℙ}, s::Quantity{<:Real, dimension(u"kJ/kg/K")}) where {ℙ} =
-    ξ(P = ξ.P * exp((ξ.s - ℙ(s)) / ξ.R))
-isoT_s(ξ::IdealState{ℙ}, s::Quantity{<:Real, dimension(u"kJ/kmol/K")}) where {ℙ} =
-    ξ(P = ξ.P * exp((ξ.sMO - ℙ(s)) / ξ.RMO))
+isoT_s(ξ::IdealState, s::Real, B::Symbol) =
+    ξ(P = ξ.𝑃 * exp(B == :MO ? (kSI(ξ.sMO) - s) / kSI(ξ.R) : (kSI(ξ.s) - s) / kSI(ξ.RMA)))
+isoT_s(ξ::IdealState, s::ENTR) = isoT_s(ξ, kSI(s), s isa MOLR ? :MO : :MA)
 
 function isoT(
         ξ::IdealState;
-        P::Union{Missing, Quantity{<:Real, dimension(u"kPa")}, Real} = missing,
-        v::Union{
-            Missing, Quantity{<:Real, dimension(u"m^3/kg")}, Quantity{<:Real, dimension(u"m^3/kmol")}, Tuple{<:Real, Symbol},
-        } = missing,
-        s::Union{Missing, Quantity{<:Real, dimension(u"kJ/kg/K")}, Quantity{<:Real, dimension(u"kJ/kmol/K")}, Tuple{<:Real, Symbol}} = missing,
+        P::Union{Missing, ℙ, PRES{ℙ}} where ℙ<:Real = missing,
+        v::Union{Missing, Tuple{ℚ, Symbol}, VOLU{ℚ}} where ℚ<:Real = missing,
+        s::Union{Missing, Tuple{ℝ, Symbol}, ENTR{ℝ}} where ℝ<:Real = missing,
     )
     @assert(
         count(x -> !isa(x, Missing), (P, v, s)) == 1,
@@ -37,6 +32,9 @@ function isoT(
 end
 
 export isoT
+
+# Isobaric processes
+# ------------------
 
 function isoP(
         FR::IdealState{ℙ};
