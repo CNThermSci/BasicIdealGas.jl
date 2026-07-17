@@ -36,6 +36,8 @@ export isoT
 # Isobaric processes
 # ------------------
 
+# TODO: refactor as with isoT
+
 function isoP(
         FR::IdealState{ℙ};
         T::Union{
