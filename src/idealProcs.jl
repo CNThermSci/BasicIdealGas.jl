@@ -15,8 +15,8 @@ isoT_s(ξ::IdealState, s::ENTR) = isoT_s(ξ, kSI(s), s isa MOLR ? :MO : :MA)
 function isoT(
         ξ::IdealState;
         P::Union{Missing, ℙ, PRES{ℙ}} where {ℙ <: Real} = missing,
-        v::Union{Missing, Tuple{ℚ, Symbol}, VOLU{ℚ}} where {ℚ <: Real} = missing,
-        s::Union{Missing, Tuple{ℝ, Symbol}, ENTR{ℝ}} where {ℝ <: Real} = missing,
+        v::Union{Missing, Tuple{ℙ, Symbol}, VOLU{ℙ}} where {ℙ <: Real} = missing,
+        s::Union{Missing, Tuple{ℙ, Symbol}, ENTR{ℙ}} where {ℙ <: Real} = missing,
     )
     @assert(
         count(x -> !isa(x, Missing), (P, v, s)) == 1,
@@ -36,12 +36,28 @@ export isoT
 # Isobaric processes
 # ------------------
 
-# TODO: refactor as with isoT
-
 isoP_T(ξ::IdealState, T::Union{Missing, Real, TEMP}) = ξ(T = T)
 
 isoP_v(ξ::IdealState, v::Real, B::Symbol) = ξ(T = _T(ξ.gas, ξ.𝑃, v, B))
 isoP_v(ξ::IdealState, v::VOLU) = isoP_v(ξ, kSI(v), v isa MOLR ? :MO : :MA)
+
+isoP_u(ξ::IdealState, u::Real, B::Symbol) =
+    ξ(
+    T = find_zero(
+        B == :MO ? T -> kSI(ξ(T = T).uMO) - u : T -> kSI(ξ(T = T).u) - u,
+        (ξ.Tmin, ξ.Tmax), Bisection()
+    )
+)
+isoP_u(ξ::IdealState, u::ENER) = isoP_u(ξ, kSI(u), u isa MOLR ? :MO : :MA)
+
+isoP_h(ξ::IdealState, h::Real, B::Symbol) =
+    ξ(
+    T = find_zero(
+        B == :MO ? T -> kSI(ξ(T = T).hMO) - h : T -> kSI(ξ(T = T).h) - h,
+        (ξ.Tmin, ξ.Tmax), Bisection()
+    )
+)
+isoP_h(ξ::IdealState, h::ENER) = isoP_h(ξ, kSI(h), h isa MOLR ? :MO : :MA)
 
 isoP_s(ξ::IdealState, s::Real, B::Symbol) =
     ξ(
@@ -55,17 +71,23 @@ isoP_s(ξ::IdealState, s::ENTR) = isoP_s(ξ, kSI(s), s isa MOLR ? :MO : :MA)
 function isoP(
         ξ::IdealState;
         T::Union{Missing, ℙ, TEMP{ℙ}} where {ℙ <: Real} = missing,
-        v::Union{Missing, Tuple{ℚ, Symbol}, VOLU{ℚ}} where {ℚ <: Real} = missing,
-        s::Union{Missing, Tuple{ℝ, Symbol}, ENTR{ℝ}} where {ℝ <: Real} = missing,
+        v::Union{Missing, Tuple{ℙ, Symbol}, VOLU{ℙ}} where {ℙ <: Real} = missing,
+        u::Union{Missing, Tuple{ℙ, Symbol}, ENER{ℙ}} where {ℙ <: Real} = missing,
+        h::Union{Missing, Tuple{ℙ, Symbol}, ENER{ℙ}} where {ℙ <: Real} = missing,
+        s::Union{Missing, Tuple{ℙ, Symbol}, ENTR{ℙ}} where {ℙ <: Real} = missing,
     )
     @assert(
-        count(x -> !isa(x, Missing), (P, v, s)) == 1,
+        count(x -> !isa(x, Missing), (T, v, u, h, s)) == 1,
         "exactly one end-state function must be specified!"
     )
     return if !ismissing(T)
         isoP_T(ξ, T)
     elseif !ismissing(v)
         v isa Tuple ? isoP_v(ξ, v...) : isoP_v(ξ, v)
+    elseif !ismissing(u)
+        u isa Tuple ? isoP_u(ξ, u...) : isoP_u(ξ, u)
+    elseif !ismissing(h)
+        h isa Tuple ? isoP_h(ξ, h...) : isoP_h(ξ, h)
     elseif !ismissing(s)
         s isa Tuple ? isoP_s(ξ, s...) : isoP_s(ξ, s)
     end
