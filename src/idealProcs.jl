@@ -54,7 +54,7 @@ isoP_s(ξ::IdealState, s::ENTR) = isoP_s(ξ, kSI(s), s isa MOLR ? :MO : :MA)
 
 function isoP(
         ξ::IdealState;
-        P::Union{Missing, ℙ, PRES{ℙ}} where {ℙ <: Real} = missing,
+        T::Union{Missing, ℙ, TEMP{ℙ}} where {ℙ <: Real} = missing,
         v::Union{Missing, Tuple{ℚ, Symbol}, VOLU{ℚ}} where {ℚ <: Real} = missing,
         s::Union{Missing, Tuple{ℝ, Symbol}, ENTR{ℝ}} where {ℝ <: Real} = missing,
     )
@@ -62,7 +62,7 @@ function isoP(
         count(x -> !isa(x, Missing), (P, v, s)) == 1,
         "exactly one end-state function must be specified!"
     )
-    return if !ismissing(P)
+    return if !ismissing(T)
         isoP_T(ξ, T)
     elseif !ismissing(v)
         v isa Tuple ? isoP_v(ξ, v...) : isoP_v(ξ, v)
