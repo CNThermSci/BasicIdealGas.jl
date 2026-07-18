@@ -90,7 +90,7 @@ function (ξ::IdealState{ℙ})(
         T::Union{Missing, Real, Quantity{<:Real, dimension(u"K")}} = missing,
     ) where {ℙ}
     return if count(x -> !isa(x, Missing), (P, T)) == 0
-        # named tuple variant
+        # pars variant
         pairs(
             (
                 M = ξ.M,
