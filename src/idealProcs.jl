@@ -14,9 +14,9 @@ isoT_s(ξ::IdealState, s::ENTR) = isoT_s(ξ, kSI(s), s isa MOLR ? :MO : :MA)
 
 function isoT(
         ξ::IdealState;
-        P::Union{Missing, ℙ, PRES{ℙ}} where ℙ<:Real = missing,
-        v::Union{Missing, Tuple{ℚ, Symbol}, VOLU{ℚ}} where ℚ<:Real = missing,
-        s::Union{Missing, Tuple{ℝ, Symbol}, ENTR{ℝ}} where ℝ<:Real = missing,
+        P::Union{Missing, ℙ, PRES{ℙ}} where {ℙ <: Real} = missing,
+        v::Union{Missing, Tuple{ℚ, Symbol}, VOLU{ℚ}} where {ℚ <: Real} = missing,
+        s::Union{Missing, Tuple{ℝ, Symbol}, ENTR{ℝ}} where {ℝ <: Real} = missing,
     )
     @assert(
         count(x -> !isa(x, Missing), (P, v, s)) == 1,
@@ -38,41 +38,36 @@ export isoT
 
 # TODO: refactor as with isoT
 
+isoP_T(ξ::IdealState, T::Union{Missing, Real, TEMP}) = ξ(T = T)
+
+isoP_v(ξ::IdealState, v::Real, B::Symbol) = ξ(T = _T(ξ.gas, ξ.𝑃, v, B))
+isoP_v(ξ::IdealState, v::VOLU) = isoP_v(ξ, kSI(v), v isa MOLR ? :MO : :MA)
+
+isoP_s(ξ::IdealState, s::Real, B::Symbol) =
+    ξ(
+    T = find_zero(
+        B == :MO ? T -> kSI(ξ(T = T).sMO) - s : T -> kSI(ξ(T = T).s) - s,
+        (ξ.Tmin, ξ.Tmax), Bisection()
+    )
+)
+isoP_s(ξ::IdealState, s::ENTR) = isoP_s(ξ, kSI(s), s isa MOLR ? :MO : :MA)
+
 function isoP(
-        FR::IdealState{ℙ};
-        T::Union{
-            Missing,
-            Quantity{<:Real, dimension(u"K")},
-        } = missing,
-        v::Union{
-            Missing,
-            Quantity{<:Real, dimension(u"m^3/kg")},
-            Quantity{<:Real, dimension(u"m^3/kmol")},
-        } = missing,
-        s::Union{
-            Missing,
-            Quantity{<:Real, dimension(u"kJ/kg/K")},
-            Quantity{<:Real, dimension(u"kJ/kmol/K")},
-        } = missing,
-    ) where {ℙ}
+        ξ::IdealState;
+        P::Union{Missing, ℙ, PRES{ℙ}} where {ℙ <: Real} = missing,
+        v::Union{Missing, Tuple{ℚ, Symbol}, VOLU{ℚ}} where {ℚ <: Real} = missing,
+        s::Union{Missing, Tuple{ℝ, Symbol}, ENTR{ℝ}} where {ℝ <: Real} = missing,
+    )
     @assert(
-        count(x -> !isa(x, Missing), (T, v, s)) == 1,
+        count(x -> !isa(x, Missing), (P, v, s)) == 1,
         "exactly one end-state function must be specified!"
     )
-    return if !ismissing(T)
-        FR(T = uconvert(u"K", ℙ(T)).val)
+    return if !ismissing(P)
+        isoP_T(ξ, T)
     elseif !ismissing(v)
-        if dimension(v) == dimension(u"m^3/kg")
-            FR(T = _T(FR.gas, FR.𝑃, uconvert(u"m^3/kg", ℙ(v)).val, :MA))
-        else
-            FR(T = _T(FR.gas, FR.𝑃, uconvert(u"m^3/kmol", ℙ(v)).val, :MO))
-        end
+        v isa Tuple ? isoP_v(ξ, v...) : isoP_v(ξ, v)
     elseif !ismissing(s)
-        if dimension(s) == dimension(u"kJ/kg/K")
-            FR(T = find_zero(T -> FR(T = T).s - ℙ(s), (FR.Tmin, FR.Tmax), Bisection()))
-        else
-            FR(T = find_zero(T -> FR(T = T).sMO - ℙ(s), (FR.Tmin, FR.Tmax), Bisection()))
-        end
+        s isa Tuple ? isoP_s(ξ, s...) : isoP_s(ξ, s)
     end
 end
 
