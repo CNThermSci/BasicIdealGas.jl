@@ -170,3 +170,7 @@ isos_P(ξ::IdealState, P::Union{Missing, Real, PRES}) = begin
     ξ(P = P, T = find_zero(T -> kSI(ξ(P = P, T = T).sMO) - s1, (ξ.Tmin, ξ.Tmax), Bisection()))
 end
 
+isos_T(ξ::IdealState, T::Union{Missing, Real, TEMP}) = begin
+    s1 = _s(ξ.𝐺, ξ.𝑃, ξ.𝑇, :MO)
+    ξ(P = find_zero(P -> kSI(ξ(P = P, T = T).sMO) - s1, (1e-9, 1e+9), Bisection()), T = T)
+end
