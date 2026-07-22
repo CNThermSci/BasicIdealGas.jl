@@ -132,3 +132,29 @@ isov_s(ξ::IdealState, s::Real, B::Symbol) = begin
 end
 isov_s(ξ::IdealState, s::ENTR) = isov_s(ξ, kSI(s), s isa MOLR ? :MO : :MA)
 
+function isov(
+        ξ::IdealState;
+        P::Union{Missing, ℙ, PRES{ℙ}} where {ℙ <: Real} = missing,
+        T::Union{Missing, ℙ, TEMP{ℙ}} where {ℙ <: Real} = missing,
+        u::Union{Missing, Tuple{ℙ, Symbol}, ENER{ℙ}} where {ℙ <: Real} = missing,
+        h::Union{Missing, Tuple{ℙ, Symbol}, ENER{ℙ}} where {ℙ <: Real} = missing,
+        s::Union{Missing, Tuple{ℙ, Symbol}, ENTR{ℙ}} where {ℙ <: Real} = missing,
+    )
+    @assert(
+        count(x -> !isa(x, Missing), (P, T, u, h, s)) == 1,
+        "exactly one end-state function must be specified!"
+    )
+    return if !ismissing(P)
+        isov_P(ξ, P)
+    elseif !ismissing(T)
+        isov_T(ξ, T)
+    elseif !ismissing(u)
+        u isa Tuple ? isov_u(ξ, u...) : isov_u(ξ, u)
+    elseif !ismissing(h)
+        h isa Tuple ? isov_h(ξ, h...) : isov_h(ξ, h)
+    elseif !ismissing(s)
+        s isa Tuple ? isov_s(ξ, s...) : isov_s(ξ, s)
+    end
+end
+
+export isov
