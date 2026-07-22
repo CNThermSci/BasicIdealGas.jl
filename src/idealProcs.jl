@@ -94,3 +94,41 @@ function isoT(
 end
 
 export isoT
+
+# Isochoric processes
+# -------------------
+
+isov_P(ξ::IdealState, P::Union{Missing, Real, PRES}) = begin
+    v1 = _v(ξ.𝐺, ξ.𝑃, ξ.𝑇, :MO)
+    ξ(P = P, T = _T(ξ.𝐺, P, v1, :MO))
+end
+
+isov_T(ξ::IdealState, T::Union{Missing, Real, TEMP}) = begin
+    v1 = _v(ξ.𝐺, ξ.𝑃, ξ.𝑇, :MO)
+    ξ(P = _P(ξ.𝐺, T, v1, :MO), T = T)
+end
+
+isov_u(ξ::IdealState, u::Real, B::Symbol) = begin
+    v1 = _v(ξ.𝐺, ξ.𝑃, ξ.𝑇, :MO)
+    T2 = isoP_u(ξ, u, B).𝑇
+    ξ(P = _P(ξ.𝐺, T2, v1, :MO), T = T2)
+end
+isov_u(ξ::IdealState, u::ENER) = isov_u(ξ, kSI(u), u isa MOLR ? :MO : :MA)
+
+isov_h(ξ::IdealState, h::Real, B::Symbol) = begin
+    v1 = _v(ξ.𝐺, ξ.𝑃, ξ.𝑇, :MO)
+    T2 = isoP_h(ξ, h, B).𝑇
+    ξ(P = _P(ξ.𝐺, T2, v1, :MO), T = T2)
+end
+isov_h(ξ::IdealState, h::ENER) = isov_h(ξ, kSI(h), h isa MOLR ? :MO : :MA)
+
+
+isov_s(ξ::IdealState, s::Real, B::Symbol) =
+    ξ(
+    T = find_zero(
+        B == :MO ? T -> kSI(ξ(T = T).sMO) - s : T -> kSI(ξ(T = T).s) - s,
+        (ξ.Tmin, ξ.Tmax), Bisection()
+    )
+)
+isov_s(ξ::IdealState, s::ENTR) = isov_s(ξ, kSI(s), s isa MOLR ? :MO : :MA)
+
