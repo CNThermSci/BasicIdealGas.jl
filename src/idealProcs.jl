@@ -122,13 +122,13 @@ isov_h(ξ::IdealState, h::Real, B::Symbol) = begin
 end
 isov_h(ξ::IdealState, h::ENER) = isov_h(ξ, kSI(h), h isa MOLR ? :MO : :MA)
 
-
-isov_s(ξ::IdealState, s::Real, B::Symbol) =
-    ξ(
-    T = find_zero(
-        B == :MO ? T -> kSI(ξ(T = T).sMO) - s : T -> kSI(ξ(T = T).s) - s,
+isov_s(ξ::IdealState, s::Real, B::Symbol) = begin
+    v1 = _v(ξ.𝐺, ξ.𝑃, ξ.𝑇, :MO)
+    T2 = find_zero(
+        B == :MO ? T -> kSI(isov_T(ξ, T).sMO) - s : T -> kSI(isov_T(ξ, T).s) - s,
         (ξ.Tmin, ξ.Tmax), Bisection()
     )
-)
+    ξ(P = _P(ξ.𝐺, T2, v1, :MO), T = T2)
+end
 isov_s(ξ::IdealState, s::ENTR) = isov_s(ξ, kSI(s), s isa MOLR ? :MO : :MA)
 
