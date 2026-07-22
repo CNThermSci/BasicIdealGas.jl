@@ -1,6 +1,6 @@
 name = "BasicIdealGas"
 uuid = "3a5f4bc5-d558-4c14-a173-42c5953d898e"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["C. Naaktgeboren"]
 
 [deps]
