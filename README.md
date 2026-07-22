@@ -25,19 +25,17 @@ Basic ideal gas models in engineering thermodynamics.
 
 - All data fields are stored as plain `ℙ <: Base.IEEEFloat` types;
 
-- It is _assumed_ that values are in kSI system, i.e., energy in $kJ$, temperatures in $K$,
-  pressure in $kPa$, specific volumes in $m³/kmol$ (molar base, `:MO`) or $m³/kg$ (mass base, `:MA`);
+- Stored values are _assumed_ to be in kSI system, and specific quantities in the molar base,
+  `:MO`, rather than in the mass base, `:MA`, i.e., energy in $kJ$, temperatures in $K$,
+  pressure in $kPa$, specific internal energies in $kJ/kmol$, and specific entropies in
+  $kJ/kmol/K$;
 
-- Instantiated `SpecificHeat` object fields store base-dependent data in the molar base;
-
-- `SpecificHeat` functions that return based amounts default to the mass base, `:MA`, due to
-  the envisioned engineering applications; however, based amount calculating functions accept a
-  `Symbol`ic base argument---either `:MA`, or `:MO`.
+- User-facing outputs are accessed through fields and properties (in the julia langauge sense),
+  and are provided with units. When the amount is based, a `Symbol`ic base argument—whether
+  `:MO`, or `:MA`, respectively for molar or mass base—can be optionally specified, with the
+  mass base being the default one.
 
 - Constructors accept any unambiguous combination of `Real` and `Quantity{<:Real}` arguments;
-
-- User-facing outputs are frequently accessed through fields and properties (in the julia
-  langauge sense);
 
 ## Examples
 
@@ -60,7 +58,7 @@ julia> C = SpecificHeat(
     213.685             # Ref entropy in kJ/kmol/K
     # Omitted molar gas constant (defaults to universal one)
     )
-cubic cp₆₄(T) [273.0 1800.0]
+cubic cp₆₄(T)
 
 julia> dump(C)
 SpecificHeat{Float64}
@@ -92,7 +90,7 @@ consistently typed values, in the above case, a `Float64`.
 
 ```julia
 julia> Float32(C)
-cubic cp₃₂(T) [273.0 1800.0]
+cubic cp₃₂(T)
 
 julia> dump(Float32(C))
 SpecificHeat{Float32}
@@ -135,41 +133,41 @@ true
 
 ```julia
 julia> C.view
-cubic cp₆₄(T) [273.0 1800.0]
-          +--------------------------------+
+SpecificHeat{Float64}(:cubic, var"#2#3"(), 44.01, 273.0, 298.0, 1800.0, 6885.0, 213.685, 8.31447)
+          +--------------------------------+               
       1.4 |⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⣀⣀⣠| ⠤⠤⠤⠤ [kJ/kg·K]
-          |⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⠤⠤⠔⠒⠒⠒⠉⠉⠉⠉⠁⠀⠀⠀⠀⠀|
-   cp (T) |⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⠤⠒⠊⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀|
-          |⠀⠀⠀⠀⠀⣀⠤⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀|
-          |⠀⠀⢀⠔⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀|
-      0.8 |⡠⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀|
-          +--------------------------------+
-          ⠀273⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀T [K]⠀⠀⠀⠀⠀⠀⠀⠀⠀1 800⠀
+          |⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⠤⠤⠔⠒⠒⠒⠉⠉⠉⠉⠁⠀⠀⠀⠀⠀|               
+   cp (T) |⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⠤⠒⠊⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀|               
+          |⠀⠀⠀⠀⠀⣀⠤⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀|               
+          |⠀⠀⢀⠔⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀|               
+      0.8 |⡠⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀|               
+          +--------------------------------+               
+          ⠀273⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀T [K]⠀⠀⠀⠀⠀⠀⠀⠀⠀1 800⠀               
 julia> cp(C, 1800) # Defaults to mass base
 1.327534832992502
 
-julia> cp(C, 1800, :MO) # Molar base
+julia> C.cp(1800, :MO) # Molar base
 58.424808000000006
 
-julia> cv(C, 1800, :MO)
+julia> C.cv(1800, :MO)
 50.110338000000006
 
-julia> ga(C, 1800) # γ = cp/cv
+julia> C.ga(1800) # γ = cp/cv
 1.1659232472149759
 
-julia> u(C, 1800) # Specific internal energy, mass base
+julia> C.u(1800) # Specific internal energy, mass base
 1647.0341409742273
 
-julia> h(C, 1800) # Specific enthalpy, mass base
+julia> C.h(1800) # Specific enthalpy, mass base
 1987.0942636736138
 
-julia> s0(C, 1800) # Ideal gas partial entropy, mass base
+julia> C.s0(1800) # Ideal gas partial entropy, mass base
 6.850566852042051
 
-julia> Pr(C, 1800) # Relative pressure, Pr = 1 at reference temperature
+julia> C.Pr(1800) # Relative pressure, Pr = 1 at reference temperature
 38596.5956535214
 
-julia> vr(C, 1800) # Relative volume
+julia> C.vr(1800) # Relative volume
 0.04663623745882819
 ```
 
@@ -179,24 +177,24 @@ julia> vr(C, 1800) # Relative volume
 
 ```julia
 julia> CO2 = IdealGas("CO2", "Carbon Dioxide", C)
-CO2 gas, cubic cp₆₄(T) [273.0 1800.0]
+CO2₆₄ gas, cubic cp₆₄(T)
 
-julia> s(CO2, P=100, T=300)
+julia> CO2.s(P=100, T=300)
 3.9909694845958117
 
 julia> CO2.Pref
 1.0
 
-julia> P(CO2, T=300, v=1.2, B=:MA) # v taken in mass base
+julia> CO2.P(T=300, v=1.2, B=:MA) # v taken in mass base
 47.23057259713702
 
-julia> P(CO2, T=300, v=1.2) # If omitted, base defaults to mass
+julia> CO2.P(T=300, v=1.2) # If omitted, base defaults to mass
 47.23057259713702
 
-julia> P(CO2, T=300.0, v=1.2, B=:MO) # v taken in molar base
+julia> CO2.P(T=300, v=1.2, B=:MO) # v taken in molar base
 2078.6175
 
-julia> v(CO2, P=47, T=300)
+julia> CO2.v(P=47, T=300)
 1.2058869599269026
 ```
 
@@ -208,8 +206,7 @@ Currently only $(P, T)$, positional constructors are implemented:
 
 ```julia
 julia> st1 = IdealState(CO2, 100, 300)
-CO2 gas, cubic cp₆₄(T) [273.0 1800.0] @(100.0 kPa, 300.0 K)
-
+CO2₆₄ gas, cubic cp₆₄(T) @(100 kPa, 300 K)
 ```
 
 Since the state is already known, user-facing convenience accessors are implemented for all
@@ -219,12 +216,11 @@ specific volume):
 
 ```julia
 julia> st1.<tab>
-ID     M      P      Pr     Pref   R      RMA    RMO    RU     Ru
-T      Tmax   Tmin   Tref   cp     cpMO   cv     cvMO   f      fMA
-form   ga     gas    h      hMO    hmod   mod    modMA  modMO  name
-s      s0     s0MO   sMO    sref   u      uMO    uref   v      vMO
-view   vr     γ      ρ      ρMO    𝑀      𝑅      𝑓
-
+ID    M     P     Pr    Pref  R     RMA   T     Tmax
+Tmin  Tref  cp    cpMO  cv    cvMO  f     fMA   form
+ga    gas   h     hMO   hmod  name  s     s0    s0MO
+sMO   sref  u     uMO   uref  v     vMO   vr    γ
+ρ     ρMO   𝐺     𝑀     𝑃     𝑅     𝑇     𝑓
 ```
 
 The user-facing convenience accessors through julia properties return amounts with units, while
