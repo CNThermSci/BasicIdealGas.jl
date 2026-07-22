@@ -1,5 +1,7 @@
 # idealProcs.jl - Ideal Gas Processes
 
+# TODO: Implement type for process end states and interactions
+
 # Isobaric processes
 # ------------------
 
