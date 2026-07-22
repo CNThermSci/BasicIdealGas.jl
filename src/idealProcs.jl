@@ -1,38 +1,5 @@
 # idealProcs.jl - Ideal Gas Processes
 
-# Isothermal processes
-# --------------------
-
-isoT_P(ξ::IdealState, P::Union{Missing, Real, PRES}) = ξ(P = P)
-
-isoT_v(ξ::IdealState, v::Real, B::Symbol) = ξ(P = _P(ξ.gas, ξ.𝑇, v, B))
-isoT_v(ξ::IdealState, v::VOLU) = isoT_v(ξ, kSI(v), v isa MOLR ? :MO : :MA)
-
-isoT_s(ξ::IdealState, s::Real, B::Symbol) =
-    ξ(P = ξ.𝑃 * exp(B == :MO ? (kSI(ξ.sMO) - s) / kSI(ξ.R) : (kSI(ξ.s) - s) / kSI(ξ.RMA)))
-isoT_s(ξ::IdealState, s::ENTR) = isoT_s(ξ, kSI(s), s isa MOLR ? :MO : :MA)
-
-function isoT(
-        ξ::IdealState;
-        P::Union{Missing, ℙ, PRES{ℙ}} where {ℙ <: Real} = missing,
-        v::Union{Missing, Tuple{ℙ, Symbol}, VOLU{ℙ}} where {ℙ <: Real} = missing,
-        s::Union{Missing, Tuple{ℙ, Symbol}, ENTR{ℙ}} where {ℙ <: Real} = missing,
-    )
-    @assert(
-        count(x -> !isa(x, Missing), (P, v, s)) == 1,
-        "exactly one end-state function must be specified!"
-    )
-    return if !ismissing(P)
-        isoT_P(ξ, P)
-    elseif !ismissing(v)
-        v isa Tuple ? isoT_v(ξ, v...) : isoT_v(ξ, v)
-    elseif !ismissing(s)
-        s isa Tuple ? isoT_s(ξ, s...) : isoT_s(ξ, s)
-    end
-end
-
-export isoT
-
 # Isobaric processes
 # ------------------
 
@@ -94,3 +61,36 @@ function isoP(
 end
 
 export isoP
+
+# Isothermal processes
+# --------------------
+
+isoT_P(ξ::IdealState, P::Union{Missing, Real, PRES}) = ξ(P = P)
+
+isoT_v(ξ::IdealState, v::Real, B::Symbol) = ξ(P = _P(ξ.gas, ξ.𝑇, v, B))
+isoT_v(ξ::IdealState, v::VOLU) = isoT_v(ξ, kSI(v), v isa MOLR ? :MO : :MA)
+
+isoT_s(ξ::IdealState, s::Real, B::Symbol) =
+    ξ(P = ξ.𝑃 * exp(B == :MO ? (kSI(ξ.sMO) - s) / kSI(ξ.R) : (kSI(ξ.s) - s) / kSI(ξ.RMA)))
+isoT_s(ξ::IdealState, s::ENTR) = isoT_s(ξ, kSI(s), s isa MOLR ? :MO : :MA)
+
+function isoT(
+        ξ::IdealState;
+        P::Union{Missing, ℙ, PRES{ℙ}} where {ℙ <: Real} = missing,
+        v::Union{Missing, Tuple{ℙ, Symbol}, VOLU{ℙ}} where {ℙ <: Real} = missing,
+        s::Union{Missing, Tuple{ℙ, Symbol}, ENTR{ℙ}} where {ℙ <: Real} = missing,
+    )
+    @assert(
+        count(x -> !isa(x, Missing), (P, v, s)) == 1,
+        "exactly one end-state function must be specified!"
+    )
+    return if !ismissing(P)
+        isoT_P(ξ, P)
+    elseif !ismissing(v)
+        v isa Tuple ? isoT_v(ξ, v...) : isoT_v(ξ, v)
+    elseif !ismissing(s)
+        s isa Tuple ? isoT_s(ξ, s...) : isoT_s(ξ, s)
+    end
+end
+
+export isoT
