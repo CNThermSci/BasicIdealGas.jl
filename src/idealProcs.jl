@@ -172,5 +172,12 @@ end
 
 isos_T(ξ::IdealState, T::Union{Missing, Real, TEMP}) = begin
     s1 = _s(ξ.𝐺, ξ.𝑃, ξ.𝑇, :MO)
-    ξ(P = find_zero(P -> kSI(ξ(P = P, T = T).sMO) - s1, (1e-9, 1e+9), Bisection()), T = T)
+    ξ(P = find_zero(P -> kSI(ξ(P = P, T = T).sMO) - s1, (1.0e-9, 1.0e+9), Bisection()), T = T)
 end
+
+isos_v(ξ::IdealState, v::Real, B::Symbol) = begin
+    s1 = _s(ξ.𝐺, ξ.𝑃, ξ.𝑇, :MO)
+    T2 = find_zero(T -> kSI(isoT_v(ξ(T = T), v, B).sMO) - s1, (ξ.Tmin, ξ.Tmax), Bisection())
+    isoT_v(ξ(T = T2), v, B)
+end
+isos_v(ξ::IdealState, v::VOLU) = isos_v(ξ, kSI(v), v isa MOLR ? :MO : :MA)
