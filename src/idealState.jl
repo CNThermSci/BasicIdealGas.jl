@@ -85,26 +85,28 @@ end
 # -------
 
 function (ξ::IdealState{ℙ})(
-    ;
-    P::Union{Missing, Real, Quantity{<:Real, dimension(u"kPa")}} = missing,
-    T::Union{Missing, Real, Quantity{<:Real, dimension(u"K")}} = missing,
-) where {ℙ}
+        ;
+        P::Union{Missing, Real, Quantity{<:Real, dimension(u"kPa")}} = missing,
+        T::Union{Missing, Real, Quantity{<:Real, dimension(u"K")}} = missing,
+    ) where {ℙ}
     return if count(x -> !isa(x, Missing), (P, T)) == 0
-        # named tuple variant
-        (
-            M = ξ.M,
-            RMO = ξ.RMO,
-            R = ξ.R,
-            P = ξ.P,
-            T = ξ.T,
-            v = ξ.v,
-            vMO = ξ.vMO,
-            u = ξ.u,
-            uMO = ξ.uMO,
-            h = ξ.h,
-            hMO = ξ.hMO,
-            s = ξ.s,
-            sMO = ξ.sMO,
+        # pars variant
+        pairs(
+            (
+                M = ξ.M,
+                R = ξ.R,
+                RMA = ξ.RMA,
+                P = ξ.P,
+                T = ξ.T,
+                v = ξ.v,
+                vMO = ξ.vMO,
+                u = ξ.u,
+                uMO = ξ.uMO,
+                h = ξ.h,
+                hMO = ξ.hMO,
+                s = ξ.s,
+                sMO = ξ.sMO,
+            )
         )
     else
         # copy-edit variant
