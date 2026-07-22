@@ -181,3 +181,24 @@ isos_v(ξ::IdealState, v::Real, B::Symbol) = begin
     isoT_v(ξ(T = T2), v, B)
 end
 isos_v(ξ::IdealState, v::VOLU) = isos_v(ξ, kSI(v), v isa MOLR ? :MO : :MA)
+
+function isos(
+        ξ::IdealState;
+        P::Union{Missing, ℙ, PRES{ℙ}} where {ℙ <: Real} = missing,
+        T::Union{Missing, ℙ, TEMP{ℙ}} where {ℙ <: Real} = missing,
+        v::Union{Missing, Tuple{ℙ, Symbol}, VOLU{ℙ}} where {ℙ <: Real} = missing,
+    )
+    @assert(
+        count(x -> !isa(x, Missing), (P, T, v)) == 1,
+        "exactly one end-state function must be specified!"
+    )
+    return if !ismissing(P)
+        isos_P(ξ, P)
+    elseif !ismissing(T)
+        isos_T(ξ, T)
+    elseif !ismissing(v)
+        v isa Tuple ? isos_v(ξ, v...) : isos_v(ξ, v)
+    end
+end
+
+export isos
