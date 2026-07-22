@@ -161,3 +161,12 @@ function isov(
 end
 
 export isov
+
+# Isentropic processes
+# --------------------
+
+isos_P(ξ::IdealState, P::Union{Missing, Real, PRES}) = begin
+    s1 = _s(ξ.𝐺, ξ.𝑃, ξ.𝑇, :MO)
+    ξ(P = P, T = find_zero(T -> kSI(ξ(P = P, T = T).sMO) - s1, (ξ.Tmin, ξ.Tmax), Bisection()))
+end
+
