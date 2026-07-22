@@ -93,7 +93,10 @@ function isoT(
     end
 end
 
-export isoT
+isou = isoT
+isoh = isoT
+
+export isoT, isou, isoh
 
 # Isochoric processes
 # -------------------
