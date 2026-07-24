@@ -38,14 +38,10 @@ IdealState(
 # Set type with unit conversion and stripping / 2 indirections
 function IdealState{ℙ}(
         G::IdealGas,
-        P::Quantity{<:Real, dimension(u"kPa")},
-        T::Quantity{<:Real, dimension(u"K")},
+        P::PRES,
+        T::TEMP,
     ) where {ℙ <: FLOAT}
-    return IdealState{ℙ}(
-        G,
-        P isa Quantity ? uconvert(u"kPa", P).val : P,
-        T isa Quantity ? uconvert(u"K", T).val : T,
-    )
+    return IdealState{ℙ}(G, kSI.((P, T))...)
 end
 
 # Heat model type with unit conversion and stripping / 3 indirections
