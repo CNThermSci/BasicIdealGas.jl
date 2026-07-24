@@ -98,7 +98,10 @@ function (ξ::PropPair{ℙ})(
         )
     else
         # copy-edit variant
-        PropPair{ℙ}(P, T)
+        PropPair{ℙ}(
+            P isa Missing ? ξ.𝑃 : P,
+            T isa Missing ? ξ.𝑇 : T,
+        )
     end
 end
 
@@ -136,6 +139,6 @@ Base.propertynames(ξ::PropPair) = (
 function Base.show(io::IO, ::MIME"text/plain", st::PropPair{ℙ}) where {ℙ <: FLOAT}
     return print(
         io,
-        " @($(@sprintf("%.*g", 5, st.𝑃)) kPa, $(@sprintf("%.*g", 5, st.𝑇)) K)"
+        "@$(pDeco(ℙ))($(@sprintf("%.*g", 5, st.𝑃)) kPa, $(@sprintf("%.*g", 5, st.𝑇)) K)"
     )
 end
