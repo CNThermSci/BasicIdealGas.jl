@@ -14,7 +14,7 @@ using NumericalIntegration
 include("common.jl")
 include("cpModel.jl")
 include("idealEoS.jl")
-include("proppair.jl")
+include("propPair.jl")
 include("idealState.jl")
 include("idealProcs.jl")
 
