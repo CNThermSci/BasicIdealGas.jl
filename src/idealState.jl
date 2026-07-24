@@ -5,6 +5,7 @@
 
 struct IdealState{ℙ <: FLOAT}
     𝐺::IdealGas{ℙ}
+    # TODO: Use PropPair{ℙ} instead of separate 𝑃, 𝑇
     𝑃::ℙ                # kPa
     𝑇::ℙ                # K
     # Internal, validating constructors
