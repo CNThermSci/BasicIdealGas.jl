@@ -47,8 +47,8 @@ end
 # Heat model type with unit conversion and stripping / 3 indirections
 IdealState(
     G::IdealGas{ℙ},
-    P::Quantity{<:Real, dimension(u"kPa")},
-    T::Quantity{<:Real, dimension(u"K")},
+    P::PRES,
+    T::TEMP,
 ) where {ℙ <: FLOAT} = IdealState{ℙ}(G, P, T)
 
 # Conversions
