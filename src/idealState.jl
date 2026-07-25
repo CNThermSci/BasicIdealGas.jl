@@ -5,17 +5,14 @@
 
 struct IdealState{ℙ <: FLOAT}
     𝐺::IdealGas{ℙ}
-    # TODO: Use PropPair{ℙ} instead of separate 𝑃, 𝑇
-    𝑃::ℙ                # kPa
-    𝑇::ℙ                # K
+    𝑝::PropPair{ℙ}
     # Internal, validating constructors
     function IdealState(
             G::IdealGas{ℙ},
-            P::ℙ,
-            T::ℙ,
+            p::PropPair{ℙ},
         ) where {ℙ <: FLOAT}
-        @assert(G.hmod.Tmin <= T <= G.hmod.Tmax, "T = $(T) out of range for $(G.hmod)")
-        return new{ℙ}(G, P, T)
+        @assert(G.hmod.Tmin <= p.𝑇 <= G.hmod.Tmax, "T = $(p.𝑇) out of range for $(G.hmod)")
+        return new{ℙ}(G, p)
     end
 end
 
@@ -195,10 +192,11 @@ Base.propertynames(ξ::IdealState) = (
 # User-facing functions
 # ---------------------
 
-function Base.show(io::IO, ::MIME"text/plain", st::IdealState{ℙ}) where {ℙ <: FLOAT}
+function Base.show(io::IO, ::MIME"text/plain", ξ::IdealState{ℙ}) where {ℙ <: FLOAT}
     return print(
         io,
-        repr(MIME"text/plain"(), st.gas),
-        " @($(@sprintf("%.*g", 5, st.𝑃)) kPa, $(@sprintf("%.*g", 5, st.𝑇)) K)"
+        repr(MIME"text/plain"(), ξ.𝐺),
+        " ",
+        repr(MIME"text/plain"(), ξ.𝑝),
     )
 end
