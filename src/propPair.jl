@@ -136,9 +136,9 @@ Base.propertynames(ξ::PropPair) = (
 # User-facing functions
 # ---------------------
 
-function Base.show(io::IO, ::MIME"text/plain", st::PropPair{ℙ}) where {ℙ <: FLOAT}
+function Base.show(io::IO, ::MIME"text/plain", ξ::PropPair{ℙ}) where {ℙ <: FLOAT}
     return print(
         io,
-        "@$(pDeco(ℙ))($(@sprintf("%.*g", 5, st.𝑃)) kPa, $(@sprintf("%.*g", 5, st.𝑇)) K)"
+        "@$(pDeco(ℙ))($(@sprintf("%.*g", 5, ξ.𝑃)) kPa, $(@sprintf("%.*g", 5, ξ.𝑇)) K)"
     )
 end
