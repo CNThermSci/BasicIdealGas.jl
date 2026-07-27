@@ -2,6 +2,28 @@
 
 # TODO: Implement type for process end states and interactions
 
+# Structure (type) definition
+# ---------------------------
+
+struct IdealProc{ℙ <: FLOAT}
+    𝐺::IdealGas{ℙ}  # gas
+    𝑖::PropPair{ℙ}  # initial state
+    𝑓::PropPair{ℙ}  # final state
+    𝑞::ℙ            # specific heat interaction, kJ/kg
+    𝑤::ℙ            # specific work interaction, kJ/kg
+    # Internal, validating constructors
+    function IdealProc(
+            G::IdealGas{ℙ},
+            i::PropPair{ℙ},
+            f::PropPair{ℙ},
+            q::ℙ,
+            w::ℙ,
+        ) where {ℙ <: FLOAT}
+        @assert(G.hmod.Tmin <= i.𝑇 <= G.hmod.Tmax, "T = $(i.𝑇) out of range for $(G.hmod)")
+        @assert(G.hmod.Tmin <= f.𝑇 <= G.hmod.Tmax, "T = $(f.𝑇) out of range for $(G.hmod)")
+        return new{ℙ}(G, i, f, q, w)
+    end
+end
 # Isobaric processes
 # ------------------
 
