@@ -3,10 +3,55 @@
 # Ancillary type definitions
 # --------------------------
 
-struct InterPair{ℙ <: FLOAT}
+struct Interact{ℙ <: FLOAT}
     𝑞::ℙ            # specific heat interaction, kJ/kg
     𝑤::ℙ            # specific work interaction, kJ/kg
 end
+
+Interact{ℙ}(
+    q::Real,
+    w::Real,
+) where {ℙ} = Interact(ℙ.((q, w))...)
+
+import Base: convert, promote_rule
+import Base: Float16, Float32, Float64
+import Base: getproperty, propertynames
+export Interact
+
+convert(::Type{Interact{ℙ}}, ξ::Interact{ℙ}) where {ℙ <: FLOAT} = ξ
+function convert(::Type{Interact{ℙ}}, ξ::Interact{ℚ}) where {ℙ <: FLOAT, ℚ <: FLOAT}
+    return Interact{ℙ}(ξ.𝑞, ξ.𝑤)
+end
+Float16(ξ::Interact) = convert(Interact{Float16}, ξ)
+Float32(ξ::Interact) = convert(Interact{Float32}, ξ)
+Float64(ξ::Interact) = convert(Interact{Float64}, ξ)
+function promote_rule(::Type{Interact{ℙ}}, ::Type{Interact{ℚ}}) where {ℙ <: FLOAT, ℚ <: FLOAT}
+    return Interact{promote_type(ℙ, ℚ)}
+end
+function (ξ::Interact{ℙ})(
+        ;
+        q::Union{Missing, Real, ENER} = missing,
+        w::Union{Missing, Real, ENER} = missing,
+    ) where {ℙ}
+    return if count(x -> !isa(x, Missing), (q, w)) == 0
+        pairs((q = ξ.𝑞, w = ξ.𝑤))
+    else
+        Interact{ℙ}(q, w)
+    end
+end
+function Base.getproperty(ξ::Interact, sy::Symbol)
+    # Raw fields
+    if sy in fieldnames(Interact)
+        return getfield(ξ, sy)
+    end
+    # User-facing state function accessors (with units)
+    if sy == :q
+        return getfield(ξ, :𝑞) * u"kJ/kg"
+    elseif sy == :w
+        return getfield(ξ, :𝑤) * u"kJ/kg"
+    end
+end
+Base.propertynames(ξ::Interact) = (fieldnames(Interact)..., :q, :w)
 
 # Structure (type) definition
 # ---------------------------
@@ -15,7 +60,7 @@ struct IdealProc{ℙ <: FLOAT}
     𝐺::IdealGas{ℙ}              # gas
     𝑖::PropPair{ℙ}              # process initial state
     𝑓::PropPair{ℙ}              # process final state
-    intr::InterPair{ℙ}          # process interactions
+    intr::Interact{ℙ}          # process interactions
     path::Vector{PropPair{ℙ}}   # process path
     proc::Symbol                # process type
     # Internal, validating constructors
@@ -23,7 +68,7 @@ struct IdealProc{ℙ <: FLOAT}
             G::IdealGas{ℙ},
             i::PropPair{ℙ},
             f::PropPair{ℙ},
-            intr::InterPair{ℙ},
+            intr::Interact{ℙ},
             path::Vector{PropPair{ℙ}},
             proc::Symbol,
         ) where {ℙ <: FLOAT}
