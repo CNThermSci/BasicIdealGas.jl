@@ -1,29 +1,36 @@
 # idealProcs.jl - Ideal Gas Processes
 
-# TODO: Implement type for process end states and interactions
+# Ancillary type definitions
+# --------------------------
+
+struct InterPair{ℙ <: FLOAT}
+    𝑞::ℙ            # specific heat interaction, kJ/kg
+    𝑤::ℙ            # specific work interaction, kJ/kg
+end
 
 # Structure (type) definition
 # ---------------------------
 
 struct IdealProc{ℙ <: FLOAT}
-    𝐺::IdealGas{ℙ}  # gas
-    𝑖::PropPair{ℙ}  # initial state
-    𝑓::PropPair{ℙ}  # final state
-    # TODO: path? Vector{PropPair{ℙ}}?
-    # TODO: proc? {:v,:T,:P,:n,:other}?
-    𝑞::ℙ            # specific heat interaction, kJ/kg
-    𝑤::ℙ            # specific work interaction, kJ/kg
+    𝐺::IdealGas{ℙ}              # gas
+    𝑖::PropPair{ℙ}              # process initial state
+    𝑓::PropPair{ℙ}              # process final state
+    intr::InterPair{ℙ}          # process interactions
+    path::Vector{PropPair{ℙ}}   # process path
+    proc::Symbol                # process type
     # Internal, validating constructors
     function IdealProc(
             G::IdealGas{ℙ},
             i::PropPair{ℙ},
             f::PropPair{ℙ},
-            q::ℙ,
-            w::ℙ,
+            intr::InterPair{ℙ},
+            path::Vector{PropPair{ℙ}},
+            proc::Symbol,
         ) where {ℙ <: FLOAT}
         @assert(G.hmod.Tmin <= i.𝑇 <= G.hmod.Tmax, "T = $(i.𝑇) out of range for $(G.hmod)")
         @assert(G.hmod.Tmin <= f.𝑇 <= G.hmod.Tmax, "T = $(f.𝑇) out of range for $(G.hmod)")
-        return new{ℙ}(G, i, f, q, w)
+        @assert(proc in (:P, :T, :v, :u, :h, :s, :poly, :other), "Invalid process type: '$(proc)'")
+        return new{ℙ}(G, i, f, intr, path, proc)
     end
 end
 # Isobaric processes
