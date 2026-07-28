@@ -9,7 +9,8 @@ struct IdealProc{ℙ <: FLOAT}
     𝐺::IdealGas{ℙ}  # gas
     𝑖::PropPair{ℙ}  # initial state
     𝑓::PropPair{ℙ}  # final state
-    # TODO:  path? ID (iso-{:v,:T,:P,:n,:other})? Vector{PropPair{ℙ}}?
+    # TODO: path? Vector{PropPair{ℙ}}?
+    # TODO: proc? {:v,:T,:P,:n,:other}?
     𝑞::ℙ            # specific heat interaction, kJ/kg
     𝑤::ℙ            # specific work interaction, kJ/kg
     # Internal, validating constructors
