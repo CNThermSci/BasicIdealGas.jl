@@ -42,7 +42,10 @@ function (ξ::Interact{ℙ})(
     return if count(x -> !isa(x, Missing), (q, w)) == 0
         pairs((q = ξ.𝑞, w = ξ.𝑤))
     else
-        Interact{ℙ}(q, w)
+        Interact{ℙ}(
+            q isa Missing ? ξ.𝑞 : q,
+            w isa Missing ? ξ.𝑤 : w,
+        )
     end
 end
 function Base.getproperty(ξ::Interact, sy::Symbol)
