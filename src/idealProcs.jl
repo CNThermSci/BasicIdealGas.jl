@@ -60,7 +60,7 @@ struct IdealProc{ℙ <: FLOAT}
     𝐺::IdealGas{ℙ}              # gas
     𝑖::PropPair{ℙ}              # process initial state
     𝑓::PropPair{ℙ}              # process final state
-    intr::Interact{ℙ}          # process interactions
+    intr::Interact{ℙ}           # process interactions
     path::Vector{PropPair{ℙ}}   # process path
     proc::Symbol                # process type
     # Internal, validating constructors
