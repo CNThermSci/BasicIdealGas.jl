@@ -6,6 +6,12 @@
 struct Interact{ℙ <: FLOAT}
     𝑞::ℙ            # specific heat interaction, kJ/kg
     𝑤::ℙ            # specific work interaction, kJ/kg
+    function Interact(
+            q::ℙ,
+            w::ℙ,
+        ) where {ℙ <: FLOAT}
+        return new{ℙ}(q, w)
+    end
 end
 
 Interact{ℙ}(
