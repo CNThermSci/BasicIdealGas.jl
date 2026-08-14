@@ -16,8 +16,6 @@ struct IdealState{ℙ <: FLOAT}
     end
 end
 
-# TODO: Fix constructors for using PropPair instead of loose (P, T) values
-
 # External constructors
 # ---------------------
 
