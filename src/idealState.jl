@@ -64,6 +64,7 @@ function (ξ::IdealState{ℙ})(
         ;
         P::Union{Missing, Real, PRES} = missing,
         T::Union{Missing, Real, TEMP} = missing,
+        p::Union{Missing, PropPair} = missing,
     ) where {ℙ}
     return if count(x -> !isa(x, Missing), (P, T)) == 0
         # pars variant
@@ -86,7 +87,11 @@ function (ξ::IdealState{ℙ})(
         )
     else
         # copy-edit variant
-        IdealState{ℙ}(ξ.𝐺, P, T)
+        if ismissing(p)
+            IdealState{ℙ}(ξ.𝐺, PropPair{ℙ}(P, T))
+        else
+            IdealState{ℙ}(ξ.𝐺, p(P = P, T = T))
+        end
     end
 end
 
