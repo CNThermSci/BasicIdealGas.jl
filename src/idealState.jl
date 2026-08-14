@@ -122,13 +122,15 @@ function Base.getproperty(ξ::IdealState, sy::Symbol)
     # Raw fields
     if sy in fieldnames(IdealState)
         return getfield(ξ, sy)
+    elseif sy in fieldnames(PropPair)
+        return getfield(getfield(ξ, :𝑝), sy)
     elseif sy in fieldnames(IdealGas)
         return getfield(getfield(ξ, :𝐺), sy)
     elseif sy in fieldnames(SpecificHeat)
         return getfield(getfield(getfield(ξ, :𝐺), :hmod), sy)
     end
     # User-facing state function accessors (with units)
-    GAS, P, T = map(sy -> getfield(ξ, sy), (:𝐺, :𝑃, :𝑇))
+    GAS, P, T = map(sy -> getproperty(ξ, sy), (:𝐺, :𝑃, :𝑇))
     MOD = getfield(GAS, :hmod)
     # SpecificHeat convenience/porcelain
     if sy in (:f, :fMA, :M, :R, :RMA)
@@ -136,9 +138,9 @@ function Base.getproperty(ξ::IdealState, sy::Symbol)
     elseif sy == :gas
         return GAS
     elseif sy == :P
-        return getfield(ξ, :𝑃) * u"kPa"
+        return P * u"kPa"
     elseif sy == :T
-        return getfield(ξ, :𝑇) * u"K"
+        return T * u"K"
     elseif sy in (:γ, :ga)
         return ga(MOD, T)
     elseif sy == :v
