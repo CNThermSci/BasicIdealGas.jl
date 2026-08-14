@@ -87,6 +87,7 @@ struct IdealProc{ℙ <: FLOAT}
         return new{ℙ}(G, i, f, intr, path, proc)
     end
 end
+
 # Isobaric processes
 # ------------------
 
