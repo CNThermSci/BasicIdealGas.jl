@@ -126,7 +126,7 @@ _ρ(ξ::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA) where {ℙ} = inv(_v(�
 
 # Internal, fast, positional, entropy function
 function _s(ξ::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA)::ℙ where {ℙ}
-    return s0(G, T, B) - R(G, B) * log(ℙ(P) / ξ.Pref)
+    return s0(ξ, T, B) - R(ξ, B) * log(ℙ(P) / ξ.Pref)
 end
 
 # Base.getproperty
