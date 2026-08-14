@@ -24,32 +24,14 @@ end
 # Set type conversion / 1 indirection
 IdealState{ℙ}(
     G::IdealGas,
-    P::Real,
-    T::Real,
-) where {ℙ} = IdealState(ℙ.((G, P, T))...)
+    p::PropPair,
+) where {ℙ} = IdealState(ℙ.((G, p))...)
 
 # Ideal gas model type conversion / 2 indirections
 IdealState(
     G::IdealGas{ℙ},
-    P::Real,
-    T::Real,
-) where {ℙ} = IdealState{ℙ}(G, P, T)
-
-# Set type with unit conversion and stripping / 2 indirections
-function IdealState{ℙ}(
-        G::IdealGas,
-        P::PRES,
-        T::TEMP,
-    ) where {ℙ <: FLOAT}
-    return IdealState{ℙ}(G, kSI.((P, T))...)
-end
-
-# Heat model type with unit conversion and stripping / 3 indirections
-IdealState(
-    G::IdealGas{ℙ},
-    P::PRES,
-    T::TEMP,
-) where {ℙ <: FLOAT} = IdealState{ℙ}(G, P, T)
+    p::PropPair,
+) where {ℙ} = IdealState{ℙ}(G, p)
 
 # Conversions
 # -----------
