@@ -88,7 +88,7 @@ function (ξ::IdealState{ℙ})(
     else
         # copy-edit variant
         if ismissing(p)
-            IdealState{ℙ}(ξ.𝐺, ξ.𝑝(P, T))
+            IdealState{ℙ}(ξ.𝐺, ξ.𝑝(P = P, T = T))
         else
             IdealState{ℙ}(ξ.𝐺, p(P = P, T = T))
         end
