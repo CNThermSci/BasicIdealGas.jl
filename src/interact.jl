@@ -48,14 +48,20 @@ Float64(ξ::Interact) = convert(Interact{Float64}, ξ)
 function promote_rule(::Type{Interact{ℙ}}, ::Type{Interact{ℚ}}) where {ℙ <: FLOAT, ℚ <: FLOAT}
     return Interact{promote_type(ℙ, ℚ)}
 end
+
+# Functor
+# -------
+
 function (ξ::Interact{ℙ})(
         ;
         q::Union{Missing, Real, ENER} = missing,
         w::Union{Missing, Real, ENER} = missing,
     ) where {ℙ}
     return if count(x -> !isa(x, Missing), (q, w)) == 0
+        # pars variant
         pairs((q = ξ.𝑞, w = ξ.𝑤))
     else
+        # copy-edit variant
         Interact{ℙ}(
             q isa Missing ? ξ.𝑞 : q,
             w isa Missing ? ξ.𝑤 : w,
