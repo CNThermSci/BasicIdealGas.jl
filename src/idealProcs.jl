@@ -8,26 +8,23 @@ struct IdealProc{ℙ <: FLOAT}
     𝑖::PropPair{ℙ}              # process initial state
     𝑓::PropPair{ℙ}              # process final state
     intr::Interact{ℙ}           # process interactions
-    path::Vector{PropPair{ℙ}}   # process path
-    proc::Symbol                # process type
+    proc::String                # process type (short)
     # Internal, validating constructors
     function IdealProc(
             G::IdealGas{ℙ},
             i::PropPair{ℙ},
             f::PropPair{ℙ},
             intr::Interact{ℙ},
-            path::Vector{PropPair{ℙ}},
-            proc::Symbol,
+            proc::String,
         ) where {ℙ <: FLOAT}
         @assert(G.hmod.Tmin <= i.𝑇 <= G.hmod.Tmax, "T = $(i.𝑇) out of range for $(G.hmod)")
         @assert(G.hmod.Tmin <= f.𝑇 <= G.hmod.Tmax, "T = $(f.𝑇) out of range for $(G.hmod)")
-        @assert(proc in (:P, :T, :v, :u, :h, :s, :poly, :other), "Invalid process type: '$(proc)'")
-        return new{ℙ}(G, i, f, intr, path, proc)
+        # @assert(proc in (:P, :T, :v, :u, :h, :s, :poly, :other), "Invalid process type: '$(proc)'")
+        return new{ℙ}(G, i, f, intr, proc)
     end
 end
 
 # TODO:
-# - DROP path::Vector{PropPair{ℙ}} ->  leave ot to highr level or wrapper (see below)
 # - Homogeneous interface for IdealProc
 # - Additional methods for initial and final states ::IdealState
 # - Polytropic processes
@@ -36,6 +33,7 @@ end
 
 # Maybe / likely:
 # ? Sub-processes? (perhaps another type or wrapping function around this type?)
+# - Include path::Vector{PropPair{ℙ}} -> (higher level or wrapper)
 
 # Definitely:
 # (solver / simulator that actually uses this lib)
