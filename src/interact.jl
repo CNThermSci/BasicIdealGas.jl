@@ -14,6 +14,10 @@ struct Interact{ℙ <: FLOAT}
     end
 end
 
+# External constructors
+# ---------------------
+
+# Set type conversion / 1 indirection
 Interact{ℙ}(
     q::Real,
     w::Real,
