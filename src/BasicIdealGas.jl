@@ -16,7 +16,7 @@ include("cpModel.jl")
 include("idealEoS.jl")
 include("propPair.jl")
 include("idealState.jl")
-inclide("interact.jl")
+include("interact.jl")
 include("idealProcs.jl")
 
 end
