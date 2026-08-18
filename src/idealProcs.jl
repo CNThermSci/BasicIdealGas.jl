@@ -26,6 +26,17 @@ struct IdealProc{ℙ <: FLOAT}
     end
 end
 
+# TODO:
+# - DROP path::Vector{PropPair{ℙ}} ->  leave ot to highr level or wrapper (see below)
+# - Homogeneous interface for IdealProc
+# - Additional methods for initial and final states ::IdealState
+# - Polytropic processes
+# - Fix heat-to-work ratio processes (polytropic for ideal gas)
+# - Check whether object is usable
+# ? Sub-processes? (perhaps another type or wrapping function around this type?)
+# ? Cycle description? (from high-level specs to Vector{IdealProc}?)
+# ? or more memory-friendly: GAS + Vector{PropPair}
+
 # Isobaric processes
 # ------------------
 
