@@ -68,6 +68,10 @@ function (ξ::Interact{ℙ})(
         )
     end
 end
+
+# Base.getproperty
+# ----------------
+
 function Base.getproperty(ξ::Interact, sy::Symbol)
     # Raw fields
     if sy in fieldnames(Interact)
@@ -80,5 +84,6 @@ function Base.getproperty(ξ::Interact, sy::Symbol)
         return getfield(ξ, :𝑤) * u"kJ/kg"
     end
 end
+
 Base.propertynames(ξ::Interact) = (fieldnames(Interact)..., :q, :w)
 
