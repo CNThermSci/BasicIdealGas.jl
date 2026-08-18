@@ -33,7 +33,14 @@ end
 # - Polytropic processes
 # - Fix heat-to-work ratio processes (polytropic for ideal gas)
 # - Check whether object is usable
+
+# Maybe / likely:
 # ? Sub-processes? (perhaps another type or wrapping function around this type?)
+
+# Definitely:
+# (solver / simulator that actually uses this lib)
+
+# Further-fetched: (only after simulator ready / if it still makes sense)
 # ? Cycle description? (from high-level specs to Vector{IdealProc}?)
 # ? or more memory-friendly: GAS + Vector{PropPair}
 
