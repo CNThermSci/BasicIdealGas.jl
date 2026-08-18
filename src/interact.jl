@@ -24,18 +24,27 @@ Interact{ℙ}(
     w::Real,
 ) where {ℙ} = Interact(ℙ.((q, w))...)
 
+# Conversions
+# -----------
+
 import Base: convert, promote_rule
 import Base: Float16, Float32, Float64
 import Base: getproperty, propertynames
 export Interact
 
 convert(::Type{Interact{ℙ}}, ξ::Interact{ℙ}) where {ℙ <: FLOAT} = ξ
+
 function convert(::Type{Interact{ℙ}}, ξ::Interact{ℚ}) where {ℙ <: FLOAT, ℚ <: FLOAT}
     return Interact{ℙ}(ξ.𝑞, ξ.𝑤)
 end
+
 Float16(ξ::Interact) = convert(Interact{Float16}, ξ)
 Float32(ξ::Interact) = convert(Interact{Float32}, ξ)
 Float64(ξ::Interact) = convert(Interact{Float64}, ξ)
+
+# Promotions
+# ----------
+
 function promote_rule(::Type{Interact{ℙ}}, ::Type{Interact{ℚ}}) where {ℙ <: FLOAT, ℚ <: FLOAT}
     return Interact{promote_type(ℙ, ℚ)}
 end
