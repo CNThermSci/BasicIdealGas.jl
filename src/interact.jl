@@ -6,6 +6,7 @@
 struct Interact{ℙ <: FLOAT}
     𝑞::ℙ            # specific heat interaction, kJ/kg
     𝑤::ℙ            # specific work interaction, kJ/kg
+    # Internal, validating constructors
     function Interact(
             q::ℙ,
             w::ℙ,
