@@ -216,7 +216,35 @@ julia> Float32(p)
 @₃₂(100 kPa, 300 K)
 ```
 
-### Example 4 – `IdealState`
+`PropPair` has some rough edges to be trimmed on upcomming releases.
+
+### Example 4 - `Interact`
+
+`Interact` represents simple compressible system interactions of heat and work.
+
+```julia
+julia> i = Interact(-10.0, -20.0)
+Interact{Float64}(-10.0, -20.0)
+
+julia> dump((i, Float32(i)))
+Tuple{Interact{Float64}, Interact{Float32}}
+  1: Interact{Float64}
+    𝑞: Float64 -10.0
+    𝑤: Float64 -20.0
+  2: Interact{Float32}
+    𝑞: Float32 -10.0f0
+    𝑤: Float32 -20.0f0
+
+julia> i.q
+-10.0 kJ kg^-1
+
+julia> i.w
+-20.0 kJ kg^-1
+```
+
+`Interact` is very incipient, and has significant rough edges to be trimmed on upcomming releases.
+
+### Example 5 – `IdealState`
 
 `IdealState` objects adds state (through a property pair, `PropPair`) information to `IdealGas`.
 
@@ -257,6 +285,10 @@ julia> sample_fields = [ st1.𝑀, st1.𝑅, st1.uref, st1.sref ]
  6885.0
   213.685
 ```
+
+### Example 6 - Processes
+
+Some incipient ideal gas processes _functions_ are available
 
 ## Author
 
