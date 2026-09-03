@@ -38,18 +38,17 @@ end
 # External constructors
 # ---------------------
 
-# Set type conversion / 1 indirection
+# Set precision conversion / 1 indirection
 function SpecificHeat{ℙ}(
         ID::Symbol,
-        𝑓::Function,
-        𝑀::Real,
-        Tmin::Real,
-        Tref::Real,
-        Tmax::Real,
-        uref::Real,
-        sref::Real,
-        𝑅::Real = ℙ(universal_R),
-        B::Symbol = :MO,
+        f┆R::Function,
+        𝑀::Quantity{ℙ, dimension(u"kg/kmol"), typeof(u"kg/kmol")},
+        𝑇min::Quantity{ℙ, dimension(u"K"), typeof(u"K")},
+        𝑇ref::Quantity{ℙ, dimension(u"K"), typeof(u"K")},
+        𝑇max::Quantity{ℙ, dimension(u"K"), typeof(u"K")},
+        𝑢ref::Quantity{ℙ, dimension(u"kJ/kmol"), typeof(u"kJ/kmol")},
+        𝑠ref::Quantity{ℙ, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")},
+        𝑅::Quantity{ℙ, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")} = ℙ(universal_R),
     ) where {ℙ <: FLOAT}
     return SpecificHeat(ID, ℙ ⊚ 𝑓, ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))..., B)
 end
