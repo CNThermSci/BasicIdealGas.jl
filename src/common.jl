@@ -87,7 +87,7 @@ universal_R = 8.31447
 # ---------
 
 # Precision Composition Simplification
-⊚(p::Type{ℙ}, f::Function) where {ℙ <: FLOAT} = f(1) isa ℙ ? f : p ∘ f
+⊚(p::Type{ℙ}, f::Function) where {ℙ <: FLOAT} = f(300) isa ℙ ? f : p ∘ f
 
 # Chained Precision Composition Simplification
 ⊚(
