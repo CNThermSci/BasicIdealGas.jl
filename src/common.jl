@@ -107,10 +107,6 @@ is_qty_dim(T, dim) = T <: Quantity && dimension(T) == dim
 function user_func_trywrap(𝑓::Function; hint = 300)
     # Initializations
     wrap = Dict{Symbol, Union{Function, Nothing}}(:i => nothing, :o => nothing)
-    # Helper functions
-    Qprec(Q::Type{Quantity{ℙ, 𝔻, 𝕌}}) where {ℙ, 𝔻, 𝕌} = ℙ
-    Qprec(Q::Type{Quantity{ℙ, 𝔻}}) where {ℙ, 𝔻} = ℙ
-    Qprec(Q::Type{Quantity{ℙ}}) where {ℙ} = ℙ
     # Full i/o type table for function
     table = type_table(𝑓, hint = hint)
     # Exception-filtered
