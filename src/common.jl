@@ -4,7 +4,7 @@
 # IEEE-754 normalized floating point types of half, single, and double precision
 FLOAT = Base.IEEEFloat
 
-# Thermodynamic state function Quantity type alias
+# Thermodynamic state function Quantity type alias - dimension set (for arguments)
 PRES = Quantity{ℙ, dimension(u"kPa")} where {ℙ <: Real}
 TEMP = Quantity{ℙ, dimension(u"K")} where {ℙ <: Real}
 MOLW = Quantity{ℙ, dimension(u"kg/kmol")} where {ℙ <: Real}
@@ -38,6 +38,9 @@ MOLR = Union{
     Quantity{ℙ, dimension(u"kJ/kmol/K")},
     Quantity{ℙ, dimension(u"kmol/m^3")},
 } where {ℙ <: Real}
+
+# Thermodynamic state function Quantity type alias - unit set (for type defs)
+const PRESty{ℙ <: FLOAT} = Quantity{ℙ, dimension(u"kPa"), typeof(u"kPa")}
 
 # Thermodynamic unit conversion/stripping
 kSI(x::Real) = x
