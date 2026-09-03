@@ -16,7 +16,7 @@ struct SpecificHeat{ℙ <: FLOAT}
     # Internal, validating constructor
     SpecificHeat(
         ID::Symbol,
-        𝑓::Function,
+        f┆R::Function,
         𝑀::Quantity{ℙ, dimension(u"kg/kmol"), typeof(u"kg/kmol")},
         𝑇min::Quantity{ℙ, dimension(u"K"), typeof(u"K")},
         𝑇ref::Quantity{ℙ, dimension(u"K"), typeof(u"K")},
@@ -30,15 +30,8 @@ struct SpecificHeat{ℙ <: FLOAT}
         @assert(zero(ℙ) * u"K" <= 𝑇min <= 𝑇ref < 𝑇max, "Error: Temperature values")
         @assert(𝑅 > zero(ℙ) * u"kJ/kmol/K", "Error: 𝑅 <= 0 kJ/kmol/K")
         @assert(B in (:MA, :MO), "Error: B should be either :MA or :MO")
-        wf┆R = (
-            (T::Quantity{𝔽, dimension(u"K")} where {𝔽 <: Real}) ->
-            𝑓(ℙ(uconvert(u"K", T).val)) * u"kJ/kmol/K"
-        )
-        return B == :MA ? (
-                new{ℙ}(ID, ℙ ⊚ T -> 𝑓(T) * 𝑀, 𝑀, Tmin, Tref, Tmax, uref * 𝑀, sref * 𝑀, 𝑅)
-            ) : (
-                new{ℙ}(ID, ℙ ⊚ 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
-            )
+        wf┆R = (T::Quantity{𝔽, dimension(u"K")} where {𝔽 <: Real}) -> f┆R(ℙ(uconvert(u"K", T).val))
+        return new{ℙ}(ID, ℙ ⊚ wf┆R, 𝑀, 𝑇min, 𝑇ref, 𝑇max, 𝑢ref, 𝑠ref, 𝑅)
     end
 end
 
