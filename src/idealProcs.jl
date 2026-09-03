@@ -1,6 +1,46 @@
 # idealProcs.jl - Ideal Gas Processes
 
-# TODO: Implement type for process end states and interactions
+# Structure (type) definition
+# ---------------------------
+
+struct IdealProc{ℙ <: FLOAT}
+    𝐺::IdealGas{ℙ}              # gas
+    𝑖::PropPair{ℙ}              # process initial state
+    𝑓::PropPair{ℙ}              # process final state
+    intr::Interact{ℙ}           # process interactions
+    proc::String                # process type (short)
+    # Internal, validating constructors
+    function IdealProc(
+            G::IdealGas{ℙ},
+            i::PropPair{ℙ},
+            f::PropPair{ℙ},
+            intr::Interact{ℙ},
+            proc::String,
+        ) where {ℙ <: FLOAT}
+        @assert(G.hmod.Tmin <= i.𝑇 <= G.hmod.Tmax, "T = $(i.𝑇) out of range for $(G.hmod)")
+        @assert(G.hmod.Tmin <= f.𝑇 <= G.hmod.Tmax, "T = $(f.𝑇) out of range for $(G.hmod)")
+        # @assert(proc in (:P, :T, :v, :u, :h, :s, :poly, :other), "Invalid process type: '$(proc)'")
+        return new{ℙ}(G, i, f, intr, proc)
+    end
+end
+
+# TODO:
+# - Homogeneous interface for IdealProc
+# - Additional methods for initial and final states ::IdealState
+# - Polytropic processes
+# - Fix heat-to-work ratio processes (polytropic for ideal gas)
+# - Check whether object is usable
+
+# Maybe / likely:
+# ? Sub-processes? (perhaps another type or wrapping function around this type?)
+# - Include path::Vector{PropPair{ℙ}} -> (higher level or wrapper)
+
+# Definitely:
+# (solver / simulator that actually uses this lib)
+
+# Further-fetched: (only after simulator ready / if it still makes sense)
+# ? Cycle description? (from high-level specs to Vector{IdealProc}?)
+# ? or more memory-friendly: GAS + Vector{PropPair}
 
 # Isobaric processes
 # ------------------
