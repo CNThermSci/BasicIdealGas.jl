@@ -104,10 +104,9 @@ end
 
 is_qty_dim(T, dim) = T <: Quantity && dimension(T) == dim
 
-function profile_user_func(𝑓::Function; hint = 300)
+function user_func_trywrap(𝑓::Function; hint = 300)
     # Initializations
-    iwrap = Dict{Symbol, Union{Function, Nothing}}(:uless => nothing, :ufull => nothing)
-    owrap = Dict{Symbol, Union{Function, Nothing}}(:uless => nothing, :ufull => nothing)
+    wrap = Dict{Symbol, Union{Function, Nothing}}(:i => nothing, :o => nothing)
     # Helper functions
     Qprec(Q::Type{Quantity{ℙ, 𝔻, 𝕌}}) where {ℙ, 𝔻, 𝕌} = ℙ
     Qprec(Q::Type{Quantity{ℙ, 𝔻}}) where {ℙ, 𝔻} = ℙ
@@ -116,33 +115,33 @@ function profile_user_func(𝑓::Function; hint = 300)
     table = type_table(𝑓, hint = hint)
     # Exception-filtered
     valid = [ ti for ti in table if ti[2] != Exception ]
-    # Separate by Input units
-    uless_input = [ ti for ti in valid if ti[1] <: Union{FLOAT, Integer} ]
-    ufull_input = [ ti for ti in valid if ti[1] <: Quantity ]
-    if length(uless_input) == 0
+    # INPUT WRAPPING
+    valid_uless_input = [ ti for ti in valid if ti[1] <: Union{FLOAT, Integer} ]
+    valid_ufull_input = [ ti for ti in valid if ti[1] <: Quantity ]
+    if length(valid_uless_input) == 0
         # No valid unitless input
-        if length(ufull_input) > 0
-            # Input must be unitful
-            iwrap[:uless] = x -> x * u"K"
-            table = type_table(𝑓 ∘ iwrap[:uless], hint = hint)
-            valid = [ ti for ti in table if ti[2] != Exception ]
-            uless_input = [ ti for ti in valid if ti[1] <: Union{FLOAT, Integer} ]
+        if length(valid_ufull_input) > 0
+            # 𝑓 only accepts Quantity / wrapper's input must be Real (no conversion)
+            tmpi(x::Real) = x * u"K"
+            tmpi(x::Quantity) = x
+            wrap[:i] = tmpi
         else
-            # No valid wrappers
-            return (iwrap = iwrap, owrap = owrap)
+            # No valid wrappers: return Dict of nothings
+            return wrap
         end
-    elseif length(ufull_input) == 0
-        iwrap[:ufull] = x -> uconvert(u"K", x).val
+    elseif length(valid_ufull_input) == 0
+        # No valid unitfull input
+        tmpj(x::Real) = x
+        tmpj(x::Quantity{𝕋, dimension(u"K")}) where 𝕋 = uconvert(u"K", x).val
+        wrap[:i] = tmpj
     end
-    # Homogeneous I/O precision type sets
-    same_prec_ul = Set(p[1] for p in [ ti for ti in uless if ti[1] == ti[2] ])
-    same_prec_uf = Set(Qprec(p[1]) for p in [ ti for ti in ufull if Qprec(ti[1]) == Qprec(ti[2]) ])
-
-    # Same unitless I/O types for the following:
-    same_ul_ty = Set(p[1] for p in [ ti for ti in uless if ti[1] == ti[2] ])
-    # Function adds units for the following unitless types:
-    addu4 = [ ti for ti in uless if ti[2] <: Quantity ]
-    f_adds_units = any(t -> t[2] <: Quantity, uless)
+    if !isnothing(wrap[:i])
+        table = type_table(𝑓 ∘ wrap[:i], hint = hint)
+        valid = [ ti for ti in table if ti[2] != Exception ]
+        valid_uless_input = [ ti for ti in valid if ti[1] <: Union{FLOAT, Integer} ]
+        valid_ufull_input = [ ti for ti in valid if ti[1] <: Quantity ]
+    end
+    # OUTPUT WRAPPING
 end
 
 # Utilities
