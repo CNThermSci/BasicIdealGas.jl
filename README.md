@@ -177,7 +177,7 @@ julia> C.vr(1800) # Relative volume
 
 ```julia
 julia> CO2 = IdealGas("CO2", "Carbon Dioxide", C)
-CO2₆₄ gas, cubic cp₆₄(T)
+CO2 gas, cubic cp₆₄(T)
 
 julia> CO2.s(P=100, T=300)
 3.9909694845958117
