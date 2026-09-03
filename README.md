@@ -198,15 +198,31 @@ julia> CO2.v(P=47, T=300)
 1.2058869599269026
 ```
 
-### Example 3 – `IdealState`
+### Example 3 - `PropPair`
 
-`IdealState` objects adds state information to `IdealGas`.
-
-Currently only $(P, T)$, positional constructors are implemented:
+`PropPair` designates a thermodynamic $(P, T)$ property pair, and serves to determine the state
+of an ideal gas inside a simple compressible system.
 
 ```julia
-julia> st1 = IdealState(CO2, 100, 300)
-CO2₆₄ gas, cubic cp₆₄(T) @(100 kPa, 300 K)
+julia> p = PropPair(100, 300)
+@₆₄(100 kPa, 300 K)
+
+julia> dump(p)
+PropPair{Float64}
+  𝑃: Float64 100.0
+  𝑇: Float64 300.0
+
+julia> Float32(p)
+@₃₂(100 kPa, 300 K)
+```
+
+### Example 4 – `IdealState`
+
+`IdealState` objects adds state (through a property pair, `PropPair`) information to `IdealGas`.
+
+```julia
+julia> st1 = IdealState(CO2, PropPair(100, 300))
+CO2 gas, cubic cp₆₄(T) @₆₄(100 kPa, 300 K)
 ```
 
 Since the state is already known, user-facing convenience accessors are implemented for all
@@ -220,7 +236,7 @@ ID    M     P     Pr    Pref  R     RMA   T     Tmax
 Tmin  Tref  cp    cpMO  cv    cvMO  f     fMA   form
 ga    gas   h     hMO   hmod  name  s     s0    s0MO
 sMO   sref  u     uMO   uref  v     vMO   vr    γ
-ρ     ρMO   𝐺     𝑀     𝑃     𝑅     𝑇     𝑓
+ρ     ρMO   𝐺     𝑀     𝑅     𝑓     𝑝
 ```
 
 The user-facing convenience accessors through julia properties return amounts with units, while
