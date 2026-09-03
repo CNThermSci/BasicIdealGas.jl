@@ -83,6 +83,68 @@ end
 
 universal_R = 8.31447
 
+# Function in/out type utilities
+# ------------------------------
+
+function type_table(𝑓::Function; hint = 300)
+    ret = Tuple{DataType, DataType}[]
+    for 𝕌 in (1, u"K")
+        for 𝕀 in (Float64, Float32, Float16, Int64)
+            𝕚 = 𝕀(hint) * 𝕌
+            try
+                𝕠 = 𝑓(𝕚)
+                push!(ret, typeof.((𝕚, 𝕠)))
+            catch
+                push!(ret, (typeof(𝕚), Exception))
+            end
+        end
+    end
+    return ret
+end
+
+is_qty_dim(T, dim) = T <: Quantity && dimension(T) == dim
+
+function profile_user_func(𝑓::Function; hint = 300)
+    # Initializations
+    iwrap = Dict{Symbol, Union{Function, Nothing}}(:uless => nothing, :ufull => nothing)
+    owrap = Dict{Symbol, Union{Function, Nothing}}(:uless => nothing, :ufull => nothing)
+    # Helper functions
+    Qprec(Q::Type{Quantity{ℙ, 𝔻, 𝕌}}) where {ℙ, 𝔻, 𝕌} = ℙ
+    Qprec(Q::Type{Quantity{ℙ, 𝔻}}) where {ℙ, 𝔻} = ℙ
+    Qprec(Q::Type{Quantity{ℙ}}) where {ℙ} = ℙ
+    # Full i/o type table for function
+    table = type_table(𝑓, hint = hint)
+    # Exception-filtered
+    valid = [ ti for ti in table if ti[2] != Exception ]
+    # Separate by Input units
+    uless_input = [ ti for ti in valid if ti[1] <: Union{FLOAT, Integer} ]
+    ufull_input = [ ti for ti in valid if ti[1] <: Quantity ]
+    if length(uless_input) == 0
+        # No valid unitless input
+        if length(ufull_input) > 0
+            # Input must be unitful
+            iwrap[:uless] = x -> x * u"K"
+            table = type_table(𝑓 ∘ iwrap[:uless], hint = hint)
+            valid = [ ti for ti in table if ti[2] != Exception ]
+            uless_input = [ ti for ti in valid if ti[1] <: Union{FLOAT, Integer} ]
+        else
+            # No valid wrappers
+            return (iwrap = iwrap, owrap = owrap)
+        end
+    elseif length(ufull_input) == 0
+        iwrap[:ufull] = x -> uconvert(u"K", x).val
+    end
+    # Homogeneous I/O precision type sets
+    same_prec_ul = Set(p[1] for p in [ ti for ti in uless if ti[1] == ti[2] ])
+    same_prec_uf = Set(Qprec(p[1]) for p in [ ti for ti in ufull if Qprec(ti[1]) == Qprec(ti[2]) ])
+
+    # Same unitless I/O types for the following:
+    same_ul_ty = Set(p[1] for p in [ ti for ti in uless if ti[1] == ti[2] ])
+    # Function adds units for the following unitless types:
+    addu4 = [ ti for ti in uless if ti[2] <: Quantity ]
+    f_adds_units = any(t -> t[2] <: Quantity, uless)
+end
+
 # Utilities
 # ---------
 
