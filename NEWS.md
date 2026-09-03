@@ -1,3 +1,10 @@
+## v0.3.0
+
+- Added `PropPair` for property pairs
+- Changed `IdealState` to work with `PropPair`
+- Added `Interact` for simple system interactions
+- More flexible compat settings (more upgradable)
+
 ## v0.2.0
 
 - User interface: limited exported functions
