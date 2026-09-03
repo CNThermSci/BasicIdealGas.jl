@@ -288,7 +288,54 @@ julia> sample_fields = [ st1.𝑀, st1.𝑅, st1.uref, st1.sref ]
 
 ### Example 6 - Processes
 
-Some incipient ideal gas processes _functions_ are available
+Some incipient ideal gas processes _functions_ are available:
+
+```julia
+julia> using BasicIdealGas
+
+julia> C = SpecificHeat(
+    :cubic,             # model ID
+    # molar cp(T) model
+    T -> 22.26 +5.891e-2*T -3.501e-5*T^2 +7.469e-9*T^3,
+    44.01,              # Molecular weight in kg/kmol
+    273,                # Minimum T in K
+    298,                # Reference T in K
+    1800,               # Maximum T in K
+    6885,               # Ref internal energy in kJ/kmol
+    213.685             # Ref entropy in kJ/kmol/K
+    # Omitted molar gas constant (defaults to universal one)
+    )
+cubic cp₆₄(T)
+
+julia> CO2 = IdealGas("CO2", "Carbon Dioxide", C)
+CO2 gas, cubic cp₆₄(T)
+
+julia> st1 = IdealState(CO2, PropPair(100, 300))
+CO2 gas, cubic cp₆₄(T) @₆₄(100 kPa, 300 K)
+
+julia> st2 = isoP(st1, T = 400)             # Isobaric process up to T = 400 (K)
+CO2 gas, cubic cp₆₄(T) @₆₄(100 kPa, 400 K)
+
+julia> st3 = isoT(st2, P = 150)             # Isothermal process up to P = 150 (kPa)
+CO2 gas, cubic cp₆₄(T) @₆₄(150 kPa, 400 K)
+
+julia> st3.u
+227.21082809079132 kJ kg^-1
+
+julia> st4 = isov(st3, u = (250, :MA))      # Isochoric process up to u = 250 (kJ/kg)
+CO2 gas, cubic cp₆₄(T) @₆₄(161.43 kPa, 430.48 K)
+
+julia> st4.s
+4.222878505947657 kJ kg^-1 K^-1
+
+julia> st5 = isos(st4, P = st1.𝑃)           # Isentropic process up to st1 pressure
+CO2 gas, cubic cp₆₄(T) @₆₄(100 kPa, 390.68 K)
+
+julia> st5.s
+4.222878505947658 kJ kg^-1 K^-1
+```
+
+Process interactions are not yet being calculated and returned from process functions.
 
 ## Author
 
