@@ -6,8 +6,8 @@
 struct SpecificHeat{ℙ <: FLOAT}
     ID::Symbol      # Model ID, as in :cubic, etc...
     𝑓::Function     # K -> kJ/kmol/K
-    𝑀::ℙ            # kg/kmol
-    Tmin::ℙ         # K
+    𝑀::Quantity{ℙ, dimension(u"kg/kmol"), typeof(u"kg/kmol")}
+    Tmin::
     Tref::ℙ         # K
     Tmax::ℙ         # K
     uref::ℙ         # kJ/kmol
