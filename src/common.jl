@@ -40,13 +40,13 @@ const MOLR = Union{
 } where {ℙ <: Real}
 
 # Thermodynamic state function Quantity type alias - unit set (for type defs)
-const PRESty{ℙ <: FLOAT} = Quantity{ℙ, dimension(u"kPa"),       typeof(u"kPa")}
-const TEMPty{ℙ <: FLOAT} = Quantity{ℙ, dimension(u"K"),         typeof(u"K")}
-const VOLUty{ℙ <: FLOAT} = Quantity{ℙ, dimension(u"m^3/kmol"),  typeof(u"m^3/kmol")}
-const MOLWty{ℙ <: FLOAT} = Quantity{ℙ, dimension(u"kg/kmol"),   typeof(u"kg/kmol")}
-const ENERty{ℙ <: FLOAT} = Quantity{ℙ, dimension(u"kJ/kmol"),   typeof(u"kJ/kmol")}
-const ENTRty{ℙ <: FLOAT} = Quantity{ℙ, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")}
-const DENSty{ℙ <: FLOAT} = Quantity{ℙ, dimension(u"kmol/m^3"),  typeof(u"kmol/m^3")}
+const PRES_TYPE{ℙ <: FLOAT} = Quanti_TYPE{ℙ, dimension(u"kPa"),       typeof(u"kPa")}
+const TEMP_TYPE{ℙ <: FLOAT} = Quanti_TYPE{ℙ, dimension(u"K"),         typeof(u"K")}
+const VOLU_TYPE{ℙ <: FLOAT} = Quanti_TYPE{ℙ, dimension(u"m^3/kmol"),  typeof(u"m^3/kmol")}
+const MOLW_TYPE{ℙ <: FLOAT} = Quanti_TYPE{ℙ, dimension(u"kg/kmol"),   typeof(u"kg/kmol")}
+const ENER_TYPE{ℙ <: FLOAT} = Quanti_TYPE{ℙ, dimension(u"kJ/kmol"),   typeof(u"kJ/kmol")}
+const ENTR_TYPE{ℙ <: FLOAT} = Quanti_TYPE{ℙ, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")}
+const DENS_TYPE{ℙ <: FLOAT} = Quanti_TYPE{ℙ, dimension(u"kmol/m^3"),  typeof(u"kmol/m^3")}
 
 # Thermodynamic unit conversion/stripping
 kSI(x::Real) = x
