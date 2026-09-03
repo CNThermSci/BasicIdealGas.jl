@@ -5,7 +5,7 @@
 
 struct SpecificHeat{ℙ <: FLOAT}
     ID::Symbol      # Model ID, as in :cubic, etc...
-    𝑓::Function     # Unitless function for unitless molar cp(T): ℙ -> ℙ
+    f┆R::Function   # Unitless function cp(T)/R: ℙ -> ℙ
     𝑀::Quantity{ℙ, dimension(u"kg/kmol"), typeof(u"kg/kmol")}
     𝑇min::Quantity{ℙ, dimension(u"K"), typeof(u"K")}
     𝑇ref::Quantity{ℙ, dimension(u"K"), typeof(u"K")}
@@ -17,20 +17,23 @@ struct SpecificHeat{ℙ <: FLOAT}
     SpecificHeat(
         ID::Symbol,
         𝑓::Function,
-        𝑀::ℙ,
-        Tmin::ℙ,
-        Tref::ℙ,
-        Tmax::ℙ,
-        uref::ℙ,
-        sref::ℙ,
-        𝑅::ℙ = ℙ(universal_R),
-        B::Symbol = :MO
+        𝑀::Quantity{ℙ, dimension(u"kg/kmol"), typeof(u"kg/kmol")},
+        𝑇min::Quantity{ℙ, dimension(u"K"), typeof(u"K")},
+        𝑇ref::Quantity{ℙ, dimension(u"K"), typeof(u"K")},
+        𝑇max::Quantity{ℙ, dimension(u"K"), typeof(u"K")},
+        𝑢ref::Quantity{ℙ, dimension(u"kJ/kmol"), typeof(u"kJ/kmol")},
+        𝑠ref::Quantity{ℙ, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")},
+        𝑅::Quantity{ℙ, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")} = ℙ(universal_R),
     ) where {ℙ <: FLOAT} = begin
         @assert(ID != Symbol(""), "Error: Empty model ID")
-        @assert(𝑀 > zero(ℙ), "Error: M <= 0")
-        @assert(zero(ℙ) <= Tmin <= Tref < Tmax, "Error: Temperature values")
-        @assert(𝑅 > zero(ℙ), "Error: 𝑅 <= 0")
+        @assert(𝑀 > zero(ℙ) * u"kg/kmol", "Error: M <= 0 kg/kmol")
+        @assert(zero(ℙ) * u"K" <= 𝑇min <= 𝑇ref < 𝑇max, "Error: Temperature values")
+        @assert(𝑅 > zero(ℙ) * u"kJ/kmol/K", "Error: 𝑅 <= 0 kJ/kmol/K")
         @assert(B in (:MA, :MO), "Error: B should be either :MA or :MO")
+        wf┆R = (
+            (T::Quantity{𝔽, dimension(u"K")} where {𝔽 <: Real}) ->
+            𝑓(ℙ(uconvert(u"K", T).val)) * u"kJ/kmol/K"
+        )
         return B == :MA ? (
                 new{ℙ}(ID, ℙ ⊚ T -> 𝑓(T) * 𝑀, 𝑀, Tmin, Tref, Tmax, uref * 𝑀, sref * 𝑀, 𝑅)
             ) : (
@@ -90,7 +93,7 @@ function SpecificHeat{ℙ}(
     ) where {ℙ <: FLOAT}
     uref = uref isa MASS ? kSI(uref) * kSI(𝑀) : kSI(uref)
     sref = sref isa MASS ? kSI(sref) * kSI(𝑀) : kSI(sref)
-    𝑅    = 𝑅    isa MASS ? kSI(𝑅   ) * kSI(𝑀) : kSI(𝑅)
+    𝑅 = 𝑅 isa MASS ? kSI(𝑅) * kSI(𝑀) : kSI(𝑅)
     return SpecificHeat{ℙ}(ID, 𝑓, kSI.((𝑀, Tmin, Tref, Tmax))..., uref, sref, 𝑅, :MO)
 end
 
