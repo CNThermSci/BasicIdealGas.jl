@@ -5,34 +5,34 @@
 FLOAT = Base.IEEEFloat
 
 # Thermodynamic state function Quantity type alias - dimension set (for arguments)
-PRES = Quantity{ℙ, dimension(u"kPa")} where {ℙ <: Real}
-TEMP = Quantity{ℙ, dimension(u"K")} where {ℙ <: Real}
-MOLW = Quantity{ℙ, dimension(u"kg/kmol")} where {ℙ <: Real}
-VOLU = Union{
+const PRES = Quantity{ℙ, dimension(u"kPa")} where {ℙ <: Real}
+const TEMP = Quantity{ℙ, dimension(u"K")} where {ℙ <: Real}
+const MOLW = Quantity{ℙ, dimension(u"kg/kmol")} where {ℙ <: Real}
+const VOLU = Union{
     Quantity{ℙ, dimension(u"m^3/kg")},
     Quantity{ℙ, dimension(u"m^3/kmol")},
 } where {ℙ <: Real}
-ENER = Union{
+const ENER = Union{
     Quantity{ℙ, dimension(u"kJ/kg")},
     Quantity{ℙ, dimension(u"kJ/kmol")},
 } where {ℙ <: Real}
-ENTR = Union{
+const ENTR = Union{
     Quantity{ℙ, dimension(u"kJ/kg/K")},
     Quantity{ℙ, dimension(u"kJ/kmol/K")},
 } where {ℙ <: Real}
-DENS = Union{
+const DENS = Union{
     Quantity{ℙ, dimension(u"kg/m^3")},
     Quantity{ℙ, dimension(u"kmol/m^3")},
 } where {ℙ <: Real}
 
 # Termodynamic base Unions
-MASS = Union{
+const MASS = Union{
     Quantity{ℙ, dimension(u"m^3/kg")},
     Quantity{ℙ, dimension(u"kJ/kg")},
     Quantity{ℙ, dimension(u"kJ/kg/K")},
     Quantity{ℙ, dimension(u"kg/m^3")},
 } where {ℙ <: Real}
-MOLR = Union{
+const MOLR = Union{
     Quantity{ℙ, dimension(u"m^3/kmol")},
     Quantity{ℙ, dimension(u"kJ/kmol")},
     Quantity{ℙ, dimension(u"kJ/kmol/K")},
