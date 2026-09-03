@@ -13,8 +13,7 @@ struct SpecificHeat{ℙ <: FLOAT}
     𝑢ref::Quantity{ℙ, dimension(u"kJ/kmol"), typeof(u"kJ/kmol")}
     𝑠ref::Quantity{ℙ, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")}
     𝑅::Quantity{ℙ, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")}
-    # Internal constructors
-    # Validating
+    # Internal, validating constructor
     SpecificHeat(
         ID::Symbol,
         𝑓::Function,
