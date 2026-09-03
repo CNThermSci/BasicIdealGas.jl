@@ -92,41 +92,41 @@ export IdealGas
 # User-facing functions
 # ---------------------
 
-function Base.show(io::IO, ::MIME"text/plain", G::IdealGas{ℙ}) where {ℙ <: FLOAT}
+function Base.show(io::IO, ::MIME"text/plain", ξ::IdealGas{ℙ}) where {ℙ <: FLOAT}
     return print(
         io,
-        "$(G.form)$(pDeco(ℙ)) gas, ",
-        repr(MIME"text/plain"(), G.hmod),
+        "$(ξ.form) gas, ",
+        repr(MIME"text/plain"(), ξ.hmod),
     )
 end
 
 for FUNC in (:R,)
     @eval begin
-        $FUNC(G::IdealGas, B::Symbol = :MA) = $FUNC(G.hmod, B)
+        $FUNC(ξ::IdealGas, B::Symbol = :MA) = $FUNC(ξ.hmod, B)
     end
 end
 
 for FUNC in (:cp┆R, :cv┆R, :ga, :∫cp┆R, :∫cv┆R, :u┆R, :h┆R, :∫cp┆RT, :s0┆R, :Pr, :vr)
     @eval begin
-        $FUNC(G::IdealGas, T::Real) = $FUNC(G.hmod, T)
+        $FUNC(ξ::IdealGas, T::Real) = $FUNC(ξ.hmod, T)
     end
 end
 
 for FUNC in (:cp, :cv, :u, :h, :s0)
     @eval begin
-        $FUNC(G::IdealGas, T::Real, B::Symbol = :MA) = $FUNC(G.hmod, T, B)
+        $FUNC(ξ::IdealGas, T::Real, B::Symbol = :MA) = $FUNC(ξ.hmod, T, B)
     end
 end
 
 # Internal, fast, positional, EoS functions
-_P(G::IdealGas{ℙ}, T::Real, v::Real, B::Symbol = :MA) where {ℙ} = R(G, B) * ℙ(T / v)
-_T(G::IdealGas{ℙ}, P::Real, v::Real, B::Symbol = :MA) where {ℙ} = ℙ(P * v) / R(G, B)
-_v(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA) where {ℙ} = R(G, B) * ℙ(T / P)
-_ρ(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA) where {ℙ} = inv(_v(G, P, T, B))
+_P(ξ::IdealGas{ℙ}, T::Real, v::Real, B::Symbol = :MA) where {ℙ} = R(ξ, B) * ℙ(T / v)
+_T(ξ::IdealGas{ℙ}, P::Real, v::Real, B::Symbol = :MA) where {ℙ} = ℙ(P * v) / R(ξ, B)
+_v(ξ::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA) where {ℙ} = R(ξ, B) * ℙ(T / P)
+_ρ(ξ::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA) where {ℙ} = inv(_v(ξ, P, T, B))
 
 # Internal, fast, positional, entropy function
-function _s(G::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA)::ℙ where {ℙ}
-    return s0(G, T, B) - R(G, B) * log(ℙ(P) / G.Pref)
+function _s(ξ::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA)::ℙ where {ℙ}
+    return s0(ξ, T, B) - R(ξ, B) * log(ℙ(P) / ξ.Pref)
 end
 
 # Base.getproperty

@@ -5,16 +5,14 @@
 
 struct IdealState{ℙ <: FLOAT}
     𝐺::IdealGas{ℙ}
-    𝑃::ℙ                # kPa
-    𝑇::ℙ                # K
+    𝑝::PropPair{ℙ}
     # Internal, validating constructors
     function IdealState(
             G::IdealGas{ℙ},
-            P::ℙ,
-            T::ℙ,
+            p::PropPair{ℙ},
         ) where {ℙ <: FLOAT}
-        @assert(G.hmod.Tmin <= T <= G.hmod.Tmax, "T = $(T) out of range for $(G.hmod)")
-        return new{ℙ}(G, P, T)
+        @assert(G.hmod.Tmin <= p.𝑇 <= G.hmod.Tmax, "T = $(p.𝑇) out of range for $(G.hmod)")
+        return new{ℙ}(G, p)
     end
 end
 
@@ -24,36 +22,14 @@ end
 # Set type conversion / 1 indirection
 IdealState{ℙ}(
     G::IdealGas,
-    P::Real,
-    T::Real,
-) where {ℙ} = IdealState(ℙ.((G, P, T))...)
+    p::PropPair,
+) where {ℙ} = IdealState(ℙ.((G, p))...)
 
 # Ideal gas model type conversion / 2 indirections
 IdealState(
     G::IdealGas{ℙ},
-    P::Real,
-    T::Real,
-) where {ℙ} = IdealState{ℙ}(G, P, T)
-
-# Set type with unit conversion and stripping / 2 indirections
-function IdealState{ℙ}(
-        G::IdealGas,
-        P::Quantity{<:Real, dimension(u"kPa")},
-        T::Quantity{<:Real, dimension(u"K")},
-    ) where {ℙ <: FLOAT}
-    return IdealState{ℙ}(
-        G,
-        P isa Quantity ? uconvert(u"kPa", P).val : P,
-        T isa Quantity ? uconvert(u"K", T).val : T,
-    )
-end
-
-# Heat model type with unit conversion and stripping / 3 indirections
-IdealState(
-    G::IdealGas{ℙ},
-    P::Quantity{<:Real, dimension(u"kPa")},
-    T::Quantity{<:Real, dimension(u"K")},
-) where {ℙ <: FLOAT} = IdealState{ℙ}(G, P, T)
+    p::PropPair,
+) where {ℙ} = IdealState{ℙ}(G, p)
 
 # Conversions
 # -----------
@@ -86,8 +62,9 @@ end
 
 function (ξ::IdealState{ℙ})(
         ;
-        P::Union{Missing, Real, Quantity{<:Real, dimension(u"kPa")}} = missing,
-        T::Union{Missing, Real, Quantity{<:Real, dimension(u"K")}} = missing,
+        P::Union{Missing, Real, PRES} = missing,
+        T::Union{Missing, Real, TEMP} = missing,
+        𝑝::Union{Missing, PropPair} = missing,
     ) where {ℙ}
     return if count(x -> !isa(x, Missing), (P, T)) == 0
         # pars variant
@@ -110,11 +87,11 @@ function (ξ::IdealState{ℙ})(
         )
     else
         # copy-edit variant
-        IdealState{ℙ}(
-            ξ.𝐺,
-            P isa Missing ? ξ.𝑃 : P isa Quantity ? uconvert(u"kPa", P).val : P,
-            T isa Missing ? ξ.𝑇 : T isa Quantity ? uconvert(u"K", T).val : T,
-        )
+        if ismissing(𝑝)
+            IdealState{ℙ}(ξ.𝐺, ξ.𝑝(P = P, T = T))
+        else
+            IdealState{ℙ}(ξ.𝐺, 𝑝(P = P, T = T))
+        end
     end
 end
 
@@ -132,13 +109,15 @@ function Base.getproperty(ξ::IdealState, sy::Symbol)
     # Raw fields
     if sy in fieldnames(IdealState)
         return getfield(ξ, sy)
+    elseif sy in fieldnames(PropPair)
+        return getfield(getfield(ξ, :𝑝), sy)
     elseif sy in fieldnames(IdealGas)
         return getfield(getfield(ξ, :𝐺), sy)
     elseif sy in fieldnames(SpecificHeat)
         return getfield(getfield(getfield(ξ, :𝐺), :hmod), sy)
     end
     # User-facing state function accessors (with units)
-    GAS, P, T = map(sy -> getfield(ξ, sy), (:𝐺, :𝑃, :𝑇))
+    GAS, P, T = map(sy -> getproperty(ξ, sy), (:𝐺, :𝑃, :𝑇))
     MOD = getfield(GAS, :hmod)
     # SpecificHeat convenience/porcelain
     if sy in (:f, :fMA, :M, :R, :RMA)
@@ -146,9 +125,9 @@ function Base.getproperty(ξ::IdealState, sy::Symbol)
     elseif sy == :gas
         return GAS
     elseif sy == :P
-        return getfield(ξ, :𝑃) * u"kPa"
+        return P * u"kPa"
     elseif sy == :T
-        return getfield(ξ, :𝑇) * u"K"
+        return T * u"K"
     elseif sy in (:γ, :ga)
         return ga(MOD, T)
     elseif sy == :v
@@ -202,10 +181,11 @@ Base.propertynames(ξ::IdealState) = (
 # User-facing functions
 # ---------------------
 
-function Base.show(io::IO, ::MIME"text/plain", st::IdealState{ℙ}) where {ℙ <: FLOAT}
+function Base.show(io::IO, ::MIME"text/plain", ξ::IdealState{ℙ}) where {ℙ <: FLOAT}
     return print(
         io,
-        repr(MIME"text/plain"(), st.gas),
-        " @($(@sprintf("%.*g", 5, st.𝑃)) kPa, $(@sprintf("%.*g", 5, st.𝑇)) K)"
+        repr(MIME"text/plain"(), ξ.𝐺),
+        " ",
+        repr(MIME"text/plain"(), ξ.𝑝),
     )
 end
