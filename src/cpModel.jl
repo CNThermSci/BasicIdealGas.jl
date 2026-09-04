@@ -42,15 +42,15 @@ end
 function SpecificHeat{ℙ}(
         ID::Symbol,
         f┆R::Function,
-        𝑀::Quantity{𝔸, dimension(u"kg/kmol"), typeof(u"kg/kmol")},
-        𝑇min::Quantity{𝔹, dimension(u"K"), typeof(u"K")},
-        𝑇ref::Quantity{ℂ, dimension(u"K"), typeof(u"K")},
-        𝑇max::Quantity{𝔻, dimension(u"K"), typeof(u"K")},
-        𝑢ref::Quantity{𝔼, dimension(u"kJ/kmol"), typeof(u"kJ/kmol")},
-        𝑠ref::Quantity{𝔽, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")},
-        𝑅::Quantity{𝔾, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")} = ℙ(Ru),
+        𝑀::MOLW{𝔸},
+        𝑇min::TEMP{𝔹},
+        𝑇ref::TEMP{ℂ},
+        𝑇max::TEMP{𝔻},
+        𝑢ref::ENER{𝔼},
+        𝑠ref::ENTR{𝔽},
+        𝑅::ENTR{𝔾} = 𝔾(Ru),
     ) where {ℙ <: FLOAT, 𝔸 <: Real, 𝔹 <: Real, ℂ <: Real, 𝔻 <: Real, 𝔼 <: Real, 𝔽 <: Real, 𝔾 <: Real}
-    return SpecificHeat(ID, ℙ ⊚ 𝑓, ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))..., B)
+    return SpecificHeat(ID, f┆R, ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))..., B)
 end
 
 # Promotion type conversion / 2 indirections
