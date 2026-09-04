@@ -72,9 +72,9 @@ function SpecificHeat(
         𝑠ref::ENTR,
         𝑅::ENTR = Ru,
     ) where {ℙ <: FLOAT}
-    ℙ = promote_type(precof.((𝑀, Tmin, Tref, Tmax, uref, sref))...) # Default 𝑅 left out
+    ℙ = promote_type(precof.((𝑀, 𝑇min, 𝑇ref, 𝑇max, 𝑢ref, 𝑠ref))...) # Default 𝑅 left out
     ℙ = ℙ <: FLOAT ? ℙ : Float64
-    return SpecificHeat{ℙ}(ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅, B)
+    return SpecificHeat{ℙ}(ID, 𝑓, 𝑀, 𝑇min, 𝑇ref, 𝑇max, 𝑢ref, 𝑠ref, 𝑅)
 end
 
 # Set type with unit conversion and stripping / 2 indirections
