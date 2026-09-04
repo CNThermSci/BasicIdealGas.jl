@@ -137,6 +137,7 @@ end
     msg = "T = $(@sprintf("%.*g K", 5, 𝑇.val)) out of bounds"
     @assert(C.𝑇min <= 𝑇 <= C.𝑇max, msg)
 end
+𝗯(C::SpecificHeat, 𝑇::Real) = 𝗯(C, 𝑇 * u"K")
 
 import Base: cp
 
