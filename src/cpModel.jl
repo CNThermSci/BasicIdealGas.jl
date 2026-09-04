@@ -77,41 +77,6 @@ function SpecificHeat(
     return SpecificHeat{ℙ}(ID, 𝑓, 𝑀, 𝑇min, 𝑇ref, 𝑇max, 𝑢ref, 𝑠ref, 𝑅)
 end
 
-# Set type with unit conversion and stripping / 2 indirections
-function SpecificHeat{ℙ}(
-        ID::Symbol,
-        𝑓::Function,
-        𝑀::Union{Real, MOLW},
-        Tmin::Union{Real, TEMP},
-        Tref::Union{Real, TEMP},
-        Tmax::Union{Real, TEMP},
-        uref::ENER,
-        sref::ENTR,
-        𝑅::Union{Real, ENTR} = Ru,
-    ) where {ℙ <: FLOAT}
-    uref = uref isa MASS ? kSI(uref) * kSI(𝑀) : kSI(uref)
-    sref = sref isa MASS ? kSI(sref) * kSI(𝑀) : kSI(sref)
-    𝑅 = 𝑅 isa MASS ? kSI(𝑅) * kSI(𝑀) : kSI(𝑅)
-    return SpecificHeat{ℙ}(ID, 𝑓, kSI.((𝑀, Tmin, Tref, Tmax))..., uref, sref, 𝑅, :MO)
-end
-
-# Promotion type with unit conversion and stripping / 3 indirections
-function SpecificHeat(
-        ID::Symbol,
-        𝑓::Function,
-        𝑀::Union{𝕄, MOLW{𝕄}},
-        Tmin::Union{𝕀, TEMP{𝕀}},
-        Tref::Union{𝔼, TEMP{𝔼}},
-        Tmax::Union{𝔸, TEMP{𝔸}},
-        uref::ENER{𝕌},
-        sref::ENTR{𝕊},
-        𝑅::Union{Real, ENTR} = Ru,
-    ) where {𝕄 <: Real, 𝕀 <: Real, 𝔸 <: Real, 𝔼 <: Real, 𝕌 <: Real, 𝕊 <: Real}
-    ℙ = promote_type(𝕄, 𝕀, 𝔸, 𝔼, 𝕌, 𝕊) # Default R left out
-    ℙ = ℙ <: FLOAT ? ℙ : Float64
-    return SpecificHeat{ℙ}(ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
-end
-
 # Conversions
 # -----------
 
