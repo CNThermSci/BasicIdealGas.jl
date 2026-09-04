@@ -127,25 +127,25 @@ end
 # SpecificHeat Helper functions
 # -----------------------------
 
-∫┆T(C::SpecificHeat, 𝑇::TEMP) = ∫(T -> C.f┆R(T) / T, C.𝑇ref, 𝑇)
-∫┆T(C::SpecificHeat, 𝑇::Real) = ∫┆T(C, 𝑇 * u"K")
+∫┆T(ξ::SpecificHeat, 𝑇::TEMP) = ∫(T -> ξ.f┆R(T) / T, ξ.𝑇ref, 𝑇)
+∫┆T(ξ::SpecificHeat, 𝑇::Real) = ∫┆T(ξ, 𝑇 * u"K")
 
 # User-facing functions
 # ---------------------
 
-𝗯(C::SpecificHeat, 𝑇::TEMP) = begin
+𝗯(ξ::SpecificHeat, 𝑇::TEMP) = begin
     msg = "T = $(@sprintf("%.*g K", 5, 𝑇.val)) out of bounds"
-    @assert(C.𝑇min <= 𝑇 <= C.𝑇max, msg)
+    @assert(ξ.𝑇min <= 𝑇 <= ξ.𝑇max, msg)
 end
-𝗯(C::SpecificHeat, 𝑇::Real) = 𝗯(C, 𝑇 * u"K")
+𝗯(ξ::SpecificHeat, 𝑇::Real) = 𝗯(ξ, 𝑇 * u"K")
 
 import Base: cp
 
-cp┆R(C::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(C, 𝑇); C.f┆R(𝑇))
-cp┆R(C::SpecificHeat{ℙ}, 𝑇::Real) where {ℙ <: FLOAT} = cp┆R(C, 𝑇 * u"K")
+cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ξ.f┆R(𝑇))
+cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::Real) where {ℙ <: FLOAT} = cp┆R(ξ, 𝑇 * u"K")
 
-cv┆R(C::SpecificHeat{ℙ}, 𝑇::Union{Real, TEMP}) where {ℙ <: FLOAT} = cp┆R(C, 𝑇) - one(ℙ)
-ga(C::SpecificHeat{ℙ}, 𝑇::Union{Real, TEMP}) where {ℙ <: FLOAT} = (x = cp┆R(C, 𝑇); x / (x - one(ℙ)))
+cv┆R(ξ::SpecificHeat{ℙ}, 𝑇::Union{Real, TEMP}) where {ℙ <: FLOAT} = cp┆R(ξ, 𝑇) - one(ℙ)
+ga(ξ::SpecificHeat{ℙ}, 𝑇::Union{Real, TEMP}) where {ℙ <: FLOAT} = (x = cp┆R(ξ, 𝑇); x / (x - one(ℙ)))
 
 function R(C::SpecificHeat, B::Symbol = :MA)
     @assert B in (:MA, :MO)
