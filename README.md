@@ -55,7 +55,7 @@ julia> using BasicIdealGas
 julia> C = SpecificHeat(
     :cubic,             # model ID
     # molar cp(T)/Ru model
-    T -> (22.26 +5.891e-2*T -3.501e-5*T^2 +7.469e-9*T^3) / Ru,
+    T -> (22.26 +5.891e-2*T -3.501e-5*T^2 +7.469e-9*T^3) / Ru.val,
     44.01,              # Molecular weight, kg/kmol
     273,                # Minimum T, K
     298,                # Reference T, K
@@ -75,16 +75,13 @@ returns values as the precision parameter of `SpecificHeat{ℙ} where ℙ <: Bas
 
 ```julia
 julia> C.f┆R(300u"K")
-4.448124274352035 K kmol kJ^-1
+4.448124274352035
 
-julia> ans isa Quantity{Float64}
-true
+julia> typeof(ans)
+Float64
 
 julia> C.f┆R
-Float64 ∘ BasicIdealGas.var"#2#3"{Float64, var"#8#9"}(var"#8#9"())
-
-julia> typeof(C.f┆R)
-ComposedFunction{Type{Float64}, BasicIdealGas.var"#2#3"{Float64, var"#8#9"}}
+#2 (generic function with 1 method)
 
 julia> C.R
 8.31446261815324 kJ K^-1 kmol^-1
@@ -92,8 +89,11 @@ julia> C.R
 
 It is worth noting that (i) each specific heat model may have it's own gas constant—this is so
 due to legacy databases such as NASA Glenn coefficients employing the universal gas constant of
-CODATA 1986; (ii) the model function, i.e., the wrapped `f┆R` field is explicitly composed with
-the `SpecificHeat` object's precision parameter, in the above case, a `Float64`.
+CODATA 1986; (ii) the model function, i.e., the wrapped `f┆R` field is composed with the
+`SpecificHeat` object's precision parameter if the return type of the function passed upon
+construction is different, which isn't the case for the `SpecificHeat{Float64}` object—since the
+provided function already returns a `Float64` value—but is the case for the converted
+`SpecificHeat{Float32}` object below:
 
 *Precision conversion:*
 
@@ -101,24 +101,10 @@ the `SpecificHeat` object's precision parameter, in the above case, a `Float64`.
 julia> Float32(C)
 cubic cp₃₂(T)
 
-julia> dump(Float32(C))
-SpecificHeat{Float32}
-  ID: Symbol cubic
-  𝑓: Float32 ∘ var"#2#3"() (function of type ComposedFunction{Type{Float32}, var"#2#3"})
-    outer: primitive type Float32 <: AbstractFloat
-    inner: #2 (function of type var"#2#3")
-  𝑀: Float32 44.01f0
-  Tmin: Float32 273.0f0
-  Tref: Float32 298.0f0
-  Tmax: Float32 1800.0f0
-  uref: Float32 6885.0f0
-  sref: Float32 213.685f0
-  𝑅: Float32 8.31447f0
+julia> typeof(Float32(C).f┆R)
+ComposedFunction{Type{Float32}, BasicIdealGas.var"#2#3"{Float32, var"#8#9"}}
 
-julia> typeof(Float32(C).𝑓)
-ComposedFunction{Type{Float32}, var"#2#3"}
-
-julia> Float32(C).𝑓(300)
+julia> Float32(C).f┆R(300u"K")
 36.983765f0
 ```
 
