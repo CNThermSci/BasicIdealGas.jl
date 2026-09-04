@@ -88,7 +88,7 @@ precof(x::Real) = typeof(x)
 precof(x::Quantity{ℙ}) where ℙ = ℙ
 
 # Precision Composition Simplification
-⊚(p::Type{ℙ}, f::Function) where {ℙ <: FLOAT} = f(300) isa ℙ ? f : p ∘ f
+⊚(p::Type{ℙ}, f::Function) where {ℙ <: FLOAT} = f(ℙ(300u"K")) isa ℙ ? f : p ∘ f
 
 # Chained Precision Composition Simplification
 ⊚(
