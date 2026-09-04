@@ -183,6 +183,16 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
         return getfield(ξ, :𝑅)
     elseif sy == :RMA
         return R(ξ, :MA)
+    elseif sy == :Tmin
+        return getfield(ξ, :𝑇min)
+    elseif sy == :Tref
+        return getfield(ξ, :𝑇ref)
+    elseif sy == :Tmax
+        return getfield(ξ, :𝑇max)
+    elseif sy == :uref
+        return getfield(ξ, :𝑢ref)
+    elseif sy == :sref
+        return getfield(ξ, :𝑠ref)
     end
     # Pretty print
     if sy == :view
@@ -213,7 +223,7 @@ end
 
 Base.propertynames(::SpecificHeat) = (
     :ID, :𝑓, :𝑀, :𝑇min, :𝑇max, :𝑇ref, :𝑢ref, :𝑠ref, :𝑅,
-    :f, :M, :R, :RMO, :RMA, :view,
+    :f, :M, :Tmin, :Tref, :Tmax, :uref, :sref, :R, :RMO, :RMA, :view,
     :cp┆R, :cv┆R, :ga, :R, :∫cp┆R, :∫cv┆R,
     :u┆R, :h┆R, :∫cp┆RT, :s0┆R, :Pr, :vr,
     :cp, :cv, :u, :h, :s0,
