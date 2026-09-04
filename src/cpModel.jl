@@ -141,9 +141,11 @@ end
 
 import Base: cp
 
-cp┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = (𝗯(C, T); C.𝑓(T) / C.𝑅)
-cv┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = cp┆R(C, T) - one(ℙ)
-ga(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = (𝗯(C, T); x = C.𝑓(T); x / (x - C.𝑅))
+cp┆R(C::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(C, 𝑇); C.f┆R(𝑇))
+cp┆R(C::SpecificHeat{ℙ}, 𝑇::Real) where {ℙ <: FLOAT} = cp┆R(C, 𝑇 * u"K")
+
+cv┆R(C::SpecificHeat{ℙ}, 𝑇::Union{Real, TEMP}) where {ℙ <: FLOAT} = cp┆R(C, 𝑇) - one(ℙ)
+ga(C::SpecificHeat{ℙ}, 𝑇::Union{Real, TEMP}) where {ℙ <: FLOAT} = (x = cp┆R(C, 𝑇); x / (x - one(ℙ)))
 
 function R(C::SpecificHeat, B::Symbol = :MA)
     @assert B in (:MA, :MO)
