@@ -9,6 +9,7 @@ using Printf
 using Roots
 using QuadGK
 using NumericalIntegration
+using PhysicalConstants.CODATA2022
 
 # Includes
 include("common.jl")
