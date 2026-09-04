@@ -149,12 +149,15 @@ end
 
 cp(ξ::SpecificHeat, 𝑇, B = :MA) = cp┆R(ξ, 𝑇) * R(ξ, B)
 cv(ξ::SpecificHeat, 𝑇, B = :MA) = cv┆R(ξ, 𝑇) * R(ξ, B)
+# The ∫cp┆R, ∫cv┆R functions below check bounds just once
 ∫cp┆R(ξ::SpecificHeat, 𝑇::TEMP) = (𝗯(ξ, 𝑇); ∫(ξ.f┆R, ξ.𝑇ref, 𝑇))
 ∫cp┆R(ξ::SpecificHeat, 𝑇::Real) = ∫cp┆R(ξ, 𝑇 * u"K")
-∫cv┆R(ξ::SpecificHeat{ℙ}, 𝑇::Real) where {ℙ <: FLOAT} = ∫cp┆R(ξ, 𝑇) - ℙ(𝑇) + ξ.𝑇ref
+∫cv┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = ∫cp┆R(ξ, 𝑇) - ℙ(𝑇) + ξ.𝑇ref
+∫cv┆R(ξ::SpecificHeat, 𝑇::Real) = ∫cv┆R(ξ, 𝑇 * u"K")
+u┆R(ξ::SpecificHeat, 𝑇) = ∫cv┆R(ξ, 𝑇) + ξ.𝑢ref / ξ.𝑅
+h┆R(ξ::SpecificHeat, 𝑇::TEMP) = u┆R(ξ, 𝑇) + ℙ(𝑇)
+h┆R(ξ::SpecificHeat, 𝑇::Real) = h┆R(ξ, 𝑇 * u"K")
 
-u┆R(ξ::SpecificHeat{ℙ}, 𝑇::Real) where {ℙ <: FLOAT} = ∫cv┆R(ξ, 𝑇) + ξ.𝑢ref / ξ.𝑅
-h┆R(ξ::SpecificHeat{ℙ}, 𝑇::Real) where {ℙ <: FLOAT} = u┆R(ξ, 𝑇) + ℙ(𝑇)
 u(ξ::SpecificHeat{ℙ}, 𝑇::Real, B::Symbol = :MA) where {ℙ <: FLOAT} = u┆R(ξ, 𝑇) * R(ξ, B)
 h(ξ::SpecificHeat{ℙ}, 𝑇::Real, B::Symbol = :MA) where {ℙ <: FLOAT} = h┆R(ξ, 𝑇) * R(ξ, B)
 ∫cp┆RT(ξ::SpecificHeat, 𝑇::Real) = (𝗯(ξ, 𝑇); ∫┆T(ξ, 𝑇) / ξ.𝑅)
