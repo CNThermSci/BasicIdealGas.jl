@@ -14,10 +14,10 @@ using PhysicalConstants.CODATA2022
 # Includes
 include("common.jl")
 include("cpModel.jl")
-include("idealEoS.jl")
-include("propPair.jl")
-include("idealState.jl")
-include("interact.jl")
-include("idealProcs.jl")
+## include("idealEoS.jl")
+## include("propPair.jl")
+## include("idealState.jl")
+## include("interact.jl")
+## include("idealProcs.jl")
 
 end
