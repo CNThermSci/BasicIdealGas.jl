@@ -42,14 +42,14 @@ end
 function SpecificHeat{ℙ}(
         ID::Symbol,
         f┆R::Function,
-        𝑀::Quantity{ℙ, dimension(u"kg/kmol"), typeof(u"kg/kmol")},
-        𝑇min::Quantity{ℙ, dimension(u"K"), typeof(u"K")},
-        𝑇ref::Quantity{ℙ, dimension(u"K"), typeof(u"K")},
-        𝑇max::Quantity{ℙ, dimension(u"K"), typeof(u"K")},
-        𝑢ref::Quantity{ℙ, dimension(u"kJ/kmol"), typeof(u"kJ/kmol")},
-        𝑠ref::Quantity{ℙ, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")},
-        𝑅::Quantity{ℙ, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")} = ℙ(Ru),
-    ) where {ℙ <: FLOAT}
+        𝑀::Quantity{𝔸, dimension(u"kg/kmol"), typeof(u"kg/kmol")},
+        𝑇min::Quantity{𝔹, dimension(u"K"), typeof(u"K")},
+        𝑇ref::Quantity{ℂ, dimension(u"K"), typeof(u"K")},
+        𝑇max::Quantity{𝔻, dimension(u"K"), typeof(u"K")},
+        𝑢ref::Quantity{𝔼, dimension(u"kJ/kmol"), typeof(u"kJ/kmol")},
+        𝑠ref::Quantity{𝔽, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")},
+        𝑅::Quantity{𝔾, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")} = ℙ(Ru),
+    ) where {ℙ <: FLOAT, 𝔸 <: Real, 𝔹 <: Real, ℂ <: Real, 𝔻 <: Real, 𝔼 <: Real, 𝔽 <: Real, 𝔾 <: Real}
     return SpecificHeat(ID, ℙ ⊚ 𝑓, ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))..., B)
 end
 
