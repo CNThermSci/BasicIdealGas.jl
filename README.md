@@ -102,22 +102,22 @@ julia> Float32(C)
 cubic cp₃₂(T)
 
 julia> typeof(Float32(C).f┆R)
-ComposedFunction{Type{Float32}, BasicIdealGas.var"#2#3"{Float32, var"#8#9"}}
+ComposedFunction{Type{Float32}, BasicIdealGas.var"#2#3"{Float32, var"#11#12"}}
 
 julia> Float32(C).f┆R(300u"K")
-36.983765f0
+4.4481244f0
 ```
 
 Julia function composition is used, not only to perform the intended conversions, but also, to
-render multiple conversions lossless, i.e., if a `SpecificHeat{Float64}` is converted to a
+render multiple _function_ conversions lossless, i.e., if a `SpecificHeat{Float64}` is converted to a
 `Float32` precision, and then back to `Float64`, it preserves the intrinsic precision of the
-original model:
+original model function (but not the other parameters!):
 
 ```julia
-julia> a = [ C.𝑓, Float32(C).𝑓, Float64(Float32(C)).𝑓 ]
+julia> a = [ C.f┆R, Float32(C).f┆R, Float64(Float32(C)).f┆R ]
 3-element Vector{Function}:
  #2 (generic function with 1 method)
- Float32 ∘ var"#2#3"()
+ Float32 ∘ BasicIdealGas.var"#2#3"{Float32, var"#11#12"}(var"#11#12"())
  #2 (generic function with 1 method)
 
 julia> a[1] === a[3]
