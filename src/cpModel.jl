@@ -48,7 +48,7 @@ function SpecificHeat{ℙ}(
         𝑇max::Union{Real, TEMP},
         𝑢ref::ENER,
         𝑠ref::ENTR,
-        𝑅::ENTR = 𝔾(Ru),
+        𝑅::ENTR = ℙ(Ru),
     ) where {ℙ <: FLOAT}
     M = 𝑀 isa MOLW ? uconvert(u"kg/kmol", 𝑀) : 𝑀 * u"kg/kmol"
     Tmin = 𝑇min isa TEMP ? uconvert(u"K", 𝑇min) : 𝑇min * u"K"
@@ -70,9 +70,9 @@ function SpecificHeat(
         𝑇max::Union{Real, TEMP},
         𝑢ref::ENER,
         𝑠ref::ENTR,
-        𝑅::ENTR = 𝔾(Ru),
+        𝑅::ENTR = Ru,
     ) where {ℙ <: FLOAT}
-    ℙ = promote_type(typeof.((𝑀, Tmin, Tref, Tmax, uref, sref))...) # Default 𝑅 left out
+    ℙ = promote_type(precof.((𝑀, Tmin, Tref, Tmax, uref, sref))...) # Default 𝑅 left out
     ℙ = ℙ <: FLOAT ? ℙ : Float64
     return SpecificHeat{ℙ}(ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅, B)
 end
