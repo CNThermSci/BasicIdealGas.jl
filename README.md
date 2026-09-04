@@ -151,7 +151,7 @@ julia> C.ga(1800) # γ = cp/cv
 1.1659230754606869
 
 julia> C.u(1800) # Specific internal energy, mass base
-1647.0341409742273
+1647.0343929063752 kJ kg^-1
 
 julia> C.h(1800) # Specific enthalpy, mass base
 1987.0942636736138
