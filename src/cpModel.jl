@@ -117,8 +117,10 @@ export SpecificHeat
 # Show
 # ----
 
+pretty(ξ::SpecificHeat{ℙ}) where {ℙ <: FLOAT} = "$(ξ.ID) cp$(pDeco(ℙ))(T)"
+
 function Base.show(io::IO, ::MIME"text/plain", ξ::SpecificHeat{ℙ}) where {ℙ <: FLOAT}
-    return print(io, "$(ξ.ID) cp$(pDeco(ℙ))(T)")
+    return print(io, pretty(ξ))
 end
 
 # User-facing functions
@@ -188,11 +190,11 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
         x = range(xmin, stop = xmax, length = 33)
         y = map(T -> cp(ξ, T, :MA), x)
         plt = lineplot(
-            x, y, xlabel = "T [K]", ylabel = "cp (T)", name = "⠤⠤⠤⠤ [kJ/kg·K]",
+            x, y, xlabel = "T", ylabel = "cp (T)",
             xlim = (xmin, xmax), width = 32, height = 6,
             border = :ascii, color = :white, compact_labels = true,
         )
-        return print(join([repr(ξ), string(plt)], "\n"))
+        return print(join([pretty(ξ), string(plt)], "\n"))
     end
     # OOP-style covenience functions (formerly exported ones)
     oop_style_funcs_1 = (
