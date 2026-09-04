@@ -137,10 +137,10 @@ end
 
 import Base: cp
 
-cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ξ.f┆R(𝑇))
-cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::Real) where {ℙ <: FLOAT} = cp┆R(ξ, 𝑇 * u"K")
+cp┆R(ξ::SpecificHeat, 𝑇::TEMP) = (𝗯(ξ, 𝑇); ξ.f┆R(𝑇))
+cp┆R(ξ::SpecificHeat, 𝑇::Real) = cp┆R(ξ, 𝑇 * u"K")
 cv┆R(ξ::SpecificHeat{ℙ}, 𝑇) where {ℙ <: FLOAT} = cp┆R(ξ, 𝑇) - one(ℙ)
-ga(ξ::SpecificHeat{ℙ}, 𝑇) where {ℙ <: FLOAT} = (x = cp┆R(ξ, 𝑇); x / (x - one(ℙ)))
+ga(ξ::SpecificHeat, 𝑇) = cp┆R(ξ, 𝑇) / cv┆R(ξ, 𝑇)
 
 function R(ξ::SpecificHeat, B::Symbol = :MA)
     @assert B in (:MA, :MO)
