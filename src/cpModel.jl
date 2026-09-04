@@ -173,21 +173,17 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
     end
     # Convenience accessors/transformers
     if sy == :f
-        return getfield(ξ, :𝑓)
-    elseif sy == :fMA
-        return T -> getfield(ξ, :𝑓)(T) / getfield(ξ, :𝑀)
-    end
-    # Porcelain accessors (with units)
-    if sy == :M
-        return getfield(ξ, :𝑀) * u"kg/kmol"
-    elseif sy == :R
-        return getfield(ξ, :𝑅) * u"kJ/kmol/K"
+        return getfield(ξ, :f┆R)
+    elseif sy == :M
+        return getfield(ξ, :𝑀)
+    elseif sy in (:R, :RMO)
+        return getfield(ξ, :𝑅)
     elseif sy == :RMA
-        return R(ξ, :MA) * u"kJ/kg/K"
+        return R(ξ, :MA)
     end
     # Pretty print
     if sy == :view
-        xmin, xmax = getfield(ξ, :Tmin), getfield(ξ, :Tmax)
+        xmin, xmax = getfield(ξ, :𝑇min), getfield(ξ, :𝑇max)
         x = range(xmin, stop = xmax, length = 33)
         y = map(T -> cp(ξ, T, :MA), x)
         plt = lineplot(
@@ -206,15 +202,15 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
         :cp, :cv, :u, :h, :s0,
     )
     if sy in oop_style_funcs_1
-        return (T::Real,) -> eval(sy)(ξ, T)
+        return T -> eval(sy)(ξ, T)
     elseif sy in oop_style_funcs_2
-        return (T::Real, B::Symbol = :MA) -> eval(sy)(ξ, T, B)
+        return (T, B = :MA) -> eval(sy)(ξ, T, B)
     end
 end
 
 Base.propertynames(::SpecificHeat) = (
-    :ID, :𝑓, :𝑀, :Tmin, :Tmax, :Tref, :uref, :sref, :𝑅,
-    :f, :fMA, :M, :R, :RMA, :view,
+    :ID, :𝑓, :𝑀, :𝑇min, :𝑇max, :𝑇ref, :𝑢ref, :𝑠ref, :𝑅,
+    :f, :M, :R, :RMO, :RMA, :view,
     :cp┆R, :cv┆R, :ga, :R, :∫cp┆R, :∫cv┆R,
     :u┆R, :h┆R, :∫cp┆RT, :s0┆R, :Pr, :vr,
     :cp, :cv, :u, :h, :s0,
