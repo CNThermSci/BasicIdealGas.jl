@@ -84,9 +84,11 @@ import Base: convert
 convert(::Type{SpecificHeat{ℙ}}, ξ::SpecificHeat{ℙ}) where {ℙ <: FLOAT} = ξ
 
 function convert(::Type{SpecificHeat{ℙ}}, ξ::SpecificHeat{ℚ}) where {ℙ <: FLOAT, ℚ <: FLOAT}
-    return SpecificHeat{ℙ}(
-        ξ.ID, ξ.f┆R.inner.f┆R, ξ.𝑀, ξ.𝑇min, ξ.𝑇ref, ξ.𝑇max, ξ.𝑢ref, ξ.𝑠ref, ξ.𝑅
-    )
+    return if ξ.f┆R isa ComposedFunction
+        SpecificHeat{ℙ}(ξ.ID, ξ.f┆R.inner.f┆R, ξ.𝑀, ξ.𝑇min, ξ.𝑇ref, ξ.𝑇max, ξ.𝑢ref, ξ.𝑠ref, ξ.𝑅)
+    else
+        SpecificHeat{ℙ}(ξ.ID, ξ.f┆R.f┆R, ξ.𝑀, ξ.𝑇min, ξ.𝑇ref, ξ.𝑇max, ξ.𝑢ref, ξ.𝑠ref, ξ.𝑅)
+    end
 end
 
 import Base: Float16, Float32, Float64
