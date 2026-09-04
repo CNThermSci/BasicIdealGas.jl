@@ -4,17 +4,19 @@ Basic ideal gas models in engineering thermodynamics.
 
 ## Description
 
-`BasicIdealGas.jl` is a package developed in the context of undergraduate mechanical engineering course on internal combustion engine simulation at the equilibrium thermodynamics level, also known as 0-D models. It provides types for basic ideal gas functionality from a hierarchy of `Type`s:
+`BasicIdealGas.jl` is a package developed in the context of mechanical engineering education. It
+provides types for basic ideal gas functionality from a hierarchy of `Type`s:
 
 - `SpecificHeat{ℙ <: Base.IEEEFloat}`: A generic ideal gas specific heat model parameterized by
   the precision `ℙ <: Base.IEEEFloat`. `SpecificHeat` methods are the ultimate fallback for
   ideal gas calculations that are solely dependent on temperature, as well as for storing and
   retrieving gas constants, such as the molecular weight and gas constant;
 
-- `IdealGas{ℙ <: Base.IEEEFloat}`: A precision-parametric type for basic ideal gas EoS and entropy
-  calculations. `IdealGas{ℙ}` objects include a `SpecificHeat{ℙ}` member data. `IdealGas`
-  introduces Equation of State calculations atop of the ones covered by the `SpecificHeat` data
-  member, including the ideal gas $P$-$T$-$v$ behavior, as well as entropy, $s:s(P, T)$, ones.
+- `IdealGas{ℙ <: Base.IEEEFloat}`: A precision-parametric type for basic ideal gas EoS and
+  entropy calculations. `IdealGas{ℙ}` objects include a `SpecificHeat{ℙ}` member data.
+  `IdealGas` introduces Equation of State calculations atop of the ones covered by the
+  `SpecificHeat` data member, including the ideal gas $P-T-v$ behavior, as well as entropy,
+  $s:s(P, T)$, ones.
 
 - `IdealState{ℙ <: Base.IEEEFloat}`: A precision-parametric type for an ideal gas at a
   determined `(P, T)` state. Since here the state is known, `IdealState` object instances are
@@ -23,19 +25,23 @@ Basic ideal gas models in engineering thermodynamics.
 
 ## Common Design Choices
 
-- All data fields are stored as plain `ℙ <: Base.IEEEFloat` types;
+- All dimensional data fields are stored with units as `Quantity{ℙ} where ℙ <: Base.IEEEFloat`
+  types;
 
-- Stored values are _assumed_ to be in kSI system, and specific quantities in the molar base,
-  `:MO`, rather than in the mass base, `:MA`, i.e., energy in $kJ$, temperatures in $K$,
-  pressure in $kPa$, specific internal energies in $kJ/kmol$, and specific entropies in
-  $kJ/kmol/K$;
+- Specific heat functions are dimensionless and molar-base normalized by the universal gas
+  constant;
 
-- User-facing outputs are accessed through fields and properties (in the julia langauge sense),
-  and are provided with units. When the amount is based, a `Symbol`ic base argument—whether
-  `:MO`, or `:MA`, respectively for molar or mass base—can be optionally specified, with the
-  mass base being the default one.
+- Stored value units are in the kSI system, and specific quantities in the molar base, `:MO`,
+  rather than in the mass base, `:MA`, i.e., energy in $kJ$, temperatures in $K$, pressure in
+  $kPa$, specific internal energies in $kJ/kmol$, and specific entropies in $kJ/kmol/K$;
 
-- Constructors accept any unambiguous combination of `Real` and `Quantity{<:Real}` arguments;
+- User-facing outputs are accessed through fields and properties (in the julia langauge sense).
+  When the amount is based, a `Symbol`ic base argument—whether `:MO`, or `:MA`, respectively for
+  molar or mass base—can be optionally specified, with the mass base being the default one.
+
+- Constructors accept any unambiguous combination of `Real` and `Quantity{<:Real}` arguments.
+  Specifying unitless values of reference specific internal energy and entropy is ambiguous.
+  Unitless molecular mass is assumed to be in $kg/kmol$, and temperatures in $K$.
 
 ## Examples
 
@@ -48,43 +54,46 @@ julia> using BasicIdealGas
 
 julia> C = SpecificHeat(
     :cubic,             # model ID
-    # molar cp(T) model
-    T -> 22.26 +5.891e-2*T -3.501e-5*T^2 +7.469e-9*T^3,
-    44.01,              # Molecular weight in kg/kmol
-    273,                # Minimum T in K
-    298,                # Reference T in K
-    1800,               # Maximum T in K
-    6885,               # Ref internal energy in kJ/kmol
-    213.685             # Ref entropy in kJ/kmol/K
+    # molar cp(T)/Ru model
+    T -> (22.26 +5.891e-2*T -3.501e-5*T^2 +7.469e-9*T^3) / Ru,
+    44.01,              # Molecular weight, kg/kmol
+    273,                # Minimum T, K
+    298,                # Reference T, K
+    1800,               # Maximum T, K
+    6885u"kJ/kmol",     # Ref internal energy
+    213.685u"kJ/kmol/K" # Ref entropy
     # Omitted molar gas constant (defaults to universal one)
     )
 cubic cp₆₄(T)
 
-julia> dump(C)
+julia> typeof(C)
 SpecificHeat{Float64}
-  ID: Symbol cubic
-  𝑓: #2 (function of type var"#2#3")
-  𝑀: Float64 44.01
-  Tmin: Float64 273.0
-  Tref: Float64 298.0
-  Tmax: Float64 1800.0
-  uref: Float64 6885.0
-  sref: Float64 213.685
-  𝑅: Float64 8.31447
+```
 
-julia> C.𝑓(300)
-36.983763
+The constructor wraps the passed function into one that only accepts temperature arguments, and
+returns values as the precision parameter of `SpecificHeat{ℙ} where ℙ <: Base.IEEEFloat`:
 
-julia> typeof(ans)
-Float64
+```julia
+julia> C.f┆R(300u"K")
+4.448124274352035 K kmol kJ^-1
+
+julia> ans isa Quantity{Float64}
+true
+
+julia> C.f┆R
+Float64 ∘ BasicIdealGas.var"#2#3"{Float64, var"#8#9"}(var"#8#9"())
+
+julia> typeof(C.f┆R)
+ComposedFunction{Type{Float64}, BasicIdealGas.var"#2#3"{Float64, var"#8#9"}}
+
+julia> C.R
+8.31446261815324 kJ K^-1 kmol^-1
 ```
 
 It is worth noting that (i) each specific heat model may have it's own gas constant—this is so
-due to legacy databases such as NASA Glenn coefficients employing universal gas constants of
-slighlty different precision than today's accepted value; (ii) although the `𝑀`, `Tmin`, etc.
-values are stored in plain `Base.IEEEFloat`s, as shown, the model function, i.e., the `𝑓` field
-has no such return type information, even though it's return type is checked, and does return
-consistently typed values, in the above case, a `Float64`.
+due to legacy databases such as NASA Glenn coefficients employing the universal gas constant of
+CODATA 1986; (ii) the model function, i.e., the wrapped `f┆R` field is explicitly composed with
+the `SpecificHeat` object's precision parameter, in the above case, a `Float64`.
 
 *Precision conversion:*
 
