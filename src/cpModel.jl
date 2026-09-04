@@ -42,30 +42,36 @@ end
 function SpecificHeat{ℙ}(
         ID::Symbol,
         f┆R::Function,
-        𝑀::MOLW{𝔸},
-        𝑇min::TEMP{𝔹},
-        𝑇ref::TEMP{ℂ},
-        𝑇max::TEMP{𝔻},
-        𝑢ref::ENER{𝔼},
-        𝑠ref::ENTR{𝔽},
-        𝑅::ENTR{𝔾} = 𝔾(Ru),
-    ) where {ℙ <: FLOAT, 𝔸 <: Real, 𝔹 <: Real, ℂ <: Real, 𝔻 <: Real, 𝔼 <: Real, 𝔽 <: Real, 𝔾 <: Real}
+        𝑀::Union{Real, MOLW},
+        𝑇min::Union{Real, TEMP},
+        𝑇ref::Union{Real, TEMP},
+        𝑇max::Union{Real, TEMP},
+        𝑢ref::ENER,
+        𝑠ref::ENTR,
+        𝑅::ENTR = 𝔾(Ru),
+    ) where {ℙ <: FLOAT}
+    M = 𝑀 isa MOLW ? uconvert(u"kg/kmol", 𝑀) : 𝑀 * u"kg/kmol"
+    Tmin = 𝑇min isa TEMP ? uconvert(u"K", 𝑇min) : 𝑇min * u"K"
+    Tref = 𝑇ref isa TEMP ? uconvert(u"K", 𝑇ref) : 𝑇ref * u"K"
+    Tmax = 𝑇max isa TEMP ? uconvert(u"K", 𝑇max) : 𝑇max * u"K"
+    uref = 𝑢ref isa MASS ? uconvert(u"kJ/kmol", 𝑢ref * 𝑀) : uconvert(u"kJ/kmol", 𝑢ref)
+    sref = 𝑠ref isa MASS ? uconvert(u"kJ/kmol/K", 𝑠ref * 𝑀) : uconvert(u"kJ/kmol/K", 𝑠ref)
+    R = 𝑅 isa MASS ? uconvert(u"kJ/kmol/K", 𝑅 * 𝑀) : uconvert(u"kJ/kmol/K", 𝑅)
     return SpecificHeat(ID, f┆R, ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))..., B)
 end
 
 # Promotion type conversion / 2 indirections
 function SpecificHeat(
         ID::Symbol,
-        𝑓::Function,
-        𝑀::Real,
-        Tmin::Real,
-        Tref::Real,
-        Tmax::Real,
-        uref::Real,
-        sref::Real,
-        𝑅::Real = Ru,
-        B::Symbol = :MO,
-    )
+        f┆R::Function,
+        𝑀::Union{Real, MOLW},
+        𝑇min::Union{Real, TEMP},
+        𝑇ref::Union{Real, TEMP},
+        𝑇max::Union{Real, TEMP},
+        𝑢ref::ENER,
+        𝑠ref::ENTR,
+        𝑅::ENTR = 𝔾(Ru),
+    ) where {ℙ <: FLOAT}
     ℙ = promote_type(typeof.((𝑀, Tmin, Tref, Tmax, uref, sref))...) # Default 𝑅 left out
     ℙ = ℙ <: FLOAT ? ℙ : Float64
     return SpecificHeat{ℙ}(ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅, B)
