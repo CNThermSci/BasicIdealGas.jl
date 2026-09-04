@@ -81,64 +81,9 @@ end
 # Constants
 # ---------
 
-universal_R = 8.31447
-
-# Function in/out type utilities
-# ------------------------------
-
-function type_table(𝑓::Function; hint = 300)
-    ret = Tuple{DataType, DataType}[]
-    for 𝕌 in (1, u"K")
-        for 𝕀 in (Float64, Float32, Float16, Int64)
-            𝕚 = 𝕀(hint) * 𝕌
-            try
-                𝕠 = 𝑓(𝕚)
-                push!(ret, typeof.((𝕚, 𝕠)))
-            catch
-                push!(ret, (typeof(𝕚), Exception))
-            end
-        end
-    end
-    return ret
-end
-
-is_qty_dim(T, dim) = T <: Quantity && dimension(T) == dim
-
-function user_func_trywrap(𝑓::Function; hint = 300)
-    # Initializations
-    wrap = Dict{Symbol, Union{Function, Nothing}}(:i => nothing, :o => nothing)
-    # Full i/o type table for function
-    table = type_table(𝑓, hint = hint)
-    # Exception-filtered
-    valid = [ ti for ti in table if ti[2] != Exception ]
-    # INPUT WRAPPING
-    valid_uless_input = [ ti for ti in valid if ti[1] <: Union{FLOAT, Integer} ]
-    valid_ufull_input = [ ti for ti in valid if ti[1] <: Quantity ]
-    if length(valid_uless_input) == 0
-        # No valid unitless input
-        if length(valid_ufull_input) > 0
-            # 𝑓 only accepts Quantity / wrapper's input must be Real (no conversion)
-            tmpi(x::Real) = x * u"K"
-            tmpi(x::Quantity) = x
-            wrap[:i] = tmpi
-        else
-            # No valid wrappers: return Dict of nothings
-            return wrap
-        end
-    elseif length(valid_ufull_input) == 0
-        # No valid unitfull input
-        tmpj(x::Real) = x
-        tmpj(x::Quantity{𝕋, dimension(u"K")}) where 𝕋 = uconvert(u"K", x).val
-        wrap[:i] = tmpj
-    end
-    if !isnothing(wrap[:i])
-        table = type_table(𝑓 ∘ wrap[:i], hint = hint)
-        valid = [ ti for ti in table if ti[2] != Exception ]
-        valid_uless_input = [ ti for ti in valid if ti[1] <: Union{FLOAT, Integer} ]
-        valid_ufull_input = [ ti for ti in valid if ti[1] <: Quantity ]
-    end
-    # OUTPUT WRAPPING
-end
+const NA = 6.02214076e23u"1/mol"
+const kB = 1.380649e-23u"J/K"
+const Ru = uconvert(u"kJ/kmol/K", NA * kB)
 
 # Utilities
 # ---------
