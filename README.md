@@ -154,21 +154,23 @@ julia> C.u(1800) # Specific internal energy, mass base
 1647.0343929063752 kJ kg^-1
 
 julia> C.h(1800) # Specific enthalpy, mass base
-1987.0942636736138
+1987.0942136897386 kJ kg^-1
 
 julia> C.s0(1800) # Ideal gas partial entropy, mass base
-6.850566852042051
+6.850566852042049 kJ kg^-1 K^-1
 
 julia> C.Pr(1800) # Relative pressure, Pr = 1 at reference temperature
-38596.5956535214
+38596.95754937146
 
 julia> C.vr(1800) # Relative volume
-0.04663623745882819
+0.04663580018444517 K
 ```
 
 ### Example 2 – `IdealGas`
 
-`IdealGas` objects adds formula, name, and reference pressure data beyond the specific heat model, thus allowing for ideal gas $P$-$T$-$v$ and entropy calculations. Since these calculations require multiple input parameters, keyword argument versions are provided:
+`IdealGas` objects adds formula, name, and reference pressure data beyond the specific heat
+model, thus allowing for ideal gas $P-T-v$ and entropy calculations. Since these calculations
+require multiple input parameters, keyword argument versions are provided:
 
 ```julia
 julia> CO2 = IdealGas("CO2", "Carbon Dioxide", C)
