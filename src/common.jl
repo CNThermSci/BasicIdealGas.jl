@@ -83,6 +83,10 @@ export RuCODATA1986
 # Utilities
 # ---------
 
+# Precision of
+precof(x::Real) = typeof(x)
+precof(x::Quantity{ℙ}) where ℙ = ℙ
+
 # Precision Composition Simplification
 ⊚(p::Type{ℙ}, f::Function) where {ℙ <: FLOAT} = f(300) isa ℙ ? f : p ∘ f
 
