@@ -23,7 +23,7 @@ struct SpecificHeat{ℙ <: FLOAT}
         𝑇max::Quantity{ℙ, dimension(u"K"), typeof(u"K")},
         𝑢ref::Quantity{ℙ, dimension(u"kJ/kmol"), typeof(u"kJ/kmol")},
         𝑠ref::Quantity{ℙ, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")},
-        𝑅::Quantity{ℙ, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")} = ℙ(universal_R),
+        𝑅::Quantity{ℙ, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")} = ℙ(Ru),
     ) where {ℙ <: FLOAT} = begin
         @assert(ID != Symbol(""), "Error: Empty model ID")
         @assert(𝑀 > zero(ℙ) * u"kg/kmol", "Error: M <= 0 kg/kmol")
@@ -48,7 +48,7 @@ function SpecificHeat{ℙ}(
         𝑇max::Quantity{ℙ, dimension(u"K"), typeof(u"K")},
         𝑢ref::Quantity{ℙ, dimension(u"kJ/kmol"), typeof(u"kJ/kmol")},
         𝑠ref::Quantity{ℙ, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")},
-        𝑅::Quantity{ℙ, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")} = ℙ(universal_R),
+        𝑅::Quantity{ℙ, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")} = ℙ(Ru),
     ) where {ℙ <: FLOAT}
     return SpecificHeat(ID, ℙ ⊚ 𝑓, ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))..., B)
 end
@@ -63,7 +63,7 @@ function SpecificHeat(
         Tmax::Real,
         uref::Real,
         sref::Real,
-        𝑅::Real = universal_R,
+        𝑅::Real = Ru,
         B::Symbol = :MO,
     )
     ℙ = promote_type(typeof.((𝑀, Tmin, Tref, Tmax, uref, sref))...) # Default 𝑅 left out
@@ -81,7 +81,7 @@ function SpecificHeat{ℙ}(
         Tmax::Union{Real, TEMP},
         uref::ENER,
         sref::ENTR,
-        𝑅::Union{Real, ENTR} = universal_R,
+        𝑅::Union{Real, ENTR} = Ru,
     ) where {ℙ <: FLOAT}
     uref = uref isa MASS ? kSI(uref) * kSI(𝑀) : kSI(uref)
     sref = sref isa MASS ? kSI(sref) * kSI(𝑀) : kSI(sref)
@@ -99,7 +99,7 @@ function SpecificHeat(
         Tmax::Union{𝔸, TEMP{𝔸}},
         uref::ENER{𝕌},
         sref::ENTR{𝕊},
-        𝑅::Union{Real, ENTR} = universal_R,
+        𝑅::Union{Real, ENTR} = Ru,
     ) where {𝕄 <: Real, 𝕀 <: Real, 𝔸 <: Real, 𝔼 <: Real, 𝕌 <: Real, 𝕊 <: Real}
     ℙ = promote_type(𝕄, 𝕀, 𝔸, 𝔼, 𝕌, 𝕊) # Default R left out
     ℙ = ℙ <: FLOAT ? ℙ : Float64
