@@ -86,7 +86,7 @@ convert(::Type{SpecificHeat{ℙ}}, ξ::SpecificHeat{ℙ}) where {ℙ <: FLOAT} =
 
 function convert(::Type{SpecificHeat{ℙ}}, ξ::SpecificHeat{ℚ}) where {ℙ <: FLOAT, ℚ <: FLOAT}
     return SpecificHeat{ℙ}(
-        ξ.ID, ξ.𝑓, ξ.𝑀, ξ.Tmin, ξ.Tref, ξ.Tmax, ξ.uref, ξ.sref, ξ.𝑅
+        ξ.ID, ξ.f┆R, ξ.𝑀, ξ.𝑇min, ξ.𝑇ref, ξ.𝑇max, ξ.𝑢ref, ξ.𝑠ref, ξ.𝑅
     )
 end
 
@@ -127,14 +127,15 @@ end
 # SpecificHeat Helper functions
 # -----------------------------
 
-∫┆T(C::SpecificHeat, T::Real) = ∫(T -> C.𝑓(T) / T, C.Tref, T)
+∫┆T(C::SpecificHeat, 𝑇::TEMP) = ∫(T -> C.f┆R(T) / T, C.𝑇ref, 𝑇)
+∫┆T(C::SpecificHeat, 𝑇::Real) = ∫┆T(C, 𝑇 * u"K")
 
 # User-facing functions
 # ---------------------
 
-𝗯(C::SpecificHeat, T::Real) = begin
-    msg = "T = $(@sprintf("%.*g K", 5, T)) out of bounds"
-    @assert(C.Tmin <= T <= C.Tmax, msg)
+𝗯(C::SpecificHeat, 𝑇::TEMP) = begin
+    msg = "T = $(@sprintf("%.*g K", 5, 𝑇.val)) out of bounds"
+    @assert(C.𝑇min <= 𝑇 <= C.𝑇max, msg)
 end
 
 import Base: cp
