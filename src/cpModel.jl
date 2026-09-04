@@ -118,10 +118,7 @@ export SpecificHeat
 
 function Base.show(io::IO, ::MIME"text/plain", ξ::SpecificHeat{ℙ}) where {ℙ <: FLOAT}
     # rng = "[$(@sprintf("%.*g K", 5, ξ.Tmin)) $(@sprintf("%.*g K", 5, ξ.Tmax))]"
-    return print(
-        io,
-        "$(ξ.ID) cp$(pDeco(ℙ))(T)"
-    )
+    return print(io, "$(ξ.ID) cp$(pDeco(ℙ))(T)")
 end
 
 # SpecificHeat Helper functions
