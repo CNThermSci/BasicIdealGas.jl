@@ -153,9 +153,8 @@ end
 
 cp(ξ::SpecificHeat{ℙ}, 𝑇, B = :MA) where {ℙ <: FLOAT} = cp┆R(ξ, 𝑇) * R(ξ, B)
 cv(ξ::SpecificHeat{ℙ}, 𝑇, B = :MA) where {ℙ <: FLOAT} = cv┆R(ξ, 𝑇) * R(ξ, B)
-
-∫cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::ℙ) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ∫(ξ.𝑓, ξ.𝑇ref, 𝑇) / ξ.𝑅)
-∫cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::Real) where {ℙ <: FLOAT} = ∫cp┆R(ξ, ℙ(𝑇))
+∫cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ∫(ξ.f┆R, ξ.𝑇ref, 𝑇))
+∫cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::Real) where {ℙ <: FLOAT} = ∫cp┆R(ξ, 𝑇 * u"K")
 
 ∫cv┆R(ξ::SpecificHeat{ℙ}, 𝑇::Real) where {ℙ <: FLOAT} = ∫cp┆R(ξ, 𝑇) - ℙ(𝑇) + ξ.𝑇ref
 
