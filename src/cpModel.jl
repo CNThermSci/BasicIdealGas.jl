@@ -29,7 +29,6 @@ struct SpecificHeat{ℙ <: FLOAT}
         @assert(𝑀 > zero(ℙ) * u"kg/kmol", "Error: M <= 0 kg/kmol")
         @assert(zero(ℙ) * u"K" <= 𝑇min <= 𝑇ref < 𝑇max, "Error: Temperature values")
         @assert(𝑅 > zero(ℙ) * u"kJ/kmol/K", "Error: 𝑅 <= 0 kJ/kmol/K")
-        @assert(B in (:MA, :MO), "Error: B should be either :MA or :MO")
         wf┆R = (T::Quantity{𝔽, dimension(u"K")} where {𝔽 <: Real}) -> f┆R(ℙ(uconvert(u"K", T).val))
         return new{ℙ}(ID, ℙ ⊚ wf┆R, 𝑀, 𝑇min, 𝑇ref, 𝑇max, 𝑢ref, 𝑠ref, 𝑅)
     end
@@ -57,7 +56,7 @@ function SpecificHeat{ℙ}(
     uref = 𝑢ref isa MASS ? uconvert(u"kJ/kmol", 𝑢ref * 𝑀) : uconvert(u"kJ/kmol", 𝑢ref)
     sref = 𝑠ref isa MASS ? uconvert(u"kJ/kmol/K", 𝑠ref * 𝑀) : uconvert(u"kJ/kmol/K", 𝑠ref)
     R = 𝑅 isa MASS ? uconvert(u"kJ/kmol/K", 𝑅 * 𝑀) : uconvert(u"kJ/kmol/K", 𝑅)
-    return SpecificHeat(ID, f┆R, ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))..., B)
+    return SpecificHeat(ID, f┆R, ℙ.((M, Tmin, Tref, Tmax, uref, sref, 𝑅))...)
 end
 
 # Promotion type conversion / 2 indirections
@@ -71,10 +70,10 @@ function SpecificHeat(
         𝑢ref::ENER,
         𝑠ref::ENTR,
         𝑅::ENTR = Ru,
-    ) where {ℙ <: FLOAT}
+    )
     ℙ = promote_type(precof.((𝑀, 𝑇min, 𝑇ref, 𝑇max, 𝑢ref, 𝑠ref))...) # Default 𝑅 left out
     ℙ = ℙ <: FLOAT ? ℙ : Float64
-    return SpecificHeat{ℙ}(ID, 𝑓, 𝑀, 𝑇min, 𝑇ref, 𝑇max, 𝑢ref, 𝑠ref, 𝑅)
+    return SpecificHeat{ℙ}(ID, f┆R, 𝑀, 𝑇min, 𝑇ref, 𝑇max, 𝑢ref, 𝑠ref, 𝑅)
 end
 
 # Conversions
