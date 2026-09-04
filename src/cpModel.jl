@@ -153,13 +153,13 @@ h┆R(ξ::SpecificHeat, 𝑇::TEMP) = u┆R(ξ, 𝑇) + ℙ(𝑇)
 h┆R(ξ::SpecificHeat, 𝑇::Real) = h┆R(ξ, 𝑇 * u"K")
 u(ξ::SpecificHeat, 𝑇, B = :MA) = u┆R(ξ, 𝑇) * R(ξ, B)
 h(ξ::SpecificHeat, 𝑇, B = :MA) = h┆R(ξ, 𝑇) * R(ξ, B)
-
 ∫cp┆RT(ξ::SpecificHeat, 𝑇::TEMP) = (𝗯(ξ, 𝑇); ∫(T -> ξ.f┆R(T) / T, ξ.𝑇ref, 𝑇))
 ∫cp┆RT(ξ::SpecificHeat, 𝑇::Real) = ∫cp┆RT(ξ, 𝑇 * u"K")
-s0┆R(ξ::SpecificHeat{ℙ}, 𝑇::Real) where {ℙ <: FLOAT} = ∫cp┆RT(ξ, 𝑇) + ξ.𝑠ref / ξ.𝑅
-s0(ξ::SpecificHeat{ℙ}, 𝑇::Real, B::Symbol = :MA) where {ℙ <: FLOAT} = s0┆R(ξ, 𝑇) * R(ξ, B)
-Pr(ξ::SpecificHeat{ℙ}, 𝑇::Real) where {ℙ <: FLOAT} = exp(∫cp┆RT(ξ, 𝑇))
-vr(ξ::SpecificHeat{ℙ}, 𝑇::Real) where {ℙ <: FLOAT} = ℙ(𝑇) / Pr(ξ, 𝑇)
+s0┆R(ξ::SpecificHeat, 𝑇) = ∫cp┆RT(ξ, 𝑇) + ξ.𝑠ref / ξ.𝑅
+s0(ξ::SpecificHeat, 𝑇, B = :MA) = s0┆R(ξ, 𝑇) * R(ξ, B)
+Pr(ξ::SpecificHeat, 𝑇) = exp(∫cp┆RT(ξ, 𝑇))
+vr(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = ℙ(𝑇) / Pr(ξ, 𝑇)
+vr(ξ::SpecificHeat, 𝑇::Real) = vr(ξ, 𝑇 * u"K")
 
 # Base.getproperty
 # ----------------
