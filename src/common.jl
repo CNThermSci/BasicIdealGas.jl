@@ -81,9 +81,13 @@ end
 # Constants
 # ---------
 
-const NA = 6.02214076e23u"1/mol"
-const kB = 1.380649e-23u"J/K"
-const Ru = uconvert(u"kJ/kmol/K", NA * kB)
+# Exact CODATA2022 value for Ru
+const Ru = uconvert(u"kJ/kmol/K", MolarGasConstant)
+export Ru
+
+# Legacy CODATA1986 value - baked into NASA-9 coefficients
+const RuCODATA1986 = 8.314510u"kJ/kmol/K"
+export RuCODATA1986
 
 # Utilities
 # ---------
