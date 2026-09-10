@@ -54,7 +54,7 @@ $$
 $$
 
 Textbook (Çengel, Y. A., 2007) parameter values for the $CO_2$ gas are: $a = 22.26$, $b =
-5.981 \times 10^{-2)$, $c = -3.501 \times 10^{-5}$, $d = 7.469 \times 10^{-9)$,
+5.981 \times 10^{-2}$, $c = -3.501 \times 10^{-5}$, $d = 7.469 \times 10^{-9}$,
 $T_{min} = 273\,K$, $T_{max} = 1800\,K$.
 
 Moreover, from the Appendix tables, one finds that $\bar{R} = 8.314\,kJ/kmol/K$ and at $T = 298\,K$,
