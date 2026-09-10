@@ -24,14 +24,20 @@ end
 # External constructors
 # ---------------------
 
-# Set type conversion / 1 indirection
-IdealGas{ℙ}(
-    FORM::AbstractString,
-    NAME::AbstractString,
-    HMOD::SpecificHeat,
-    PREF::Real = one(ℙ),
-) where {ℙ} = IdealGas(FORM, NAME, ℙ(HMOD), ℙ(PREF))
+# Set precision conversion / 1 indirection
+function IdealGas{ℙ}(
+        FORM::AbstractString,
+        NAME::AbstractString,
+        HMOD::SpecificHeat,
+        PREF::Union{Real, PRES} = one(ℙ) * u"kPa",
+    ) where {ℙ}
+    Pref = PREF isa PRES ? uconvert(u"kPa", PREF) : PREF * u"kPa"
+    IdealGas(FORM, NAME, ℙ.((HMOD, Pref))...)
+end
 
+# Promotion type conversion / 2 indirections
+#
+#
 # Heat model type conversion / 2 indirections
 IdealGas(
     FORM::AbstractString,
