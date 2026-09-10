@@ -29,8 +29,8 @@ struct SpecificHeat{ℙ <: FLOAT}
         @assert(𝑀 > zero(ℙ) * u"kg/kmol", "Error: M <= 0 kg/kmol")
         @assert(zero(ℙ) * u"K" <= 𝑇min <= 𝑇ref < 𝑇max, "Error: Temperature values")
         @assert(𝑅 > zero(ℙ) * u"kJ/kmol/K", "Error: 𝑅 <= 0 kJ/kmol/K")
-        wf┆R = (T::Quantity{𝔽, dimension(u"K")} where {𝔽 <: Real}) -> f┆R(ℙ(uconvert(u"K", T).val))
-        return new{ℙ}(ID, ℙ ⊚ wf┆R, 𝑀, 𝑇min, 𝑇ref, 𝑇max, 𝑢ref, 𝑠ref, 𝑅)
+        wf┆R = (T::Quantity{𝔽, dimension(u"K")} where {𝔽 <: Real}) -> (ℙ ⊚ f┆R)(ℙ(uconvert(u"K", T).val))
+        return new{ℙ}(ID, wf┆R, 𝑀, 𝑇min, 𝑇ref, 𝑇max, 𝑢ref, 𝑠ref, 𝑅)
     end
 end
 
@@ -84,8 +84,8 @@ import Base: convert
 convert(::Type{SpecificHeat{ℙ}}, ξ::SpecificHeat{ℙ}) where {ℙ <: FLOAT} = ξ
 
 function convert(::Type{SpecificHeat{ℙ}}, ξ::SpecificHeat{ℚ}) where {ℙ <: FLOAT, ℚ <: FLOAT}
-    return if ξ.f┆R isa ComposedFunction
-        SpecificHeat{ℙ}(ξ.ID, ξ.f┆R.inner.f┆R, ξ.𝑀, ξ.𝑇min, ξ.𝑇ref, ξ.𝑇max, ξ.𝑢ref, ξ.𝑠ref, ξ.𝑅)
+    return if ξ.f┆R.f┆R isa ComposedFunction
+        SpecificHeat{ℙ}(ξ.ID, ξ.f┆R.f┆R.inner, ξ.𝑀, ξ.𝑇min, ξ.𝑇ref, ξ.𝑇max, ξ.𝑢ref, ξ.𝑠ref, ξ.𝑅)
     else
         SpecificHeat{ℙ}(ξ.ID, ξ.f┆R.f┆R, ξ.𝑀, ξ.𝑇min, ξ.𝑇ref, ξ.𝑇max, ξ.𝑢ref, ξ.𝑠ref, ξ.𝑅)
     end
@@ -222,7 +222,7 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
 end
 
 Base.propertynames(::SpecificHeat) = (
-    :ID, :𝑓, :𝑀, :𝑇min, :𝑇max, :𝑇ref, :𝑢ref, :𝑠ref, :𝑅,
+    :ID, :f┆R, :𝑀, :𝑇min, :𝑇max, :𝑇ref, :𝑢ref, :𝑠ref, :𝑅,
     :f, :M, :Tmin, :Tref, :Tmax, :uref, :sref, :R, :RMO, :RMA, :view,
     :cp┆R, :cv┆R, :ga, :R, :∫cp┆R, :∫cv┆R,
     :u┆R, :h┆R, :∫cp┆RT, :s0┆R, :Pr, :vr,
