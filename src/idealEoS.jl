@@ -36,9 +36,6 @@ function IdealGas{ℙ}(
 end
 
 # Promotion type conversion / 2 indirections
-#
-#
-# Heat model type conversion / 2 indirections
 IdealGas(
     FORM::AbstractString,
     NAME::AbstractString,
