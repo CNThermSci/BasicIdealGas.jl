@@ -20,8 +20,16 @@ cp_R = Dict(
     end,
 )
 
+function cu_cp_R(ℙ::Type{T} where {T <: Base.IEEEFloat})
+    return T -> begin
+        t = ℙ(T / 1000)
+        r = ℙ(8314 // 1000)
+        c = map(ℙ, [(2226//100) , (5891//100), -(3501//100), (7469//1000)])
+        sum([ c[i+1]*t^i for i in 0:3 ]) / r
+    end
+end
+
 @testset "cpModel.test.jl: inner constructor return types                           " begin
-    bareRu = 8.31446261815324
     for ℙ in union2vec(Base.IEEEFloat)
         for 𝔽 in (union2vec(Base.IEEEFloat)..., float)
             ID = :cubic
@@ -30,12 +38,12 @@ cp_R = Dict(
             uref, sref, 𝑀, 𝑅 = 6885u"kJ/kmol", 213.685u"kJ/kmol/K", 44.01u"kg/kmol", Ru
             pars = ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))
             @test SpecificHeat(ID, f┆R, pars...) isa SpecificHeat{ℙ}
-            f┆R = 𝔽 ∘ T -> (ℙ(22.26) + ℙ(5.891e-2) * T - ℙ(3.501e-5) * T^2 + ℙ(7.469e-9) * T^3) / ℙ(bareRu)
+            f┆R = 𝔽 ∘ cu_cp_R(ℙ)
             # Constructor function smart composition simplifies f┆R away into a Function:
             @test !(SpecificHeat(ID, f┆R, pars...).f┆R isa ComposedFunction)
             # Inner f┆R not a float-returning function exception
-            f┆R = 𝔽 ∘ T -> 4
-            @test SpecificHeat(ID, f┆R, pars...).f┆R isa ComposedFunction
+            g┆R = 𝔽 ∘ cp_R[:const]
+            @test SpecificHeat(ID, g┆R, pars...).f┆R.f┆R isa ComposedFunction
         end
     end
 end
