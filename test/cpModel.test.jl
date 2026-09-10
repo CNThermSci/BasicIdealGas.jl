@@ -98,35 +98,35 @@ end
     end
 end
 
-## @testset "cpModel.test.jl: type conversions                                         " begin
-##     ID = :cubic
-##     f┆R = cp_R[:cubic]
-##     Tmin, Tref, Tmax = 273.0, 298.0, 1800.0
-##     uref, sref, 𝑀, 𝑅 = 6885.0, 213.685, 44.01, 8.31447
-##     pars = (ID, f┆R, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
-##     SH = Dict(
-##         Float16 => SpecificHeat{Float16}(pars...),
-##         Float32 => SpecificHeat{Float32}(pars...),
-##         Float64 => SpecificHeat{Float64}(pars...),
-##     )
-##     # Conversions
-##     for orig in union2vec(Base.IEEEFloat)
-##         for dest in union2vec(Base.IEEEFloat)
-##             # Lossless f┆R conversion
-##             @test SH[orig].f┆R === orig(SH[dest]).f┆R
-##             # Type conversion
-##             @test typeof(SH[orig]) === typeof(orig(SH[dest]))
-##         end
-##     end
-##     # Lossless narrowings
-##     @test SH[Float64] === Float64(SH[Float64])
-##     @test SH[Float32] === Float32(SH[Float64])
-##     @test SH[Float32] === Float32(SH[Float32])
-##     @test SH[Float16] === Float16(SH[Float64])
-##     @test SH[Float16] === Float16(SH[Float32])
-##     @test SH[Float16] === Float16(SH[Float16])
-## end
-## 
+@testset "cpModel.test.jl: type conversions                                         " begin
+    ID = :cubic
+    f┆R = cp_R[:cubic]
+    Tmin, Tref, Tmax = 273.0, 298.0, 1800.0
+    uref, sref, 𝑀, 𝑅 = 6885.0, 213.685, 44.01, 8.31447
+    pars = (ID, f┆R, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
+    SH = Dict(
+        Float16 => SpecificHeat{Float16}(pars...),
+        Float32 => SpecificHeat{Float32}(pars...),
+        Float64 => SpecificHeat{Float64}(pars...),
+    )
+    # Conversions
+    for orig in union2vec(Base.IEEEFloat)
+        for dest in union2vec(Base.IEEEFloat)
+            # Lossless f┆R conversion
+            @test SH[orig].f┆R === orig(SH[dest]).f┆R
+            # Type conversion
+            @test typeof(SH[orig]) === typeof(orig(SH[dest]))
+        end
+    end
+    # Lossless narrowings
+    @test SH[Float64] === Float64(SH[Float64])
+    @test SH[Float32] === Float32(SH[Float64])
+    @test SH[Float32] === Float32(SH[Float32])
+    @test SH[Float16] === Float16(SH[Float64])
+    @test SH[Float16] === Float16(SH[Float32])
+    @test SH[Float16] === Float16(SH[Float16])
+end
+
 ## @testset "cpModel.test.jl: type promotions                                          " begin
 ##     ID = :cubic
 ##     f┆R = cp_R[:cubic]
