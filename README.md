@@ -50,13 +50,15 @@ provides types for basic ideal gas functionality from a hierarchy of `Type`s:
 Let's build a simple cubic $\bar{c}_{p}(T)$ model given as
 
 $$
-\bar{c}_{p}(T) = a + bT + cT^2 + dT^3, T_{min} \leqslant T \leqslant T_{max}
+\bar{c}_{p}(T) = a + bT + cT^2 + dT^3,\quad T_{min} \leqslant T \leqslant T_{max}
 $$
 
-Textbook (Çengel, Y. A., 2007) parameter values for the $CO_2$ gas are: `a = 22.26`, `b =
-5.981e-2`, `c = -3.501e-5`, `d = 7.469e-9`, `Tmin = 273`K, `Tmax = 1800`K. Moreover, from the
-Appendix tables, one finds that $\bar{R} = 8.314 kJ/kmol/K$ and at $T = 298 K$,
-$\bar{u} = 6885 kJ/kmol$, and $\bar{s} = 213.7 kJ/kmol/K$, all with 4 significant figures.
+Textbook (Çengel, Y. A., 2007) parameter values for the $CO_2$ gas are: $a = 22.26$, $b =
+5.981 \times 10^{-2)$, $c = -3.501 \times 10^{-5}$, $d = 7.469 \times 10^{-9)$,
+$T_{min} = 273\,K$, $T_{max} = 1800\,K$.
+
+Moreover, from the Appendix tables, one finds that $\bar{R} = 8.314\,kJ/kmol/K$ and at $T = 298\,K$,
+$\bar{u} = 6885\,kJ/kmol$, and $\bar{s} = 213.7\,kJ/kmol/K$, all with 4 significant figures.
 
 *Instantiation:*
 
