@@ -81,7 +81,7 @@ end
 
 ## @testset "cpModel.test.jl: outer constructor return types                           " begin
 ##     ID, B = :cubic, :MO
-##     f┆R = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
+##     f┆R = cp_R[:cubic]
 ##     Tmin, Tref, Tmax = 273, 298, 1800
 ##     uref, sref, 𝑀, 𝑅 = 6885, 213685 // 1000, BigFloat("44.01"), π
 ##     # Set type conversion / 1 indirection
@@ -109,7 +109,7 @@ end
 ## 
 ## @testset "cpModel.test.jl: constructor's optional arguments                         " begin
 ##     ID = :cubic
-##     f┆R = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
+##     f┆R = cp_R[:cubic]
 ##     Tmin, Tref, Tmax = 273, 298, 1800
 ##     uref, sref, 𝑀, 𝑅 = 6885, 213685 // 1000, 4401 // 100, BasicIdealGas.universal_R
 ##     # Promotion type conversion / 2 indirections
@@ -152,7 +152,7 @@ end
 ## 
 ## @testset "cpModel.test.jl: type conversions                                         " begin
 ##     ID, B = :cubic, :MO
-##     f┆R = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
+##     f┆R = cp_R[:cubic]
 ##     Tmin, Tref, Tmax = 273.0, 298.0, 1800.0
 ##     uref, sref, 𝑀, 𝑅 = 6885.0, 213.685, 44.01, 8.31447
 ##     pars = (ID, f┆R, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
@@ -181,7 +181,7 @@ end
 ## 
 ## @testset "cpModel.test.jl: type promotions                                          " begin
 ##     ID, B = :cubic, :MO
-##     f┆R = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
+##     f┆R = cp_R[:cubic]
 ##     Tmin, Tref, Tmax = 273.0, 298.0, 1800.0
 ##     uref, sref, 𝑀, 𝑅 = 6885.0, 213.685, 44.01, 8.31447
 ##     pars = (ID, f┆R, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
@@ -234,7 +234,7 @@ end
 ##     vr = BasicIdealGas.vr
 ##     # Float16 are tested but may overflow depending on model function form and argument type
 ##     for ℙ in [Float32, Float64]
-##         f┆R = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
+##         f┆R = cp_R[:cubic]
 ##         𝑀, Tmin, Tref, Tmax, uref, sref = 44.01, 273, 298, 1800, 6885, 213.685
 ##         𝑅 = BasicIdealGas.universal_R
 ##         C = SpecificHeat{ℙ}(:cubic, f┆R, 𝑀, Tmin, Tref, Tmax, uref, sref)
