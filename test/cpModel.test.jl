@@ -11,12 +11,21 @@ function union2vec(theU::Union)
     return ret
 end
 
+cp_R = Dict(
+    :const => T -> 4,
+    :cubic => T -> begin
+        t = T / 1000
+        r = 8314 // 1000
+        ((2226//100) + (5891//100)*t -(3501//100)*t^2 +(7469//1000)*t^3) / r
+    end,
+)
+
 @testset "cpModel.test.jl: inner constructor return types                           " begin
     bareRu = 8.31446261815324
     for ℙ in union2vec(Base.IEEEFloat)
         for 𝔽 in (union2vec(Base.IEEEFloat)..., float)
             ID = :cubic
-            f┆R = 𝔽 ∘ T -> (22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3) / bareRu
+            f┆R = 𝔽 ∘ cp_R[:cubic]
             Tmin, Tref, Tmax = 273u"K", 298u"K", 1800u"K"
             uref, sref, 𝑀, 𝑅 = 6885u"kJ/kmol", 213.685u"kJ/kmol/K", 44.01u"kg/kmol", Ru
             pars = ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))
