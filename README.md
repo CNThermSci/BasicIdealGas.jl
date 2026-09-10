@@ -47,23 +47,30 @@ provides types for basic ideal gas functionality from a hierarchy of `Type`s:
 
 ### Example 1 – `SpecificHeat`
 
+Let's build a simple cubic $\bar{c}_{p}(T)$ model given as
+
+$$
+\bar{c}_{p}(T) = a + bT + cT^2 + dT^3, T_{min} \leqslant T \leqslant T_{max}
+$$
+
+Textbook (Çengel, Y. A., 2007) parameter values for the $CO_2$ gas are: `a = 22.26`, `b =
+5.981e-2`, `c = -3.501e-5`, `d = 7.469e-9`, `Tmin = 273`K, `Tmax = 1800`K. Moreover, from the
+Appendix tables, one finds that $\bar{R} = 8.314 kJ/kmol/K$ and at $T = 298 K$,
+$\bar{u} = 6885 kJ/kmol$, and $\bar{s} = 213.7 kJ/kmol/K$, all with 4 significant figures.
+
 *Instantiation:*
 
 ```julia
 julia> using BasicIdealGas
 
-julia> C = SpecificHeat(
-    :cubic,             # model ID
-    # molar cp(T)/Ru model
-    T -> (22.26 +5.891e-2*T -3.501e-5*T^2 +7.469e-9*T^3) / Ru.val,
-    44.01,              # Molecular weight, kg/kmol
-    273,                # Minimum T, K
-    298,                # Reference T, K
-    1800,               # Maximum T, K
-    6885u"kJ/kmol",     # Ref internal energy
-    213.685u"kJ/kmol/K" # Ref entropy
-    # Omitted molar gas constant (defaults to universal one)
-    )
+julia> function cp_R(T)
+           t = T / 1000
+           r = 8314 // 1000
+           ((2226//100) + (5891//100)*t -(3501//100)*t^2 +(7469//1000)*t^3) / r
+       end
+cp_R (generic function with 1 method)
+
+julia> C = SpecificHeat(:cubic, cp_R, 44.01, 273, 298, 1800, 6885u"kJ/kmol", 213.7u"kJ/kmol/K")
 cubic cp₆₄(T)
 
 julia> typeof(C)
@@ -129,14 +136,14 @@ true
 ```julia
 julia> C.view
 cubic cp₆₄(T)
-                        +--------------------------------+ 
-                    1.4 |⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⣀⣀⣠| 
-                        |⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⠤⠤⠔⠒⠒⠒⠉⠉⠉⠉⠁⠀⠀⠀⠀⠀| 
-   cp (T) (kJ kg⁻¹ K⁻¹) |⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⠤⠒⠊⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀| 
-                        |⠀⠀⠀⠀⠀⣀⠤⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀| 
-                        |⠀⠀⢀⠔⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀| 
-                    0.8 |⡠⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀| 
-                        +--------------------------------+ 
+                        +--------------------------------+
+                    1.4 |⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⣀⣀⣠|
+                        |⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⠤⠤⠔⠒⠒⠒⠉⠉⠉⠉⠁⠀⠀⠀⠀⠀|
+   cp (T) (kJ kg⁻¹ K⁻¹) |⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⠤⠒⠊⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀|
+                        |⠀⠀⠀⠀⠀⣀⠤⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀|
+                        |⠀⠀⢀⠔⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀|
+                    0.8 |⡠⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀|
+                        +--------------------------------+
                         ⠀273⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀T (K)⠀⠀⠀⠀⠀⠀⠀⠀⠀1 800⠀
 julia> cp(C, 1800) # Defaults to mass base
 1.327534832992502 kJ kg^-1 K^-1
