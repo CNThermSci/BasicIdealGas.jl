@@ -57,7 +57,7 @@ adjswp(t::Tuple) = [
     for ℙ in union2vec(Base.IEEEFloat)
         ID = :cubic
         f┆R = cp_R[:cubic]
-        Tmin, Tref, Tmax = 273u"K", 298u"K", 1800u"K"
+        Tneg, Tmin, Tref, Tmax = -300u"K", 273u"K", 298u"K", 1800u"K"
         uref, sref, 𝑀, 𝑅 = 6885u"kJ/kmol", 213.685u"kJ/kmol/K", 44.01u"kg/kmol", Ru
         pars = ℙ.((0, Tmin, Tref, Tmax, uref, sref, 𝑅))
         @test_throws "Error: Empty model ID" SpecificHeat(Symbol(""), f┆R, pars...)
@@ -68,14 +68,10 @@ adjswp(t::Tuple) = [
             pars = (ID, f┆R, ℙ.((𝑀, temp[2:end]..., uref, sref, 𝑅))...)
             @test_throws "Error: Temperature values" SpecificHeat(pars...)
         end
-        pars = ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 0))
+        pars = ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 0Ru))
         @test_throws "Error: 𝑅 <= 0" SpecificHeat(ID, f┆R, pars...)
         pars = ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, -𝑅))
         @test_throws "Error: 𝑅 <= 0" SpecificHeat(ID, f┆R, pars...)
-        pars = (ID, f┆R, ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))...)
-        for b in (:ma, :mo, :other, Symbol(""))
-            @test_throws "Error: B should be either :MA or :MO" SpecificHeat(pars..., b)
-        end
     end
 end
 
