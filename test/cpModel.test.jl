@@ -12,7 +12,7 @@ function union2vec(theU::Union)
 end
 
 cp_R = Dict(
-    :const => T -> 4,
+    :const => T -> 5//2,
     :cubic => T -> begin
         t = T / 1000
         r = 8314 // 1000
@@ -182,24 +182,23 @@ end
     vr = BasicIdealGas.vr
     # Float16 are tested but may overflow depending on model function form and argument type
     for ℙ in [Float32, Float64]
-        f┆R = cp_R[:cubic]
-        Tmin, Tref, Tmax = 273, 298, 1800
+        Tmin, Tref, Tmax = 273u"K", 298u"K", 1800u"K"
         uref, sref, 𝑀 = 6885u"kJ/kmol", 213.685u"kJ/kmol/K", 44.01u"kg/kmol"
-        𝑅 = BasicIdealGas.universal_R
-        C = SpecificHeat{ℙ}(:cubic, f┆R, 𝑀, Tmin, Tref, Tmax, uref, sref)
-        G = SpecificHeat{ℙ}(:const, T -> (5 / 2) * 𝑅, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
-        for T in (Tmin, Int(round((Tmin + Tmax) / 2)), Tmax)
+        𝑅 = Ru
+        C = SpecificHeat{ℙ}(:cubic, cp_R[:cubic], 𝑀, Tmin, Tref, Tmax, uref, sref)
+        G = SpecificHeat{ℙ}(:const, cp_R[:const], 𝑀, Tmin, Tref, Tmax, uref, sref)
+        for T in (Tmin, (Tmin + Tmax) / 2, Tmax)
             @test C.f┆R(T) isa ℙ
-            @test cp┆R(C, T) ≈ C.f┆R(T) / C.𝑅
-            @test cv┆R(C, T) ≈ (C.f┆R(T) - C.𝑅) / C.𝑅
+            @test cp┆R(C, T) ≈ C.f┆R(T)
+            @test cv┆R(C, T) ≈ C.f┆R(T) - one(ℙ)
             @test ga(C, T) ≈ cp┆R(C, T) / cv┆R(C, T) ≈ cp(C, T) / cv(C, T)
             @test R(C, :MO) == C.𝑅
             @test R(C, :MA) ≈ C.𝑅 / C.𝑀
             for B in (:MA, :MO)
-                @test cp(C, T) ≈ cp┆R(C, T) * R(C)
-                @test cv(C, T) ≈ cv┆R(C, T) * R(C)
-                @test cp(C, T) ≈ cv(C, T) + R(C)
-                @test ga(C, T) ≈ cp(C, T) / cv(C, T)
+                @test cp(C, T, B) ≈ cp┆R(C, T) * R(C, B)
+                @test cv(C, T, B) ≈ cv┆R(C, T) * R(C, B)
+                @test cp(C, T, B) ≈ cv(C, T) + R(C, B)
+                @test ga(C, T) ≈ cp(C, T, B) / cv(C, T, B)
             end
             @test ∫cp┆R(G, T) ≈ (5 // 2) * (ℙ(T) - C.Tref)
             @test ∫cv┆R(G, T) ≈ (3 // 2) * (ℙ(T) - C.Tref)
