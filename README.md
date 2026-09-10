@@ -219,6 +219,35 @@ julia> [ C.f, C.M, C.Tmin, C.uref, C.sref ]
   213.7 kJ K^-1 kmol^-1
 ```
 
+For the gas constant, convenience native, `:R`, mass, `:RMA`, and molar, `:RMO` object
+properties are provided:
+
+```julia
+julia> [ getproperty(C, p) for p in (:R, :RMA, :RMO) ]  # loop usage
+3-element Vector{Quantity{Float64}}:
+ 8.31446261815324 kJ K^-1 kmol^-1
+ 0.18892212265742422 kJ kg^-1 K^-1
+ 8.31446261815324 kJ K^-1 kmol^-1
+
+julia> C.RMA  # most idiomatic, single usage pattern
+0.18892212265742422 kJ kg^-1 K^-1
+```
+
+*Model Functions:*
+
+Model _functions_ are also made available through properties. This was the design choice instead
+of flooding the user namespace with short-named functions. Model functions can be divided into
+(i) base-independent ones, that only require a temperature input, and (ii) based ones, that
+require both a temperature and a base (either mass `:MA`, or molar `:MO`) inputs.
+
+Base-independent ones include `(:cp┆R, :cv┆R, :ga, :R, :∫cp┆R, :∫cv┆R, :u┆R, :h┆R, :∫cp┆RT,
+:s0┆R, :Pr, :vr)`:
+
+```julia
+```
+
+Based ones include `(:cp, :cv, :u, :h, :s0)`:
+
 ```julia
 julia> C.cp(1800, :MO) # Molar base
 58.424808000000006 kJ K^-1 kmol^-1
