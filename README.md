@@ -49,7 +49,7 @@ He gas, const cp₆₄(T)
 julia> T1 = 1000u"K"
 1000 K
 
-julia> [ He.cp(T1, :MO), He.u(T, :MA), He.h(T, :MA), He.s0(T1, :MO) ]
+julia> [ He.cp(T1, :MO), He.u(T1, :MA), He.h(T1, :MA), He.s0(T1, :MO) ]
 4-element Vector{Quantity{Float64}}:
    12.47169392722986 kJ K^-1 kmol^-1
   931.5786156545383 kJ kg^-1
