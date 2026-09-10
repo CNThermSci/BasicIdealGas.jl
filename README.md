@@ -260,32 +260,24 @@ julia> C.vr(300u"K")        # Relative specific volume (vr ≡ T/Pr), [K]
 291.21433797872834 K
 ```
 
-Based ones include `(:cp, :cv, :u, :h, :s0)`:
+Based ones include `(:cp, :cv, :u, :h, :s0)`, being based thermodynamic properties (the default
+base being the mass `:MA` one):
 
 ```julia
-julia> C.cp(1800, :MO) # Molar base
-58.424808000000006 kJ K^-1 kmol^-1
+julia> T = 300u"K"
+300 K
 
-julia> C.cv(1800, :MO)
-50.11034538184677 kJ K^-1 kmol^-1
+julia> C.cp(T)          # specific heat at const-pressure (default mass base)
+0.8403958395259933 kJ kg^-1 K^-1
 
-julia> C.ga(1800) # γ = cp/cv
-1.1659230754606869
+julia> C.cp(T, :MO)     # specific heat at const-pressure (molar base)
+36.98582089753896 kJ K^-1 kmol^-1
 
-julia> C.u(1800) # Specific internal energy, mass base
-1647.0343929063752 kJ kg^-1
+julia> C.u(T, :MA)      # specific internal energy (explicit mass base)
+157.742849247618 kJ kg^-1
 
-julia> C.h(1800) # Specific enthalpy, mass base
-1987.0942136897386 kJ kg^-1
-
-julia> C.s0(1800) # Ideal gas partial entropy, mass base
-6.850566852042049 kJ kg^-1 K^-1
-
-julia> C.Pr(1800) # Relative pressure, Pr = 1 at reference temperature
-38596.95754937146
-
-julia> C.vr(1800) # Relative volume
-0.04663580018444517 K
+julia> C.h(T, :MA)      # specific enthlapy, mass base
+214.41948604484526 kJ kg^-1
 ```
 
 ### Example 2 – `IdealGas`
