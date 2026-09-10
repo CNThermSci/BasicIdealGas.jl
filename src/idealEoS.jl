@@ -105,6 +105,8 @@ for FUNC in (:cp, :cv, :u, :h, :s0)
     end
 end
 
+# TODO: feat/units below
+
 # Internal, fast, positional, EoS functions
 _P(ξ::IdealGas{ℙ}, T::Real, v::Real, B::Symbol = :MA) where {ℙ} = R(ξ, B) * ℙ(T / v)
 _T(ξ::IdealGas{ℙ}, P::Real, v::Real, B::Symbol = :MA) where {ℙ} = ℙ(P * v) / R(ξ, B)
