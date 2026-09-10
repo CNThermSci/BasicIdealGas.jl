@@ -241,9 +241,17 @@ of flooding the user namespace with short-named functions. Model functions can b
 require both a temperature and a base (either mass `:MA`, or molar `:MO`) inputs.
 
 Base-independent ones include `(:cp┆R, :cv┆R, :ga, :R, :∫cp┆R, :∫cv┆R, :u┆R, :h┆R, :∫cp┆RT,
-:s0┆R, :Pr, :vr)`:
+:s0┆R, :Pr, :vr)`, being dimensionless ratios or functions thereof:
 
 ```julia
+julia> C.ga(300u"K")        # γ ≡ cp/cv at given temperature
+1.2899919333131564
+
+julia> C.∫cv┆R(300u"K")     # ∫(cv/r)dT from Tref -> T
+6.887131257604551 K
+
+julia> C.u┆R(300u"K")       # u/R at T
+834.9622957267734 K
 ```
 
 Based ones include `(:cp, :cv, :u, :h, :s0)`:
