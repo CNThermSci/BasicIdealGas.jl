@@ -2,6 +2,7 @@
 
 Basic ideal gas models in engineering thermodynamics.
 
+
 ## Description
 
 `BasicIdealGas.jl` is a package developed in the context of mechanical engineering education. It
@@ -16,6 +17,7 @@ provides types for basic ideal gas functionality from a hierarchy of `Type`s:
   Base.IEEEFloat`. `IdealGas{ℙ}` objects include a `SpecificHeat{ℙ}` member data.  `IdealGas`
   introduces Equation of State calculations atop of the ones covered by the `SpecificHeat` data
   member, including the ideal gas $P-T-v$ behavior, as well as entropy, $s:s(P, T)$, ones.
+
 
 ## Common Design Choices
 
@@ -37,6 +39,7 @@ provides types for basic ideal gas functionality from a hierarchy of `Type`s:
   Unitless molecular mass is assumed to be in $kg/kmol$, temperatures in $K$, and pressures in
   $kPa$.
 
+
 ## Quick Overview (for the impatient)
 
 ```julia
@@ -57,7 +60,9 @@ julia> [ He.cp(T1, :MO), He.u(T1, :MA), He.h(T1, :MA), He.s0(T1, :MO) ]
   151.16500554193544 kJ K^-1 kmol^-1
 ```
 
+
 ## Paced Examples
+
 
 ### Example 1 – Building and Converting `SpecificHeat`
 
@@ -147,6 +152,7 @@ true
 julia> C64.𝑅 === C.𝑅        # Lossy conversion in the parameters (by about eps(Float32))
 false
 ```
+
 
 ### Example 2 – Using the `SpecificHeat`
 
@@ -294,7 +300,8 @@ julia> C.h(T, :MA)      # specific enthlapy, mass base
 214.41948604484526 kJ kg^-1
 ```
 
-### Example 2 – `IdealGas`
+
+### Example 3 – `IdealGas`
 
 `IdealGas` objects adds formula, name, and reference pressure data beyond the specific heat
 model, thus allowing for ideal gas $P-T-v$ and entropy calculations. Since these calculations
@@ -323,6 +330,7 @@ julia> CO2.v(P=47, T=300)
 1.2058869599269026
 ```
 
+
 ## Author
 
 Prof. C. Naaktgeboren, PhD. [Lattes](http://lattes.cnpq.br/8621139258082919).
@@ -335,10 +343,12 @@ Federal University of Technology, Paraná
 
 `NaaktgeborenC <dot!> PhD {at!} gmail [dot!] com`
 
+
 ## License
 
 This project is [licensed](https://github.com/CNThermSci/BasicIdealGas.jl/blob/main/LICENSE)
 under the MIT license.
+
 
 ## Citations
 
