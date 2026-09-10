@@ -80,7 +80,7 @@ adjswp(t::Tuple) = [
 end
 
 ## @testset "cpModel.test.jl: outer constructor return types                           " begin
-##     ID, B = :cubic, :MO
+##     ID = :cubic
 ##     f┆R = cp_R[:cubic]
 ##     Tmin, Tref, Tmax = 273, 298, 1800
 ##     uref, sref, 𝑀, 𝑅 = 6885, 213685 // 1000, BigFloat("44.01"), π
@@ -151,7 +151,7 @@ end
 ## end
 ## 
 ## @testset "cpModel.test.jl: type conversions                                         " begin
-##     ID, B = :cubic, :MO
+##     ID = :cubic
 ##     f┆R = cp_R[:cubic]
 ##     Tmin, Tref, Tmax = 273.0, 298.0, 1800.0
 ##     uref, sref, 𝑀, 𝑅 = 6885.0, 213.685, 44.01, 8.31447
@@ -180,7 +180,7 @@ end
 ## end
 ## 
 ## @testset "cpModel.test.jl: type promotions                                          " begin
-##     ID, B = :cubic, :MO
+##     ID = :cubic
 ##     f┆R = cp_R[:cubic]
 ##     Tmin, Tref, Tmax = 273.0, 298.0, 1800.0
 ##     uref, sref, 𝑀, 𝑅 = 6885.0, 213.685, 44.01, 8.31447
