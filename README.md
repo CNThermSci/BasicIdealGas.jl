@@ -12,36 +12,30 @@ provides types for basic ideal gas functionality from a hierarchy of `Type`s:
   ideal gas calculations that are solely dependent on temperature, as well as for storing and
   retrieving gas constants, such as the molecular weight and gas constant;
 
-- `IdealGas{ℙ <: Base.IEEEFloat}`: A precision-parametric type for basic ideal gas EoS and
-  entropy calculations. `IdealGas{ℙ}` objects include a `SpecificHeat{ℙ}` member data.
-  `IdealGas` introduces Equation of State calculations atop of the ones covered by the
-  `SpecificHeat` data member, including the ideal gas $P-T-v$ behavior, as well as entropy,
-  $s:s(P, T)$, ones.
-
-- `IdealState{ℙ <: Base.IEEEFloat}`: A precision-parametric type for an ideal gas at a
-  determined `(P, T)` state. Since here the state is known, `IdealState` object instances are
-  able to return ideal gas properties (in the Thermodynamic sense) through properties (in the
-  julia language sense).
+- `IdealGas{ℙ <: Base.IEEEFloat}`: An ideal gas model parameterized by the precision `ℙ <:
+  Base.IEEEFloat`. `IdealGas{ℙ}` objects include a `SpecificHeat{ℙ}` member data.  `IdealGas`
+  introduces Equation of State calculations atop of the ones covered by the `SpecificHeat` data
+  member, including the ideal gas $P-T-v$ behavior, as well as entropy, $s:s(P, T)$, ones.
 
 ## Common Design Choices
 
 - All dimensional data fields are stored with units as `Quantity{ℙ} where ℙ <: Base.IEEEFloat`
   types;
 
-- Specific heat functions are dimensionless and molar-base normalized by the universal gas
-  constant;
+- _Input_ specific heat functions are dimensionless and normalized by the gas constant;
 
-- Stored value units are in the kSI system, and specific quantities in the molar base, `:MO`,
+- _Stored_ value units are in the kSI system, and specific quantities in the molar base, `:MO`,
   rather than in the mass base, `:MA`, i.e., energy in $kJ$, temperatures in $K$, pressure in
   $kPa$, specific internal energies in $kJ/kmol$, and specific entropies in $kJ/kmol/K$;
 
-- User-facing outputs are accessed through fields and properties (in the julia langauge sense).
+- User-facing outputs are accessed through fields and properties (in the julia language sense).
   When the amount is based, a `Symbol`ic base argument—whether `:MO`, or `:MA`, respectively for
   molar or mass base—can be optionally specified, with the mass base being the default one.
 
 - Constructors accept any unambiguous combination of `Real` and `Quantity{<:Real}` arguments.
   Specifying unitless values of reference specific internal energy and entropy is ambiguous.
-  Unitless molecular mass is assumed to be in $kg/kmol$, and temperatures in $K$.
+  Unitless molecular mass is assumed to be in $kg/kmol$, temperatures in $K$, and pressures in
+  $kPa$.
 
 ## Examples
 
