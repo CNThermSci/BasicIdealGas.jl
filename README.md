@@ -98,13 +98,13 @@ julia> C.R # The default Ru value (CODATA 2022)
 8.31446261815324 kJ K^-1 kmol^-1
 ```
 
-It is worth noting that (i) each specific heat model may have it's own gas constant—this is so
+It is worth noting that (i) each specific heat model may have its own gas constant—this is so
 due to legacy databases such as NASA Glenn coefficients employing the universal gas constant of
-CODATA 1986; (ii) the model function, i.e., the wrapped `f┆R` field is composed with the
-`SpecificHeat` object's precision parameter if the return type of the function passed upon
-construction is different, which isn't the case for the `SpecificHeat{Float64}` object—since the
-provided function already returns a `Float64` value—but is the case for the converted
-`SpecificHeat{Float32}` object below:
+CODATA 1986; (ii) the model function, i.e., the wrapped `f┆R` field can be automatically
+composed with the `SpecificHeat` object's precision parameter `ℙ <: Base.IEEEFloat` if the
+return type of the function passed upon construction is different, which isn't the case for the
+above `SpecificHeat{Float64}` object—since the provided function already returns a `Float64`
+value—but is the case for the converted `SpecificHeat{Float32}` object below:
 
 *Precision conversion:*
 
