@@ -131,7 +131,7 @@ end
     ID = :cubic
     f┆R = cp_R[:cubic]
     Tmin, Tref, Tmax = 273.0, 298.0, 1800.0
-    uref, sref, 𝑀, 𝑅 = 6885.0, 213.685, 44.01, 8.31447
+    uref, sref, 𝑀, 𝑅 = 6885u"kJ/kmol", 213.685u"kJ/kmol/K", 44.01u"kg/kmol", Ru
     pars = (ID, f┆R, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
     SH = Dict(
         Float16 => SpecificHeat{Float16}(pars...),
