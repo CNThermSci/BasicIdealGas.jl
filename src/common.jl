@@ -109,22 +109,15 @@ pDeco(::Type{Float64}) = subscript(64)
 # Numerical integrator
 # --------------------
 
-HILIM = Union{
-    Quantity{Float32}, Quantity{Float64}, Quantity{Integer}, Quantity{Rational},
-    Float32, Float64, Integer, Rational,
-}
+HILIM = Union{ℍ, Quantity{ℍ}} where {ℍ <: Union{Integer, Rational, Float32, Float64}}
+LOLIM = Union{ℍ, Quantity{ℍ}} where {ℍ <: Union{Integer, Rational, Float16}}
 
-LOLIM = Union{
-    Quantity{Float16}, Quantity{Integer}, Quantity{Rational},
-    Float16, Integer, Rational,
-}
-
-function ∫(𝑔::Function, a::HILIM, b::HILIM)
+function ∫(𝑔::𝔽, a::HILIM, b::HILIM) where {𝔽 <: Function}
     ℙ = typeof(promote(a, b, one(Float32))[1])
     return quadgk(𝑔, a, b, rtol = eps(ℙ) * 2 << 6)[1]
 end
 
-function ∫(𝑔::Function, a::LOLIM, b::LOLIM)
+function ∫(𝑔::𝔽, a::LOLIM, b::LOLIM) where {𝔽 <: Function}
     a32, b32 = Float32.((a, b))
     n = max(Int(ceil((b32 - a32) / 0.25f0)), 32)
     x32 = range(a32, step = (b32 - a32) / n, length = n + 1) |> collect
