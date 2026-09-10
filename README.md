@@ -58,6 +58,16 @@ julia> [ He.cp(T1, :MO), He.u(T1, :MA), He.h(T1, :MA), He.s0(T1, :MO) ]
  3118.28228422884 kJ kg^-1
  5196.89793876715 kJ kg^-1
   151.16500554193544 kJ K^-1 kmol^-1
+
+julia> he = Float16(He)
+He gas, const cp₁₆(T)
+
+julia> [ he.cp(T1, :MO), he.u(T1, :MA), he.h(T1, :MA), he.s0(T1, :MO) ]
+4-element Vector{Quantity{Float16}}:
+ Float16(20.78) kJ K^-1 kmol^-1
+ Float16(3.12e3) kJ kg^-1
+ Float16(5.196e3) kJ kg^-1
+ Float16(151.1) kJ K^-1 kmol^-1
 ```
 
 
