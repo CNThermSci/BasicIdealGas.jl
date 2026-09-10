@@ -187,8 +187,39 @@ properties available.
 
 _Model Constants:_
 
-```julia
+Model constants are it's stored fields, which are _by design_ hard to type (due to special
+characters), since most of them are considered to be _low-level accessors_:
 
+```julia
+julia> fieldnames(SpecificHeat)
+(:ID, :f┆R, :𝑀, :𝑇min, :𝑇ref, :𝑇max, :𝑢ref, :𝑠ref, :𝑅)
+
+julia> getfield(C, :ID)
+:cubic
+
+julia> [ C.𝑀, C.𝑇min, C.𝑇ref, C.𝑇max, C.𝑢ref, C.𝑠ref ]
+6-element Vector{Quantity{Float64}}:
+   44.01 kg kmol^-1
+  273.0 K
+  298.0 K
+ 1800.0 K
+ 6885.0 kJ kmol^-1
+  213.7 kJ K^-1 kmol^-1
+```
+
+Easier to type convenience accessors/transformers counterparts are provided. They include:
+
+```julia
+julia> [ C.f, C.M, C.Tmin, C.uref, C.sref ]
+5-element Vector{Any}:
+     #2 (generic function with 1 method)
+   44.01 kg kmol^-1
+  273.0 K
+ 6885.0 kJ kmol^-1
+  213.7 kJ K^-1 kmol^-1
+```
+
+```julia
 julia> C.cp(1800, :MO) # Molar base
 58.424808000000006 kJ K^-1 kmol^-1
 
