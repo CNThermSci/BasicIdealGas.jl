@@ -127,30 +127,30 @@ end
     @test SH[Float16] === Float16(SH[Float16])
 end
 
-## @testset "cpModel.test.jl: type promotions                                          " begin
-##     ID = :cubic
-##     f┆R = cp_R[:cubic]
-##     Tmin, Tref, Tmax = 273.0, 298.0, 1800.0
-##     uref, sref, 𝑀, 𝑅 = 6885.0, 213.685, 44.01, 8.31447
-##     pars = (ID, f┆R, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
-##     SH = Dict(
-##         Float16 => SpecificHeat{Float16}(pars...),
-##         Float32 => SpecificHeat{Float32}(pars...),
-##         Float64 => SpecificHeat{Float64}(pars...),
-##     )
-##     # Promotions
-##     for orig in union2vec(Base.IEEEFloat)
-##         for dest in union2vec(Base.IEEEFloat)
-##             @test all(
-##                 [
-##                     i isa SpecificHeat{promote_type(orig, dest)}
-##                         for i in promote(SH[orig], SH[dest])
-##                 ]
-##             )
-##         end
-##     end
-## end
-## 
+@testset "cpModel.test.jl: type promotions                                          " begin
+    ID = :cubic
+    f┆R = cp_R[:cubic]
+    Tmin, Tref, Tmax = 273.0, 298.0, 1800.0
+    uref, sref, 𝑀, 𝑅 = 6885.0, 213.685, 44.01, 8.31447
+    pars = (ID, f┆R, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
+    SH = Dict(
+        Float16 => SpecificHeat{Float16}(pars...),
+        Float32 => SpecificHeat{Float32}(pars...),
+        Float64 => SpecificHeat{Float64}(pars...),
+    )
+    # Promotions
+    for orig in union2vec(Base.IEEEFloat)
+        for dest in union2vec(Base.IEEEFloat)
+            @test all(
+                [
+                    i isa SpecificHeat{promote_type(orig, dest)}
+                        for i in promote(SH[orig], SH[dest])
+                ]
+            )
+        end
+    end
+end
+
 ## @testset "cpModel.test.jl: user-facing functions: bound temperature intervals       " begin
 ##     # Bounds checks
 ##     bounds = BasicIdealGas.𝗯
