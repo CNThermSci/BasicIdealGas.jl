@@ -111,6 +111,7 @@ pDeco(::Type{Float64}) = subscript(64)
 
 HITYP = Union{Integer, Rational, Float32, Float64}
 LOTYP = Union{Integer, Rational, Float16}
+LOLIM = Union{ℍ, Quantity{ℍ}} where {ℍ <: LOTYP}
 HILIM = Union{ℍ, Quantity{ℍ}} where {ℍ <: HITYP}
 
 function ∫(𝑔::𝔽, a::HILIM, b::HILIM) where {𝔽 <: Function}
@@ -118,7 +119,7 @@ function ∫(𝑔::𝔽, a::HILIM, b::HILIM) where {𝔽 <: Function}
     return quadgk(𝑔, a, b, rtol = eps(ℙ) * 2 << 6)[1]
 end
 
-function ∫(𝑔::𝔽, a::LOTYP, b::LOTYP) where {𝔽 <: Function}
+function ∫(𝑔::𝔽, a::LOLIM, b::LOLIM) where {𝔽 <: Function}
     a ≈ b && return zero(Float16)
     sa, sb, ss = b > a ? Float16.((a, b, 1)) : Float16.((b, a, -1))
     n = min(Int(trunc((sb - sa) / eps(sb))), 256)
@@ -127,6 +128,6 @@ function ∫(𝑔::𝔽, a::LOTYP, b::LOTYP) where {𝔽 <: Function}
     return integrate(x, y, Trapezoidal()) * ss
 end
 
-function ∫(𝑔::𝔽, a::Quantity{𝔸}, b::Quantity{𝔹}) where {𝔽 <: Function, 𝔸 <: LOTYP, 𝔹 <: LOTYP}
-    return ∫(𝑔.f┆R, a.val, b.val) * unit(a) * unit(𝑔(a))
-end
+## function ∫(𝑔::𝔽, a::Quantity{𝔸}, b::Quantity{𝔹}) where {𝔽 <: Function, 𝔸 <: LOTYP, 𝔹 <: LOTYP}
+##     return ∫(𝑔.f┆R, a.val, b.val) * unit(a) * unit(𝑔(a))
+## end
