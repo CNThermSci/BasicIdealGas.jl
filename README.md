@@ -45,7 +45,7 @@ provides types for basic ideal gas functionality from a hierarchy of `Type`s:
 
 ## Examples
 
-### Example 1 – `SpecificHeat`
+### Example 1 – Building and Converting `SpecificHeat`
 
 Let's build a simple cubic $\bar{c}_{p}(T)$ model given as
 
@@ -134,7 +134,35 @@ julia> C64.𝑅 === C.𝑅        # Lossy conversion in the parameters (by about
 false
 ```
 
-*Usage:*
+### Example 2 – Using the `SpecificHeat`
+
+*`SpecificHeat` Properties*
+
+`SpecificHeat` usage is mostly carried by its properties (in the julia language sense).
+`SpecificHeat` object properties can be listed by autocompletion in the julia REPL:
+
+```julia
+julia> C.<tab><tab>
+ID      M       Pr      R       RMA     RMO     Tmax    Tmin
+Tref    cp      cp┆R    cv      cv┆R    f       f┆R     ga
+h       h┆R     s0      s0┆R    sref    u       uref    u┆R
+view    vr      ∫cp┆R   ∫cp┆RT  ∫cv┆R   𝑀       𝑅       𝑇max
+𝑇min    𝑇ref    𝑠ref    𝑢ref
+```
+
+or programatically, through:
+
+```julia
+julia> propertynames(C)
+(:ID, :f┆R, :𝑀, :𝑇min, :𝑇max, :𝑇ref, :𝑢ref, :𝑠ref, :𝑅, :f, :M, :Tmin, :Tref, :Tmax, :uref,
+:sref, :R, :RMO, :RMA, :vie w, :cp┆R, :cv┆R, :ga, :R, :∫cp┆R, :∫cv┆R, :u┆R, :h┆R, :∫cp┆RT,
+:s0┆R, :Pr, :vr, :cp, :cv, :u, :h, :s0)
+
+```
+
+*Model Previewing:*
+
+The model can be conveniently viewed in the jula REPL with the `:view` property:
 
 ```julia
 julia> C.view
@@ -148,8 +176,18 @@ cubic cp₆₄(T)
                     0.8 |⡠⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀|
                         +--------------------------------+
                         ⠀273⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀T (K)⠀⠀⠀⠀⠀⠀⠀⠀⠀1 800⠀
-julia> cp(C, 1800) # Defaults to mass base
-1.327534832992502 kJ kg^-1 K^-1
+
+```
+
+*Thermodynamic properties:*
+
+Many ideal gas thermodynamic properties depend only on the gas' specific heat model,
+`SpecificHeat`. All implemented thermodynamic functions for `SpecificHeat` have julia language
+properties available.
+
+_Model Constants:_
+
+```julia
 
 julia> C.cp(1800, :MO) # Molar base
 58.424808000000006 kJ K^-1 kmol^-1
