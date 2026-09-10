@@ -93,8 +93,8 @@ end
     for ℙ in union2vec(Base.IEEEFloat)
         pars = (ID, f┆R, ℙ(𝑀), Tmin, Tref, Tmax, uref, sref, 𝑅)
         @test SpecificHeat(pars...) isa SpecificHeat{ℙ}
-        pars = (ID, f┆R, 𝑀 * u"kg/kmol", Tmin * u"K", Tref, Tmax, uref, sref)
-        @test SpecificHeat(pars..., 𝑅) isa SpecificHeat{ℙ}
+        pars = (ID, f┆R, ℙ(𝑀 * u"kg/kmol"), Tmin * u"K", Tref, Tmax, uref, sref, 𝑅)
+        @test SpecificHeat(pars...) isa SpecificHeat{ℙ}
     end
 end
 
