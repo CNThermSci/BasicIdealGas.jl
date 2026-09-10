@@ -126,15 +126,16 @@ end
 # User-facing functions
 # ---------------------
 
-𝗯(ξ::SpecificHeat, 𝑇::TEMP) = begin
-    msg = "T = $(@sprintf("%.*g K", 5, 𝑇.val)) out of bounds"
-    @assert(ξ.𝑇min <= 𝑇 <= ξ.𝑇max, msg)
+𝗯(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = begin
+    T = ℙ(𝑇)
+    msg = "T = $(@sprintf("%.*g K", 5, T.val)) out of bounds"
+    @assert(ξ.𝑇min <= T <= ξ.𝑇max, msg)
 end
 𝗯(ξ::SpecificHeat, 𝑇::Real) = 𝗯(ξ, 𝑇 * u"K")
 
 import Base: cp
 
-cp┆R(ξ::SpecificHeat, 𝑇::TEMP) = (𝗯(ξ, 𝑇); ξ.f┆R(𝑇))
+cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ξ.f┆R(𝑇))
 cp┆R(ξ::SpecificHeat, 𝑇::Real) = cp┆R(ξ, 𝑇 * u"K")
 cv┆R(ξ::SpecificHeat{ℙ}, 𝑇) where {ℙ <: FLOAT} = cp┆R(ξ, 𝑇) - one(ℙ)
 ga(ξ::SpecificHeat, 𝑇) = cp┆R(ξ, 𝑇) / cv┆R(ξ, 𝑇)
@@ -156,7 +157,7 @@ h┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = u┆R(ξ, 𝑇) 
 h┆R(ξ::SpecificHeat{ℙ}, 𝑇::Real) where {ℙ <: FLOAT} = h┆R(ξ, ℙ(𝑇) * u"K")
 u(ξ::SpecificHeat, 𝑇, B = :MA) = u┆R(ξ, 𝑇) * R(ξ, B)
 h(ξ::SpecificHeat, 𝑇, B = :MA) = h┆R(ξ, 𝑇) * R(ξ, B)
-∫cp┆RT(ξ::SpecificHeat, 𝑇::TEMP) = (𝗯(ξ, 𝑇); ∫(T -> ξ.f┆R(T) / T, ξ.𝑇ref, 𝑇))
+∫cp┆RT(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ∫(T -> ξ.f┆R(T) / T, ξ.𝑇ref, 𝑇))
 ∫cp┆RT(ξ::SpecificHeat{ℙ}, 𝑇::Real) where {ℙ <: FLOAT}= ∫cp┆RT(ξ, ℙ(𝑇) * u"K")
 s0┆R(ξ::SpecificHeat, 𝑇) = ∫cp┆RT(ξ, 𝑇) + ξ.𝑠ref / ξ.𝑅
 s0(ξ::SpecificHeat, 𝑇, B = :MA) = s0┆R(ξ, 𝑇) * R(ξ, B)
