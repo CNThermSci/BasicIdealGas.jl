@@ -208,7 +208,7 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
     end
     # OOP-style covenience functions (formerly exported ones)
     oop_style_funcs_1 = (
-        :cp┆R, :cv┆R, :ga, :R, :∫cp┆R, :∫cv┆R,
+        :cp┆R, :cv┆R, :ga, :∫cp┆R, :∫cv┆R,
         :u┆R, :h┆R, :∫cp┆RT, :s0┆R, :Pr, :vr,
     )
     oop_style_funcs_2 = (
@@ -224,7 +224,7 @@ end
 Base.propertynames(::SpecificHeat) = (
     :ID, :f┆R, :𝑀, :𝑇min, :𝑇max, :𝑇ref, :𝑢ref, :𝑠ref, :𝑅,
     :f, :M, :Tmin, :Tref, :Tmax, :uref, :sref, :R, :RMO, :RMA, :view,
-    :cp┆R, :cv┆R, :ga, :R, :∫cp┆R, :∫cv┆R,
+    :cp┆R, :cv┆R, :ga, :∫cp┆R, :∫cv┆R,
     :u┆R, :h┆R, :∫cp┆RT, :s0┆R, :Pr, :vr,
     :cp, :cv, :u, :h, :s0,
 )
