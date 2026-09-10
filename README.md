@@ -252,6 +252,12 @@ julia> C.∫cv┆R(300u"K")     # ∫(cv/r)dT from Tref -> T
 
 julia> C.u┆R(300u"K")       # u/R at T
 834.9622957267734 K
+
+julia> C.Pr(300u"K")        # Relative pressure, dimensionless
+1.0301690572045714
+
+julia> C.vr(300u"K")        # Relative specific volume (vr ≡ T/Pr), [K]
+291.21433797872834 K
 ```
 
 Based ones include `(:cp, :cv, :u, :h, :s0)`:
