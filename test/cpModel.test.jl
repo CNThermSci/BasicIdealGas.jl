@@ -11,21 +11,39 @@ function union2vec(theU::Union)
     return ret
 end
 
+cp_R = Dict(
+    :const => T -> 5//2,
+    :cubic => T -> begin
+        t = T / 1000
+        r = 8314 // 1000
+        ((2226//100) + (5891//100)*t -(3501//100)*t^2 +(7469//1000)*t^3) / r
+    end,
+)
+
+function cu_cp_R(ℙ::Type{T} where {T <: Base.IEEEFloat})
+    return T -> begin
+        t = ℙ(T / 1000)
+        r = ℙ(8314 // 1000)
+        c = map(ℙ, [(2226//100) , (5891//100), -(3501//100), (7469//1000)])
+        sum([ c[i+1]*t^i for i in 0:3 ]) / r
+    end
+end
+
 @testset "cpModel.test.jl: inner constructor return types                           " begin
     for ℙ in union2vec(Base.IEEEFloat)
         for 𝔽 in (union2vec(Base.IEEEFloat)..., float)
-            ID, B = :cubic, :MO
-            𝑓 = 𝔽 ∘ T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
-            Tmin, Tref, Tmax = 273, 298, 1800
-            uref, sref, 𝑀, 𝑅 = 6885, 213.685, 44.01, ℙ(8.31447)
+            ID = :cubic
+            f┆R = 𝔽 ∘ cp_R[:cubic]
+            Tmin, Tref, Tmax = 273u"K", 298u"K", 1800u"K"
+            uref, sref, 𝑀, 𝑅 = 6885u"kJ/kmol", 213.685u"kJ/kmol/K", 44.01u"kg/kmol", Ru
             pars = ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))
-            @test SpecificHeat(ID, 𝑓, pars..., B) isa SpecificHeat{ℙ}
-            𝑓 = 𝔽 ∘ T -> ℙ(22.26) + ℙ(5.891e-2) * T - ℙ(3.501e-5) * T^2 + ℙ(7.469e-9) * T^3
-            # Constructor function smart composition simplifies 𝑓 away into a Function:
-            @test !(SpecificHeat(ID, 𝑓, pars..., B).𝑓 isa ComposedFunction)
-            # Inner 𝑓 not a float-returning function exception
-            𝑓 = 𝔽 ∘ T -> 22
-            @test SpecificHeat(ID, 𝑓, pars..., B).𝑓 isa ComposedFunction
+            @test SpecificHeat(ID, f┆R, pars...) isa SpecificHeat{ℙ}
+            f┆R = 𝔽 ∘ cu_cp_R(ℙ)
+            # Constructor function smart composition simplifies f┆R away into a Function:
+            @test !(SpecificHeat(ID, f┆R, pars...).f┆R isa ComposedFunction)
+            # Inner f┆R not a float-returning function exception
+            g┆R = 𝔽 ∘ cp_R[:const]
+            @test SpecificHeat(ID, g┆R, pars...).f┆R.f┆R isa ComposedFunction
         end
     end
 end
@@ -37,107 +55,55 @@ adjswp(t::Tuple) = [
 
 @testset "cpModel.test.jl: inner constructor validations                            " begin
     for ℙ in union2vec(Base.IEEEFloat)
-        ID, B = :cubic, :MO
-        𝑓 = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
-        Tneg, Tmin, Tref, Tmax = -1, 273, 298, 1800
-        uref, sref, 𝑀, 𝑅 = 6885, 213.685, 44.01, 8.31447
+        ID = :cubic
+        f┆R = cp_R[:cubic]
+        Tneg, Tmin, Tref, Tmax = -300u"K", 273u"K", 298u"K", 1800u"K"
+        uref, sref, 𝑀, 𝑅 = 6885u"kJ/kmol", 213.685u"kJ/kmol/K", 44.01u"kg/kmol", Ru
         pars = ℙ.((0, Tmin, Tref, Tmax, uref, sref, 𝑅))
-        @test_throws "Error: Empty model ID" SpecificHeat(Symbol(""), 𝑓, pars..., B)
-        @test_throws "Error: M <= 0" SpecificHeat(ID, 𝑓, pars..., B)
+        @test_throws "Error: Empty model ID" SpecificHeat(Symbol(""), f┆R, pars...)
+        @test_throws "Error: M <= 0" SpecificHeat(ID, f┆R, pars...)
         pars = ℙ.((-𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))
-        @test_throws "Error: M <= 0" SpecificHeat(ID, 𝑓, pars..., B)
+        @test_throws "Error: M <= 0" SpecificHeat(ID, f┆R, pars...)
         for temp in adjswp(ℙ.((Tneg, Tmin, Tref, Tmax)))
-            pars = (ID, 𝑓, ℙ.((𝑀, temp[2:end]..., uref, sref, 𝑅))..., B)
+            pars = (ID, f┆R, ℙ.((𝑀, temp[2:end]..., uref, sref, 𝑅))...)
             @test_throws "Error: Temperature values" SpecificHeat(pars...)
         end
-        pars = ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 0))
-        @test_throws "Error: 𝑅 <= 0" SpecificHeat(ID, 𝑓, pars..., B)
+        pars = ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 0Ru))
+        @test_throws "Error: 𝑅 <= 0" SpecificHeat(ID, f┆R, pars...)
         pars = ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, -𝑅))
-        @test_throws "Error: 𝑅 <= 0" SpecificHeat(ID, 𝑓, pars..., B)
-        pars = (ID, 𝑓, ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))...)
-        for b in (:ma, :mo, :other, Symbol(""))
-            @test_throws "Error: B should be either :MA or :MO" SpecificHeat(pars..., b)
-        end
+        @test_throws "Error: 𝑅 <= 0" SpecificHeat(ID, f┆R, pars...)
     end
 end
 
 @testset "cpModel.test.jl: outer constructor return types                           " begin
-    ID, B = :cubic, :MO
-    𝑓 = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
+    ID = :cubic
+    f┆R = cp_R[:cubic]
     Tmin, Tref, Tmax = 273, 298, 1800
-    uref, sref, 𝑀, 𝑅 = 6885, 213685 // 1000, BigFloat("44.01"), π
-    # Set type conversion / 1 indirection
+    uref, sref = 6885u"kJ/kmol", (213685 // 1000)u"kJ/kmol/K"
+    𝑀, 𝑅 = BigFloat("44.01"), π * u"kJ/kmol/K"
+    # Set type conversion
     for ℙ in union2vec(Base.IEEEFloat)
-        pars = (ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅, B)
+        pars = (ID, f┆R, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
         @test SpecificHeat{ℙ}(pars...) isa SpecificHeat{ℙ}
-    end
-    # Set type with unit conversion and stripping / 2 indirections
-    for ℙ in union2vec(Base.IEEEFloat)
-        pars = (ID, 𝑓, 𝑀 * u"kg/kmol", Tmin, Tref, Tmax, uref * u"kJ/kmol", sref * u"kJ/kmol/K")
+        pars = (ID, f┆R, 𝑀 * u"kg/kmol", Tmin * u"K", Tref, Tmax, uref, sref)
         @test SpecificHeat{ℙ}(pars..., 𝑅) isa SpecificHeat{ℙ}
     end
-    uref, sref, 𝑀, 𝑅 = 6885, 213685 // 1000, 4401 // 100, 8.31447
-    # Promotion type conversion / 2 indirections
+    𝑀, 𝑅 = 4401//100, 8.31447 * u"kJ/kmol/K"
+    # Promotion type conversion
     for ℙ in union2vec(Base.IEEEFloat)
-        pars = (ID, 𝑓, ℙ(𝑀), Tmin, Tref, Tmax, uref, sref, 𝑅, B)
+        pars = (ID, f┆R, ℙ(𝑀), Tmin, Tref, Tmax, uref, sref, 𝑅)
         @test SpecificHeat(pars...) isa SpecificHeat{ℙ}
-    end
-    # Promotion type with unit conversion and stripping / 3 indirections
-    for ℙ in union2vec(Base.IEEEFloat)
-        pars = (ID, 𝑓, ℙ(𝑀 * u"kg/kmol"), Tmin, Tref, Tmax, uref * u"kJ/kmol", sref * u"kJ/kmol/K")
-        @test SpecificHeat(pars..., 𝑅) isa SpecificHeat{ℙ}
-    end
-end
-
-@testset "cpModel.test.jl: constructor's optional arguments                         " begin
-    ID = :cubic
-    𝑓 = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
-    Tmin, Tref, Tmax = 273, 298, 1800
-    uref, sref, 𝑀, 𝑅 = 6885, 213685 // 1000, 4401 // 100, BasicIdealGas.universal_R
-    # Promotion type conversion / 2 indirections
-    for ℙ in union2vec(Base.IEEEFloat)
-        pars = (ID, 𝑓, ℙ(𝑀), Tmin, Tref, Tmax, uref, sref, 𝑅)
-        MOLR = SpecificHeat(pars..., :MO)
-        MASS = SpecificHeat(pars..., :MA)
-        AUTO = SpecificHeat(pars...)
-        @test MOLR != MASS
-        @test MOLR == AUTO
-        @test MASS != AUTO
-        auto = SpecificHeat(pars[1:(end - 1)]...)
-        @test auto == AUTO
-    end
-    # Set type conversion / 1 indirection
-    for ℙ in union2vec(Base.IEEEFloat)
-        pars = (ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
-        MOLR = SpecificHeat{ℙ}(pars..., :MO)
-        MASS = SpecificHeat{ℙ}(pars..., :MA)
-        AUTO = SpecificHeat{ℙ}(pars...)
-        @test MOLR != MASS
-        @test MOLR == AUTO
-        @test MASS != AUTO
-        auto = SpecificHeat{ℙ}(pars[1:(end - 1)]...)
-        @test auto == AUTO
-    end
-    # Internal constructor / no indirection
-    for ℙ in union2vec(Base.IEEEFloat)
-        pars = (ID, 𝑓, ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))...)
-        MOLR = SpecificHeat(pars..., :MO)
-        MASS = SpecificHeat(pars..., :MA)
-        AUTO = SpecificHeat(pars...)
-        @test MOLR != MASS
-        @test MOLR == AUTO
-        @test MASS != AUTO
-        auto = SpecificHeat(pars[1:(end - 1)]...)
-        @test auto == AUTO
+        pars = (ID, f┆R, ℙ(𝑀 * u"kg/kmol"), Tmin * u"K", Tref, Tmax, uref, sref, 𝑅)
+        @test SpecificHeat(pars...) isa SpecificHeat{ℙ}
     end
 end
 
 @testset "cpModel.test.jl: type conversions                                         " begin
-    ID, B = :cubic, :MO
-    𝑓 = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
+    ID = :cubic
+    f┆R = cp_R[:cubic]
     Tmin, Tref, Tmax = 273.0, 298.0, 1800.0
-    uref, sref, 𝑀, 𝑅 = 6885.0, 213.685, 44.01, 8.31447
-    pars = (ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅, B)
+    uref, sref, 𝑀, 𝑅 = 6885u"kJ/kmol", 213.685u"kJ/kmol/K", 44.01u"kg/kmol", Ru
+    pars = (ID, f┆R, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
     SH = Dict(
         Float16 => SpecificHeat{Float16}(pars...),
         Float32 => SpecificHeat{Float32}(pars...),
@@ -146,8 +112,8 @@ end
     # Conversions
     for orig in union2vec(Base.IEEEFloat)
         for dest in union2vec(Base.IEEEFloat)
-            # Lossless 𝑓 conversion
-            @test SH[orig].𝑓 === orig(SH[dest]).𝑓
+            # Lossless f┆R conversion
+            @test SH[orig].f┆R === orig(SH[dest]).f┆R
             # Type conversion
             @test typeof(SH[orig]) === typeof(orig(SH[dest]))
         end
@@ -162,11 +128,11 @@ end
 end
 
 @testset "cpModel.test.jl: type promotions                                          " begin
-    ID, B = :cubic, :MO
-    𝑓 = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
+    ID = :cubic
+    f┆R = cp_R[:cubic]
     Tmin, Tref, Tmax = 273.0, 298.0, 1800.0
-    uref, sref, 𝑀, 𝑅 = 6885.0, 213.685, 44.01, 8.31447
-    pars = (ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅, B)
+    uref, sref, 𝑀, 𝑅 = 6885u"kJ/kmol", 213.685u"kJ/kmol/K", 44.01u"kg/kmol", Ru
+    pars = (ID, f┆R, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
     SH = Dict(
         Float16 => SpecificHeat{Float16}(pars...),
         Float32 => SpecificHeat{Float32}(pars...),
@@ -188,10 +154,10 @@ end
 @testset "cpModel.test.jl: user-facing functions: bound temperature intervals       " begin
     # Bounds checks
     bounds = BasicIdealGas.𝗯
-    ID, 𝑓 = :const, T -> 22.26
+    ID, f┆R = :const, T -> 22.26
     Tmin, Tref, Tmax = 273, 298, 1800
-    uref, sref, 𝑀 = 6885, 213.685, 44.01
-    C = SpecificHeat(ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref)
+    uref, sref, 𝑀 = 6885u"kJ/kmol", 213.685u"kJ/kmol/K", 44.01u"kg/kmol"
+    C = SpecificHeat(ID, f┆R, 𝑀, Tmin, Tref, Tmax, uref, sref)
     @test_throws AssertionError bounds(C, prevfloat(C.Tmin))
     @test_throws AssertionError bounds(C, nextfloat(C.Tmax))
 end
@@ -216,15 +182,15 @@ end
     vr = BasicIdealGas.vr
     # Float16 are tested but may overflow depending on model function form and argument type
     for ℙ in [Float32, Float64]
-        𝑓 = T -> 22.26 + 5.891e-2 * T - 3.501e-5 * T^2 + 7.469e-9 * T^3
-        𝑀, Tmin, Tref, Tmax, uref, sref = 44.01, 273, 298, 1800, 6885, 213.685
-        𝑅 = BasicIdealGas.universal_R
-        C = SpecificHeat{ℙ}(:cubic, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref)
-        G = SpecificHeat{ℙ}(:const, T -> (5 / 2) * 𝑅, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
-        for T in (Tmin, Int(round((Tmin + Tmax) / 2)), Tmax)
-            @test C.𝑓(T) isa ℙ
-            @test cp┆R(C, T) ≈ C.𝑓(T) / C.𝑅
-            @test cv┆R(C, T) ≈ (C.𝑓(T) - C.𝑅) / C.𝑅
+        Tmin, Tref, Tmax = 273u"K", 298u"K", 1800u"K"
+        uref, sref, 𝑀 = 6885u"kJ/kmol", 213.685u"kJ/kmol/K", 44.01u"kg/kmol"
+        𝑅 = Ru
+        C = SpecificHeat{ℙ}(:cubic, cp_R[:cubic], 𝑀, Tmin, Tref, Tmax, uref, sref)
+        G = SpecificHeat{ℙ}(:const, cp_R[:const], 𝑀, Tmin, Tref, Tmax, uref, sref)
+        for T in (Tmin, (Tmin + Tmax) / 2, Tmax)
+            @test C.f┆R(T) isa ℙ
+            @test cp┆R(C, T) ≈ C.f┆R(T)
+            @test cv┆R(C, T) ≈ C.f┆R(T) - one(ℙ)
             @test ga(C, T) ≈ cp┆R(C, T) / cv┆R(C, T) ≈ cp(C, T) / cv(C, T)
             @test R(C, :MO) == C.𝑅
             @test R(C, :MA) ≈ C.𝑅 / C.𝑀
@@ -242,14 +208,14 @@ end
                 @test h┆R(H, T) ≈ u┆R(H, T) + ℙ(T)
             end
             for B in (:MA, :MO)
-                @test u(C, T, B) ≈ u┆R(C, T) * R(C, B)
-                @test h(C, T, B) ≈ h┆R(C, T) * R(C, B)
-                @test h(C, T, B) ≈ u(C, T, B) + R(C, B) * ℙ(T)
+                @test u(C, T) ≈ u┆R(C, T) * R(C)
+                @test h(C, T) ≈ h┆R(C, T) * R(C)
+                @test h(C, T) ≈ u(C, T) + R(C) * ℙ(T)
             end
             @test ∫cp┆RT(G, T) ≈ (5 // 2) * log(ℙ(T) / C.Tref)
             @test s0┆R(G, T) ≈ ∫cp┆RT(G, T) + C.sref / C.𝑅
             for B in (:MA, :MO)
-                @test s0(C, T, B) ≈ s0┆R(C, T) * R(C, B)
+                @test s0(C, T) ≈ s0┆R(C, T) * R(C)
             end
             @test Pr(C, C.Tref) ≈ one(ℙ)
             @test Pr(C, T) ≈ exp(∫cp┆RT(C, T))
