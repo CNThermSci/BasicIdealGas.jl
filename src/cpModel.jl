@@ -204,7 +204,7 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
             xlim = (xmin, xmax), width = 32, height = 6,
             border = :ascii, color = :white, compact_labels = true,
         )
-        return print(join([pretty(ξ), string(plt)], "\n"))
+        return println(join([pretty(ξ), string(plt)], "\n"))
     end
     # OOP-style covenience functions (formerly exported ones)
     oop_style_funcs_1 = (
