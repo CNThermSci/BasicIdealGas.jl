@@ -37,7 +37,27 @@ provides types for basic ideal gas functionality from a hierarchy of `Type`s:
   Unitless molecular mass is assumed to be in $kg/kmol$, temperatures in $K$, and pressures in
   $kPa$.
 
-## Examples
+## Quick Overview (for the impatient)
+
+```julia
+julia> C = SpecificHeat(:const, T -> 3//2, 4, 5.2, 298, 6000, 3718u"kJ/kmol", 126u"J/mol/K")
+const cp₆₄(T)
+
+julia> He = IdealGas("He", "Helium", C)
+He gas, const cp₆₄(T)
+
+julia> T1 = 1000u"K"
+1000 K
+
+julia> [ He.cp(T1, :MO), He.u(T, :MA), He.h(T, :MA), He.s0(T1, :MO) ]
+4-element Vector{Quantity{Float64}}:
+   12.47169392722986 kJ K^-1 kmol^-1
+  931.5786156545383 kJ kg^-1
+ 1555.163312016031 kJ kg^-1
+  141.09900332516128 kJ K^-1 kmol^-1
+```
+
+## Paced Examples
 
 ### Example 1 – Building and Converting `SpecificHeat`
 
