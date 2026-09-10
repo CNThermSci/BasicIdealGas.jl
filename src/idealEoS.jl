@@ -12,11 +12,11 @@ struct IdealGas{ℙ <: FLOAT}
             FORM::AbstractString,
             NAME::AbstractString,
             HMOD::SpecificHeat{ℙ},
-            PREF::ℙ = one(ℙ)
+            PREF::Quantity{ℙ, dimension(u"kPa"), typeof(u"kPa")} = one(ℙ) * u"kPa"
         ) where {ℙ <: FLOAT}
         @assert(length(FORM) > 0, "Error: Empty formula")
         @assert(length(NAME) > 0, "Error: Empty name")
-        @assert(PREF > 0, "Error: Pref <= 0")
+        @assert(PREF > 0u"kPa", "Error: Pref <= 0 kPa")
         return new{ℙ}(String(FORM), String(NAME), HMOD, PREF)
     end
 end
