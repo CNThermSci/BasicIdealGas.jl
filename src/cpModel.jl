@@ -147,7 +147,7 @@ end
 cp(ξ::SpecificHeat, 𝑇, B = :MA) = cp┆R(ξ, 𝑇) * R(ξ, B)
 cv(ξ::SpecificHeat, 𝑇, B = :MA) = cv┆R(ξ, 𝑇) * R(ξ, B)
 # The ∫cp┆R, ∫cv┆R functions below check bounds just once
-∫cp┆R(ξ::SpecificHeat, 𝑇::TEMP) = (𝗯(ξ, 𝑇); ∫(ξ.f┆R, ξ.𝑇ref, 𝑇))
+∫cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ∫(ξ.f┆R, ξ.𝑇ref, ℙ(𝑇)))
 ∫cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::Real) where {ℙ <: FLOAT} = ∫cp┆R(ξ, ℙ(𝑇) * u"K")
 ∫cv┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = ∫cp┆R(ξ, 𝑇) - ℙ(𝑇) + ξ.𝑇ref
 ∫cv┆R(ξ::SpecificHeat{ℙ}, 𝑇::Real) where {ℙ <: FLOAT} = ∫cv┆R(ξ, ℙ(𝑇) * u"K")
