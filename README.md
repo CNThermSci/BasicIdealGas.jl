@@ -63,7 +63,7 @@ and $\bar{s} = 213.7$ kJ/kmol/K, at $T_{ref} = 298$ K, all with 4 significant fi
 ```julia
 julia> using BasicIdealGas
 
-julia> function cp_R(T) # dimensionless cp(T)/R (assuming T in K)
+julia> function cp_R(T::Real) # dimensionless cp(T)/R (T in K)
            t = T / 1000
            r = 8314 // 1000
            ((2226//100) + (5891//100)*t -(3501//100)*t^2 +(7469//1000)*t^3) / r
