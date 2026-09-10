@@ -79,7 +79,8 @@ end
     ID = :cubic
     f┆R = cp_R[:cubic]
     Tmin, Tref, Tmax = 273u"K", 298u"K", 1800u"K"
-    uref, sref, 𝑀, 𝑅 = 6885, 213685 // 1000, BigFloat("44.01"), π
+    uref, sref = 6885u"kJ/kmol", (213685 // 1000)u"kJ/kmol/K"
+    𝑀, 𝑅 = BigFloat("44.01")u"kg/kmol", π * u"kJ/kmol/K"
     # Set type conversion / 1 indirection
     for ℙ in union2vec(Base.IEEEFloat)
         pars = (ID, f┆R, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
