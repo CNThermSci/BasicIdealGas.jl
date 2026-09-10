@@ -4,35 +4,35 @@
 # IEEE-754 normalized floating point types of half, single, and double precision
 FLOAT = Base.IEEEFloat
 
-# Thermodynamic state function Quantity type alias
-PRES = Quantity{ℙ, dimension(u"kPa")} where {ℙ <: Real}
-TEMP = Quantity{ℙ, dimension(u"K")} where {ℙ <: Real}
-MOLW = Quantity{ℙ, dimension(u"kg/kmol")} where {ℙ <: Real}
-VOLU = Union{
+# Thermodynamic state function Quantity type alias - dimension set (for arguments)
+const PRES = Quantity{ℙ, dimension(u"kPa")} where {ℙ <: Real}
+const TEMP = Quantity{ℙ, dimension(u"K")} where {ℙ <: Real}
+const MOLW = Quantity{ℙ, dimension(u"kg/kmol")} where {ℙ <: Real}
+const VOLU = Union{
     Quantity{ℙ, dimension(u"m^3/kg")},
     Quantity{ℙ, dimension(u"m^3/kmol")},
 } where {ℙ <: Real}
-ENER = Union{
+const ENER = Union{
     Quantity{ℙ, dimension(u"kJ/kg")},
     Quantity{ℙ, dimension(u"kJ/kmol")},
 } where {ℙ <: Real}
-ENTR = Union{
+const ENTR = Union{
     Quantity{ℙ, dimension(u"kJ/kg/K")},
     Quantity{ℙ, dimension(u"kJ/kmol/K")},
 } where {ℙ <: Real}
-DENS = Union{
+const DENS = Union{
     Quantity{ℙ, dimension(u"kg/m^3")},
     Quantity{ℙ, dimension(u"kmol/m^3")},
 } where {ℙ <: Real}
 
 # Termodynamic base Unions
-MASS = Union{
+const MASS = Union{
     Quantity{ℙ, dimension(u"m^3/kg")},
     Quantity{ℙ, dimension(u"kJ/kg")},
     Quantity{ℙ, dimension(u"kJ/kg/K")},
     Quantity{ℙ, dimension(u"kg/m^3")},
 } where {ℙ <: Real}
-MOLR = Union{
+const MOLR = Union{
     Quantity{ℙ, dimension(u"m^3/kmol")},
     Quantity{ℙ, dimension(u"kJ/kmol")},
     Quantity{ℙ, dimension(u"kJ/kmol/K")},
@@ -72,13 +72,23 @@ end
 # Constants
 # ---------
 
-universal_R = 8.31447
+# Exact CODATA2022 value for Ru
+const Ru = uconvert(u"kJ/kmol/K", MolarGasConstant)
+export Ru
+
+# Legacy CODATA1986 value - baked into NASA-9 coefficients
+const RuCODATA1986 = 8.314510u"kJ/kmol/K"
+export RuCODATA1986
 
 # Utilities
 # ---------
 
+# Precision of
+precof(x::Real) = typeof(x)
+precof(x::Quantity{ℙ}) where ℙ = ℙ
+
 # Precision Composition Simplification
-⊚(p::Type{ℙ}, f::Function) where {ℙ <: FLOAT} = f(1) isa ℙ ? f : p ∘ f
+⊚(p::Type{ℙ}, f::Function) where {ℙ <: FLOAT} = f(ℙ(300u"K")) isa ℙ ? f : p ∘ f
 
 # Chained Precision Composition Simplification
 ⊚(
@@ -99,20 +109,22 @@ pDeco(::Type{Float64}) = subscript(64)
 # Numerical integrator
 # --------------------
 
-function ∫(
-        𝑔::Function,
-        a::Union{Float32, Float64, Integer, Rational},
-        b::Union{Float32, Float64, Integer, Rational},
-    )
-    ℙ = typeof(promote(a, b)[1])
+HILIM = Union{
+    Quantity{Float32}, Quantity{Float64}, Quantity{Integer}, Quantity{Rational},
+    Float32, Float64, Integer, Rational,
+}
+
+LOLIM = Union{
+    Quantity{Float16}, Quantity{Integer}, Quantity{Rational},
+    Float16, Integer, Rational,
+}
+
+function ∫(𝑔::Function, a::HILIM, b::HILIM)
+    ℙ = typeof(promote(a, b, one(Float32))[1])
     return quadgk(𝑔, a, b, rtol = eps(ℙ) * 2 << 6)[1]
 end
 
-function ∫(
-        𝑔::Function,
-        a::Union{Float16, Integer, Rational},
-        b::Union{Float16, Integer, Rational},
-    )
+function ∫(𝑔::Function, a::LOLIM, b::LOLIM)
     a32, b32 = Float32.((a, b))
     n = max(Int(ceil((b32 - a32) / 0.25f0)), 32)
     x32 = range(a32, step = (b32 - a32) / n, length = n + 1) |> collect
