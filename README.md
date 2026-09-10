@@ -309,145 +309,6 @@ julia> CO2.v(P=47, T=300)
 1.2058869599269026
 ```
 
-### Example 3 - `PropPair`
-
-`PropPair` designates a thermodynamic $(P, T)$ property pair, and serves to determine the state
-of an ideal gas inside a simple compressible system.
-
-```julia
-julia> p = PropPair(100, 300)
-@₆₄(100 kPa, 300 K)
-
-julia> dump(p)
-PropPair{Float64}
-  𝑃: Float64 100.0
-  𝑇: Float64 300.0
-
-julia> Float32(p)
-@₃₂(100 kPa, 300 K)
-```
-
-`PropPair` has some rough edges to be trimmed on upcomming releases.
-
-### Example 4 - `Interact`
-
-`Interact` represents simple compressible system interactions of heat and work.
-
-```julia
-julia> i = Interact(-10.0, -20.0)
-Interact{Float64}(-10.0, -20.0)
-
-julia> dump((i, Float32(i)))
-Tuple{Interact{Float64}, Interact{Float32}}
-  1: Interact{Float64}
-    𝑞: Float64 -10.0
-    𝑤: Float64 -20.0
-  2: Interact{Float32}
-    𝑞: Float32 -10.0f0
-    𝑤: Float32 -20.0f0
-
-julia> i.q
--10.0 kJ kg^-1
-
-julia> i.w
--20.0 kJ kg^-1
-```
-
-`Interact` is very incipient, and has significant rough edges to be trimmed on upcomming releases.
-
-### Example 5 – `IdealState`
-
-`IdealState` objects adds state (through a property pair, `PropPair`) information to `IdealGas`.
-
-```julia
-julia> st1 = IdealState(CO2, PropPair(100, 300))
-CO2 gas, cubic cp₆₄(T) @₆₄(100 kPa, 300 K)
-```
-
-Since the state is already known, user-facing convenience accessors are implemented for all
-the usual thermodynamic state function (thermodynamic properties) through julia properties
-"syntactic sugar", such as `st1.v` (mass-based specific volume) and `st1.vMO` (molar-based
-specific volume):
-
-```julia
-julia> st1.<tab>
-ID    M     P     Pr    Pref  R     RMA   T     Tmax
-Tmin  Tref  cp    cpMO  cv    cvMO  f     fMA   form
-ga    gas   h     hMO   hmod  name  s     s0    s0MO
-sMO   sref  u     uMO   uref  v     vMO   vr    γ
-ρ     ρMO   𝐺     𝑀     𝑅     𝑓     𝑝
-```
-
-The user-facing convenience accessors through julia properties return amounts with units, while
-"raw" object fields are returned as stored:
-
-```julia
-julia> sample_properties = [ st1.v, st1.vMO, st1.u, st1.s ]
-4-element Vector{Quantity{Float64}}:
-   0.5667668711656442 m^3 kg^-1
-  24.94341 m^3 kmol^-1
- 157.74275549365427 kJ kg^-1
-   3.9909694845958117 kJ kg^-1 K^-1
-
-julia> sample_fields = [ st1.𝑀, st1.𝑅, st1.uref, st1.sref ]
-4-element Vector{Float64}:
-   44.01
-    8.31447
- 6885.0
-  213.685
-```
-
-### Example 6 - Processes
-
-Some incipient ideal gas processes _functions_ are available:
-
-```julia
-julia> using BasicIdealGas
-
-julia> C = SpecificHeat(
-    :cubic,             # model ID
-    # molar cp(T) model
-    T -> 22.26 +5.891e-2*T -3.501e-5*T^2 +7.469e-9*T^3,
-    44.01,              # Molecular weight in kg/kmol
-    273,                # Minimum T in K
-    298,                # Reference T in K
-    1800,               # Maximum T in K
-    6885,               # Ref internal energy in kJ/kmol
-    213.685             # Ref entropy in kJ/kmol/K
-    # Omitted molar gas constant (defaults to universal one)
-    )
-cubic cp₆₄(T)
-
-julia> CO2 = IdealGas("CO2", "Carbon Dioxide", C)
-CO2 gas, cubic cp₆₄(T)
-
-julia> st1 = IdealState(CO2, PropPair(100, 300))
-CO2 gas, cubic cp₆₄(T) @₆₄(100 kPa, 300 K)
-
-julia> st2 = isoP(st1, T = 400)             # Isobaric process up to T = 400 (K)
-CO2 gas, cubic cp₆₄(T) @₆₄(100 kPa, 400 K)
-
-julia> st3 = isoT(st2, P = 150)             # Isothermal process up to P = 150 (kPa)
-CO2 gas, cubic cp₆₄(T) @₆₄(150 kPa, 400 K)
-
-julia> st3.u
-227.21082809079132 kJ kg^-1
-
-julia> st4 = isov(st3, u = (250, :MA))      # Isochoric process up to u = 250 (kJ/kg)
-CO2 gas, cubic cp₆₄(T) @₆₄(161.43 kPa, 430.48 K)
-
-julia> st4.s
-4.222878505947657 kJ kg^-1 K^-1
-
-julia> st5 = isos(st4, P = st1.𝑃)           # Isentropic process up to st1 pressure
-CO2 gas, cubic cp₆₄(T) @₆₄(100 kPa, 390.68 K)
-
-julia> st5.s
-4.222878505947658 kJ kg^-1 K^-1
-```
-
-Process interactions are not yet being calculated and returned from process functions.
-
 ## Author
 
 Prof. C. Naaktgeboren, PhD. [Lattes](http://lattes.cnpq.br/8621139258082919).
@@ -460,12 +321,10 @@ Federal University of Technology, Paraná
 
 `NaaktgeborenC <dot!> PhD {at!} gmail [dot!] com`
 
-
 ## License
 
 This project is [licensed](https://github.com/CNThermSci/BasicIdealGas.jl/blob/main/LICENSE)
 under the MIT license.
-
 
 ## Citations
 
