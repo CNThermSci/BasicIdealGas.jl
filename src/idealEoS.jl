@@ -35,31 +35,15 @@ function IdealGas{ℙ}(
     IdealGas(FORM, NAME, ℙ.((HMOD, Pref))...)
 end
 
-# Promotion type conversion / 2 indirections
-IdealGas(
-    FORM::AbstractString,
-    NAME::AbstractString,
-    HMOD::SpecificHeat{ℙ},
-    PREF::Real = one(ℙ),
-) where {ℙ} = IdealGas{ℙ}(FORM, NAME, HMOD, PREF)
-
-# Set type with unit conversion and stripping / 2 indirections
-function IdealGas{ℙ}(
+# Heat model type conversion / 2 indirections
+function IdealGas(
         FORM::AbstractString,
         NAME::AbstractString,
-        HMOD::SpecificHeat,
-        PREF::PRES = one(ℙ) * u"kPa",
-    ) where {ℙ <: FLOAT}
-    return IdealGas{ℙ}(FORM, NAME, HMOD, kSI(PREF))
+        HMOD::SpecificHeat{ℙ},
+        PREF::Union{Real, PRES} = one(ℙ) * u"kPa",
+    ) where {ℙ}
+    IdealGas{ℙ}(FORM, NAME, HMOD, PREF)
 end
-
-# Heat model type with unit conversion and stripping / 3 indirections
-IdealGas(
-    FORM::AbstractString,
-    NAME::AbstractString,
-    HMOD::SpecificHeat{ℙ},
-    PREF::PRES,
-) where {ℙ} = IdealGas{ℙ}(FORM, NAME, HMOD, PREF)
 
 # Conversions
 # -----------
