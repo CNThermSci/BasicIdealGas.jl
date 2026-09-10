@@ -77,11 +77,12 @@ julia> typeof(C)
 SpecificHeat{Float64}
 ```
 
-The constructor wraps the passed function into one that only accepts temperature arguments, and
-returns values as the precision parameter of `SpecificHeat{ℙ} where ℙ <: Base.IEEEFloat`:
+The constructor wraps the passed `cp_R` function into one that only accepts temperature
+arguments, and returns values as the precision parameter of (plain) `SpecificHeat{ℙ} where ℙ <:
+Base.IEEEFloat`, since $\bar{c}_p / \bar{R}$ is dimensionless:
 
 ```julia
-julia> C.f┆R(300u"K")
+julia> C.f┆R(300u"K") # f┆R is a valid julia identifier for f/R, where f is the cp(T) function
 4.448124274352035
 
 julia> typeof(ans)
@@ -90,7 +91,10 @@ Float64
 julia> C.f┆R
 #2 (generic function with 1 method)
 
-julia> C.R
+julia> C.f┆R.f┆R # this recovers the original function (unwraps f┆R)
+cp_R (generic function with 1 method)
+
+julia> C.R # The default Ru value (CODATA 2022)
 8.31446261815324 kJ K^-1 kmol^-1
 ```
 
