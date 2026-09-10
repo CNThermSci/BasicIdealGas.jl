@@ -98,41 +98,40 @@ julia> C.R # The default Ru value (CODATA 2022)
 8.31446261815324 kJ K^-1 kmol^-1
 ```
 
-It is worth noting that (i) each specific heat model may have its own gas constant—this is so
-due to legacy databases such as NASA Glenn coefficients employing the universal gas constant of
-CODATA 1986; (ii) the model function, i.e., the wrapped `f┆R` field can be automatically
-composed with the `SpecificHeat` object's precision parameter `ℙ <: Base.IEEEFloat` if the
-return type of the function passed upon construction is different, which isn't the case for the
-above `SpecificHeat{Float64}` object—since the provided function already returns a `Float64`
-value—but is the case for the converted `SpecificHeat{Float32}` object below:
+It is worth noting that each specific heat model may have its own gas constant—this is so due to
+legacy databases such as NASA Glenn coefficients employing the universal gas constant of CODATA
+1986.
 
 *Precision conversion:*
 
 ```julia
-julia> Float32(C)
+julia> C32 = Float32(C)
 cubic cp₃₂(T)
 
-julia> typeof(Float32(C).f┆R)
-ComposedFunction{Type{Float32}, BasicIdealGas.var"#2#3"{Float32, var"#11#12"}}
+julia> typeof(C32)
+SpecificHeat{Float32}
 
-julia> Float32(C).f┆R(300u"K")
-4.4481244f0
+julia> dump(C32.f┆R(300u"K"))
+Float32 4.4483714f0
+
+julia> C32.f┆R.f┆R # the original function is always recoverable!
+cp_R (generic function with 1 method)
 ```
 
-Julia function composition is used, not only to perform the intended conversions, but also, to
-render multiple _function_ conversions lossless, i.e., if a `SpecificHeat{Float64}` is converted to a
-`Float32` precision, and then back to `Float64`, it preserves the intrinsic precision of the
-original model function (but not the other parameters!):
+It is worth noting that the automatic function wrapping upon construction ensures the resulting
+function field `f┆R` returns plain `{ℙ <: Base.IEEEFloat}` values, as just shown. Since the
+original function is always recoverable, as also shown, successive `SpecificHeat` conversions
+are lossless in the function, but lossy in the coefficients:
 
 ```julia
-julia> a = [ C.f┆R, Float32(C).f┆R, Float64(Float32(C)).f┆R ]
-3-element Vector{Function}:
- #2 (generic function with 1 method)
- Float32 ∘ BasicIdealGas.var"#2#3"{Float32, var"#11#12"}(var"#11#12"())
- #2 (generic function with 1 method)
+julia> C64 = Float64(C32)
+cubic cp₆₄(T)
 
-julia> a[1] === a[3]
+julia> C64.f┆R === C.f┆R    # Lossless conversion in the function
 true
+
+julia> C64.𝑅 === C.𝑅        # Lossy conversion in the parameters (by about eps(Float32))
+false
 ```
 
 *Usage:*
