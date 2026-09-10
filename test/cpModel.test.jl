@@ -98,49 +98,6 @@ end
     end
 end
 
-## @testset "cpModel.test.jl: constructor's optional arguments                         " begin
-##     ID = :cubic
-##     f┆R = cp_R[:cubic]
-##     Tmin, Tref, Tmax = 273, 298, 1800
-##     uref, sref, 𝑀, 𝑅 = 6885, 213685 // 1000, 4401 // 100, BasicIdealGas.universal_R
-##     # Promotion type conversion / 2 indirections
-##     for ℙ in union2vec(Base.IEEEFloat)
-##         pars = (ID, f┆R, ℙ(𝑀), Tmin, Tref, Tmax, uref, sref, 𝑅)
-##         MOLR = SpecificHeat(pars..., :MO)
-##         MASS = SpecificHeat(pars..., :MA)
-##         AUTO = SpecificHeat(pars...)
-##         @test MOLR != MASS
-##         @test MOLR == AUTO
-##         @test MASS != AUTO
-##         auto = SpecificHeat(pars[1:(end - 1)]...)
-##         @test auto == AUTO
-##     end
-##     # Set type conversion / 1 indirection
-##     for ℙ in union2vec(Base.IEEEFloat)
-##         pars = (ID, f┆R, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
-##         MOLR = SpecificHeat{ℙ}(pars..., :MO)
-##         MASS = SpecificHeat{ℙ}(pars..., :MA)
-##         AUTO = SpecificHeat{ℙ}(pars...)
-##         @test MOLR != MASS
-##         @test MOLR == AUTO
-##         @test MASS != AUTO
-##         auto = SpecificHeat{ℙ}(pars[1:(end - 1)]...)
-##         @test auto == AUTO
-##     end
-##     # Internal constructor / no indirection
-##     for ℙ in union2vec(Base.IEEEFloat)
-##         pars = (ID, f┆R, ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))...)
-##         MOLR = SpecificHeat(pars..., :MO)
-##         MASS = SpecificHeat(pars..., :MA)
-##         AUTO = SpecificHeat(pars...)
-##         @test MOLR != MASS
-##         @test MOLR == AUTO
-##         @test MASS != AUTO
-##         auto = SpecificHeat(pars[1:(end - 1)]...)
-##         @test auto == AUTO
-##     end
-## end
-## 
 ## @testset "cpModel.test.jl: type conversions                                         " begin
 ##     ID = :cubic
 ##     f┆R = cp_R[:cubic]
