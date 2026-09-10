@@ -7,7 +7,7 @@ struct IdealGas{ℙ <: FLOAT}
     form::String            # formula
     name::String            # name
     hmod::SpecificHeat{ℙ}   # heat model
-    Pref::ℙ                 # reference pressure, kPa
+    𝑃ref::Quantity{ℙ, dimension(u"kPa"), typeof(u"kPa")}
     function IdealGas(
             FORM::AbstractString,
             NAME::AbstractString,
@@ -66,7 +66,7 @@ import Base: convert
 convert(::Type{IdealGas{ℙ}}, ξ::IdealGas{ℙ}) where {ℙ <: FLOAT} = ξ
 
 function convert(::Type{IdealGas{ℙ}}, ξ::IdealGas{ℚ}) where {ℙ <: FLOAT, ℚ <: FLOAT}
-    return IdealGas{ℙ}(ξ.form, ξ.name, ξ.hmod, ξ.Pref)
+    return IdealGas{ℙ}(ξ.form, ξ.name, ξ.hmod, ξ.𝑃ref)
 end
 
 import Base: Float16, Float32, Float64
@@ -126,7 +126,7 @@ _ρ(ξ::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA) where {ℙ} = inv(_v(�
 
 # Internal, fast, positional, entropy function
 function _s(ξ::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA)::ℙ where {ℙ}
-    return s0(ξ, T, B) - R(ξ, B) * log(ℙ(P) / ξ.Pref)
+    return s0(ξ, T, B) - R(ξ, B) * log(ℙ(P) / ξ.𝑃ref)
 end
 
 # Base.getproperty
@@ -175,6 +175,6 @@ function Base.getproperty(ξ::IdealGas, sy::Symbol)
 end
 
 Base.propertynames(ξ::IdealGas) = (
-    :form, :name, :hmod, :Pref,
+    :form, :name, :hmod, :𝑃ref,
     propertynames(getfield(ξ, :hmod))...,
 )
