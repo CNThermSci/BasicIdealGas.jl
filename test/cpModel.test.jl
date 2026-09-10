@@ -151,17 +151,17 @@ end
     end
 end
 
-## @testset "cpModel.test.jl: user-facing functions: bound temperature intervals       " begin
-##     # Bounds checks
-##     bounds = BasicIdealGas.𝗯
-##     ID, f┆R = :const, T -> 22.26
-##     Tmin, Tref, Tmax = 273, 298, 1800
-##     uref, sref, 𝑀 = 6885, 213.685, 44.01
-##     C = SpecificHeat(ID, f┆R, 𝑀, Tmin, Tref, Tmax, uref, sref)
-##     @test_throws AssertionError bounds(C, prevfloat(C.Tmin))
-##     @test_throws AssertionError bounds(C, nextfloat(C.Tmax))
-## end
-## 
+@testset "cpModel.test.jl: user-facing functions: bound temperature intervals       " begin
+    # Bounds checks
+    bounds = BasicIdealGas.𝗯
+    ID, f┆R = :const, T -> 22.26
+    Tmin, Tref, Tmax = 273, 298, 1800
+    uref, sref, 𝑀 = 6885, 213.685, 44.01
+    C = SpecificHeat(ID, f┆R, 𝑀, Tmin, Tref, Tmax, uref, sref)
+    @test_throws AssertionError bounds(C, prevfloat(C.Tmin))
+    @test_throws AssertionError bounds(C, nextfloat(C.Tmax))
+end
+
 ## @testset "cpModel.test.jl: user-facing functions: thermodynamic consistencies       " begin
 ##     cp┆R = BasicIdealGas.cp┆R
 ##     cv┆R = BasicIdealGas.cv┆R
