@@ -40,7 +40,7 @@ provides types for basic ideal gas functionality from a hierarchy of `Type`s:
 ## Quick Overview (for the impatient)
 
 ```julia
-julia> C = SpecificHeat(:const, T -> 3//2, 4, 5.2, 298, 6000, 3718u"kJ/kmol", 126u"J/mol/K")
+julia> C = SpecificHeat(:const, T -> 5//2, 4, 5.2, 298, 6000, 3718u"kJ/kmol", 126u"J/mol/K")
 const cp₆₄(T)
 
 julia> He = IdealGas("He", "Helium", C)
@@ -51,10 +51,10 @@ julia> T1 = 1000u"K"
 
 julia> [ He.cp(T1, :MO), He.u(T1, :MA), He.h(T1, :MA), He.s0(T1, :MO) ]
 4-element Vector{Quantity{Float64}}:
-   12.47169392722986 kJ K^-1 kmol^-1
-  931.5786156545383 kJ kg^-1
- 1555.163312016031 kJ kg^-1
-  141.09900332516128 kJ K^-1 kmol^-1
+   20.7861565453831 kJ K^-1 kmol^-1
+ 3118.28228422884 kJ kg^-1
+ 5196.89793876715 kJ kg^-1
+  151.16500554193544 kJ K^-1 kmol^-1
 ```
 
 ## Paced Examples
