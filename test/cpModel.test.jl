@@ -183,7 +183,8 @@ end
     # Float16 are tested but may overflow depending on model function form and argument type
     for ℙ in [Float32, Float64]
         f┆R = cp_R[:cubic]
-        𝑀, Tmin, Tref, Tmax, uref, sref = 44.01, 273, 298, 1800, 6885, 213.685
+        Tmin, Tref, Tmax = 273, 298, 1800
+        uref, sref, 𝑀 = 6885u"kJ/kmol", 213.685u"kJ/kmol/K", 44.01u"kg/kmol"
         𝑅 = BasicIdealGas.universal_R
         C = SpecificHeat{ℙ}(:cubic, f┆R, 𝑀, Tmin, Tref, Tmax, uref, sref)
         G = SpecificHeat{ℙ}(:const, T -> (5 / 2) * 𝑅, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
