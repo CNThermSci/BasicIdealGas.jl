@@ -156,7 +156,7 @@ end
     bounds = BasicIdealGas.𝗯
     ID, f┆R = :const, T -> 22.26
     Tmin, Tref, Tmax = 273, 298, 1800
-    uref, sref, 𝑀 = 6885, 213.685, 44.01
+    uref, sref, 𝑀 = 6885u"kJ/kmol", 213.685u"kJ/kmol/K", 44.01u"kg/kmol"
     C = SpecificHeat(ID, f┆R, 𝑀, Tmin, Tref, Tmax, uref, sref)
     @test_throws AssertionError bounds(C, prevfloat(C.Tmin))
     @test_throws AssertionError bounds(C, nextfloat(C.Tmax))
