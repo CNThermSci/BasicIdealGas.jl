@@ -17,7 +17,7 @@ Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 [compat]
 InteractiveUtils = "1"
 NumericalIntegration = ">= 0.3"
-PhysicalConstants = "0.2.5"
+PhysicalConstants = ">= 0.2"
 Printf = "1"
 QuadGK = "2"
 Reexport = "1"
