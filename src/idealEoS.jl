@@ -7,16 +7,16 @@ struct IdealGas{ℙ <: FLOAT}
     form::String            # formula
     name::String            # name
     hmod::SpecificHeat{ℙ}   # heat model
-    Pref::ℙ                 # reference pressure, kPa
+    𝑃ref::Quantity{ℙ, dimension(u"kPa"), typeof(u"kPa")}
     function IdealGas(
             FORM::AbstractString,
             NAME::AbstractString,
             HMOD::SpecificHeat{ℙ},
-            PREF::ℙ = one(ℙ)
+            PREF::Quantity{ℙ, dimension(u"kPa"), typeof(u"kPa")} = one(ℙ) * u"kPa"
         ) where {ℙ <: FLOAT}
         @assert(length(FORM) > 0, "Error: Empty formula")
         @assert(length(NAME) > 0, "Error: Empty name")
-        @assert(PREF > 0, "Error: Pref <= 0")
+        @assert(PREF > 0u"kPa", "Error: Pref <= 0 kPa")
         return new{ℙ}(String(FORM), String(NAME), HMOD, PREF)
     end
 end
@@ -24,39 +24,26 @@ end
 # External constructors
 # ---------------------
 
-# Set type conversion / 1 indirection
-IdealGas{ℙ}(
-    FORM::AbstractString,
-    NAME::AbstractString,
-    HMOD::SpecificHeat,
-    PREF::Real = one(ℙ),
-) where {ℙ} = IdealGas(FORM, NAME, ℙ(HMOD), ℙ(PREF))
-
-# Heat model type conversion / 2 indirections
-IdealGas(
-    FORM::AbstractString,
-    NAME::AbstractString,
-    HMOD::SpecificHeat{ℙ},
-    PREF::Real = one(ℙ),
-) where {ℙ} = IdealGas{ℙ}(FORM, NAME, HMOD, PREF)
-
-# Set type with unit conversion and stripping / 2 indirections
+# Set precision conversion / 1 indirection
 function IdealGas{ℙ}(
         FORM::AbstractString,
         NAME::AbstractString,
         HMOD::SpecificHeat,
-        PREF::PRES = one(ℙ) * u"kPa",
-    ) where {ℙ <: FLOAT}
-    return IdealGas{ℙ}(FORM, NAME, HMOD, kSI(PREF))
+        PREF::Union{Real, PRES} = one(ℙ) * u"kPa",
+    ) where {ℙ}
+    Pref = PREF isa PRES ? uconvert(u"kPa", PREF) : PREF * u"kPa"
+    IdealGas(FORM, NAME, ℙ.((HMOD, Pref))...)
 end
 
-# Heat model type with unit conversion and stripping / 3 indirections
-IdealGas(
-    FORM::AbstractString,
-    NAME::AbstractString,
-    HMOD::SpecificHeat{ℙ},
-    PREF::PRES,
-) where {ℙ} = IdealGas{ℙ}(FORM, NAME, HMOD, PREF)
+# Heat model type conversion / 2 indirections
+function IdealGas(
+        FORM::AbstractString,
+        NAME::AbstractString,
+        HMOD::SpecificHeat{ℙ},
+        PREF::Union{Real, PRES} = one(ℙ) * u"kPa",
+    ) where {ℙ}
+    IdealGas{ℙ}(FORM, NAME, HMOD, PREF)
+end
 
 # Conversions
 # -----------
@@ -66,7 +53,7 @@ import Base: convert
 convert(::Type{IdealGas{ℙ}}, ξ::IdealGas{ℙ}) where {ℙ <: FLOAT} = ξ
 
 function convert(::Type{IdealGas{ℙ}}, ξ::IdealGas{ℚ}) where {ℙ <: FLOAT, ℚ <: FLOAT}
-    return IdealGas{ℙ}(ξ.form, ξ.name, ξ.hmod, ξ.Pref)
+    return IdealGas{ℙ}(ξ.form, ξ.name, ξ.hmod, ξ.𝑃ref)
 end
 
 import Base: Float16, Float32, Float64
@@ -118,6 +105,8 @@ for FUNC in (:cp, :cv, :u, :h, :s0)
     end
 end
 
+# TODO: feat/units below
+
 # Internal, fast, positional, EoS functions
 _P(ξ::IdealGas{ℙ}, T::Real, v::Real, B::Symbol = :MA) where {ℙ} = R(ξ, B) * ℙ(T / v)
 _T(ξ::IdealGas{ℙ}, P::Real, v::Real, B::Symbol = :MA) where {ℙ} = ℙ(P * v) / R(ξ, B)
@@ -126,7 +115,7 @@ _ρ(ξ::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA) where {ℙ} = inv(_v(�
 
 # Internal, fast, positional, entropy function
 function _s(ξ::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA)::ℙ where {ℙ}
-    return s0(ξ, T, B) - R(ξ, B) * log(ℙ(P) / ξ.Pref)
+    return s0(ξ, T, B) - R(ξ, B) * log(ℙ(P) / ξ.𝑃ref)
 end
 
 # Base.getproperty
@@ -175,6 +164,6 @@ function Base.getproperty(ξ::IdealGas, sy::Symbol)
 end
 
 Base.propertynames(ξ::IdealGas) = (
-    :form, :name, :hmod, :Pref,
+    :form, :name, :hmod, :𝑃ref,
     propertynames(getfield(ξ, :hmod))...,
 )
