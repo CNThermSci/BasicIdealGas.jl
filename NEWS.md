@@ -1,3 +1,12 @@
+## v0.4.0-alpha
+
+- Implementing units on packages (ongoing)
+- Status per Composite Types:
+- `SpecificHeat`: fully implemented / tested;
+- `IdealGas`: partially implemented / no tests;
+- Others: disabled / turned off.
+- `alpha`: Feature-incomplete, unstable
+
 ## v0.3.0
 
 - Added `PropPair` for property pairs
