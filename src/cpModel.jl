@@ -5,111 +5,75 @@
 
 struct SpecificHeat{ℙ <: FLOAT}
     ID::Symbol      # Model ID, as in :cubic, etc...
-    𝑓::Function     # K -> kJ/kmol/K
-    𝑀::ℙ            # kg/kmol
-    Tmin::ℙ         # K
-    Tref::ℙ         # K
-    Tmax::ℙ         # K
-    uref::ℙ         # kJ/kmol
-    sref::ℙ         # kJ/kmol⋅K
-    𝑅::ℙ            # kJ/kmol⋅K
-    # Internal constructors
-    # Validating
+    f┆R::Function   # Unitless function cp(T)/R: ℙ -> ℙ
+    𝑀::Quantity{ℙ, dimension(u"kg/kmol"), typeof(u"kg/kmol")}
+    𝑇min::Quantity{ℙ, dimension(u"K"), typeof(u"K")}
+    𝑇ref::Quantity{ℙ, dimension(u"K"), typeof(u"K")}
+    𝑇max::Quantity{ℙ, dimension(u"K"), typeof(u"K")}
+    𝑢ref::Quantity{ℙ, dimension(u"kJ/kmol"), typeof(u"kJ/kmol")}
+    𝑠ref::Quantity{ℙ, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")}
+    𝑅::Quantity{ℙ, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")}
+    # Internal, validating constructor
     SpecificHeat(
         ID::Symbol,
-        𝑓::Function,
-        𝑀::ℙ,
-        Tmin::ℙ,
-        Tref::ℙ,
-        Tmax::ℙ,
-        uref::ℙ,
-        sref::ℙ,
-        𝑅::ℙ = ℙ(universal_R),
-        B::Symbol = :MO
+        f┆R::Function,
+        𝑀::Quantity{ℙ, dimension(u"kg/kmol"), typeof(u"kg/kmol")},
+        𝑇min::Quantity{ℙ, dimension(u"K"), typeof(u"K")},
+        𝑇ref::Quantity{ℙ, dimension(u"K"), typeof(u"K")},
+        𝑇max::Quantity{ℙ, dimension(u"K"), typeof(u"K")},
+        𝑢ref::Quantity{ℙ, dimension(u"kJ/kmol"), typeof(u"kJ/kmol")},
+        𝑠ref::Quantity{ℙ, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")},
+        𝑅::Quantity{ℙ, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")} = ℙ(Ru),
     ) where {ℙ <: FLOAT} = begin
         @assert(ID != Symbol(""), "Error: Empty model ID")
-        @assert(𝑀 > zero(ℙ), "Error: M <= 0")
-        @assert(zero(ℙ) <= Tmin <= Tref < Tmax, "Error: Temperature values")
-        @assert(𝑅 > zero(ℙ), "Error: 𝑅 <= 0")
-        @assert(B in (:MA, :MO), "Error: B should be either :MA or :MO")
-        return B == :MA ? (
-                new{ℙ}(ID, ℙ ⊚ T -> 𝑓(T) * 𝑀, 𝑀, Tmin, Tref, Tmax, uref * 𝑀, sref * 𝑀, 𝑅)
-            ) : (
-                new{ℙ}(ID, ℙ ⊚ 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
-            )
+        @assert(𝑀 > zero(ℙ) * u"kg/kmol", "Error: M <= 0 kg/kmol")
+        @assert(zero(ℙ) * u"K" <= 𝑇min <= 𝑇ref < 𝑇max, "Error: Temperature values")
+        @assert(𝑅 > zero(ℙ) * u"kJ/kmol/K", "Error: 𝑅 <= 0 kJ/kmol/K")
+        wf┆R = (T::Quantity{𝔽, dimension(u"K")} where {𝔽 <: Real}) -> (ℙ ⊚ f┆R)(ℙ(uconvert(u"K", T).val))
+        return new{ℙ}(ID, wf┆R, 𝑀, 𝑇min, 𝑇ref, 𝑇max, 𝑢ref, 𝑠ref, 𝑅)
     end
 end
 
 # External constructors
 # ---------------------
 
-# Set type conversion / 1 indirection
+# Set precision conversion / 1 indirection
 function SpecificHeat{ℙ}(
         ID::Symbol,
-        𝑓::Function,
-        𝑀::Real,
-        Tmin::Real,
-        Tref::Real,
-        Tmax::Real,
-        uref::Real,
-        sref::Real,
-        𝑅::Real = ℙ(universal_R),
-        B::Symbol = :MO,
+        f┆R::Function,
+        𝑀::Union{Real, MOLW},
+        𝑇min::Union{Real, TEMP},
+        𝑇ref::Union{Real, TEMP},
+        𝑇max::Union{Real, TEMP},
+        𝑢ref::ENER,
+        𝑠ref::ENTR,
+        𝑅::ENTR = ℙ(Ru),
     ) where {ℙ <: FLOAT}
-    return SpecificHeat(ID, ℙ ⊚ 𝑓, ℙ.((𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅))..., B)
+    M = 𝑀 isa MOLW ? uconvert(u"kg/kmol", 𝑀) : 𝑀 * u"kg/kmol"
+    Tmin = 𝑇min isa TEMP ? uconvert(u"K", 𝑇min) : 𝑇min * u"K"
+    Tref = 𝑇ref isa TEMP ? uconvert(u"K", 𝑇ref) : 𝑇ref * u"K"
+    Tmax = 𝑇max isa TEMP ? uconvert(u"K", 𝑇max) : 𝑇max * u"K"
+    uref = 𝑢ref isa MASS ? uconvert(u"kJ/kmol", 𝑢ref * 𝑀) : uconvert(u"kJ/kmol", 𝑢ref)
+    sref = 𝑠ref isa MASS ? uconvert(u"kJ/kmol/K", 𝑠ref * 𝑀) : uconvert(u"kJ/kmol/K", 𝑠ref)
+    R = 𝑅 isa MASS ? uconvert(u"kJ/kmol/K", 𝑅 * 𝑀) : uconvert(u"kJ/kmol/K", 𝑅)
+    return SpecificHeat(ID, f┆R, ℙ.((M, Tmin, Tref, Tmax, uref, sref, 𝑅))...)
 end
 
 # Promotion type conversion / 2 indirections
 function SpecificHeat(
         ID::Symbol,
-        𝑓::Function,
-        𝑀::Real,
-        Tmin::Real,
-        Tref::Real,
-        Tmax::Real,
-        uref::Real,
-        sref::Real,
-        𝑅::Real = universal_R,
-        B::Symbol = :MO,
-    )
-    ℙ = promote_type(typeof.((𝑀, Tmin, Tref, Tmax, uref, sref))...) # Default 𝑅 left out
-    ℙ = ℙ <: FLOAT ? ℙ : Float64
-    return SpecificHeat{ℙ}(ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅, B)
-end
-
-# Set type with unit conversion and stripping / 2 indirections
-function SpecificHeat{ℙ}(
-        ID::Symbol,
-        𝑓::Function,
+        f┆R::Function,
         𝑀::Union{Real, MOLW},
-        Tmin::Union{Real, TEMP},
-        Tref::Union{Real, TEMP},
-        Tmax::Union{Real, TEMP},
-        uref::ENER,
-        sref::ENTR,
-        𝑅::Union{Real, ENTR} = universal_R,
-    ) where {ℙ <: FLOAT}
-    uref = uref isa MASS ? kSI(uref) * kSI(𝑀) : kSI(uref)
-    sref = sref isa MASS ? kSI(sref) * kSI(𝑀) : kSI(sref)
-    𝑅    = 𝑅    isa MASS ? kSI(𝑅   ) * kSI(𝑀) : kSI(𝑅)
-    return SpecificHeat{ℙ}(ID, 𝑓, kSI.((𝑀, Tmin, Tref, Tmax))..., uref, sref, 𝑅, :MO)
-end
-
-# Promotion type with unit conversion and stripping / 3 indirections
-function SpecificHeat(
-        ID::Symbol,
-        𝑓::Function,
-        𝑀::Union{𝕄, MOLW{𝕄}},
-        Tmin::Union{𝕀, TEMP{𝕀}},
-        Tref::Union{𝔼, TEMP{𝔼}},
-        Tmax::Union{𝔸, TEMP{𝔸}},
-        uref::ENER{𝕌},
-        sref::ENTR{𝕊},
-        𝑅::Union{Real, ENTR} = universal_R,
-    ) where {𝕄 <: Real, 𝕀 <: Real, 𝔸 <: Real, 𝔼 <: Real, 𝕌 <: Real, 𝕊 <: Real}
-    ℙ = promote_type(𝕄, 𝕀, 𝔸, 𝔼, 𝕌, 𝕊) # Default R left out
+        𝑇min::Union{Real, TEMP},
+        𝑇ref::Union{Real, TEMP},
+        𝑇max::Union{Real, TEMP},
+        𝑢ref::ENER,
+        𝑠ref::ENTR,
+        𝑅::ENTR = Ru,
+    )
+    ℙ = promote_type(precof.((𝑀, 𝑇min, 𝑇ref, 𝑇max, 𝑢ref, 𝑠ref))...) # Default 𝑅 left out
     ℙ = ℙ <: FLOAT ? ℙ : Float64
-    return SpecificHeat{ℙ}(ID, 𝑓, 𝑀, Tmin, Tref, Tmax, uref, sref, 𝑅)
+    return SpecificHeat{ℙ}(ID, f┆R, 𝑀, 𝑇min, 𝑇ref, 𝑇max, 𝑢ref, 𝑠ref, 𝑅)
 end
 
 # Conversions
@@ -120,9 +84,11 @@ import Base: convert
 convert(::Type{SpecificHeat{ℙ}}, ξ::SpecificHeat{ℙ}) where {ℙ <: FLOAT} = ξ
 
 function convert(::Type{SpecificHeat{ℙ}}, ξ::SpecificHeat{ℚ}) where {ℙ <: FLOAT, ℚ <: FLOAT}
-    return SpecificHeat{ℙ}(
-        ξ.ID, ξ.𝑓, ξ.𝑀, ξ.Tmin, ξ.Tref, ξ.Tmax, ξ.uref, ξ.sref, ξ.𝑅
-    )
+    return if ξ.f┆R.f┆R isa ComposedFunction
+        SpecificHeat{ℙ}(ξ.ID, ξ.f┆R.f┆R.inner, ξ.𝑀, ξ.𝑇min, ξ.𝑇ref, ξ.𝑇max, ξ.𝑢ref, ξ.𝑠ref, ξ.𝑅)
+    else
+        SpecificHeat{ℙ}(ξ.ID, ξ.f┆R.f┆R, ξ.𝑀, ξ.𝑇min, ξ.𝑇ref, ξ.𝑇max, ξ.𝑢ref, ξ.𝑠ref, ξ.𝑅)
+    end
 end
 
 import Base: Float16, Float32, Float64
@@ -151,52 +117,52 @@ export SpecificHeat
 # Show
 # ----
 
+pretty(ξ::SpecificHeat{ℙ}) where {ℙ <: FLOAT} = "$(ξ.ID) cp$(pDeco(ℙ))(T)"
+
 function Base.show(io::IO, ::MIME"text/plain", ξ::SpecificHeat{ℙ}) where {ℙ <: FLOAT}
-    # rng = "[$(@sprintf("%.*g K", 5, ξ.Tmin)) $(@sprintf("%.*g K", 5, ξ.Tmax))]"
-    return print(
-        io,
-        "$(ξ.ID) cp$(pDeco(ℙ))(T)"
-    )
+    return print(io, pretty(ξ))
 end
-
-# SpecificHeat Helper functions
-# -----------------------------
-
-∫┆T(C::SpecificHeat, T::Real) = ∫(T -> C.𝑓(T) / T, C.Tref, T)
 
 # User-facing functions
 # ---------------------
 
-𝗯(C::SpecificHeat, T::Real) = begin
-    msg = "T = $(@sprintf("%.*g K", 5, T)) out of bounds"
-    @assert(C.Tmin <= T <= C.Tmax, msg)
+𝗯(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = begin
+    T = ℙ(𝑇)
+    msg = "T = $(@sprintf("%.*g K", 5, T.val)) out of bounds"
+    @assert(ξ.𝑇min <= T <= ξ.𝑇max, msg)
 end
+𝗯(ξ::SpecificHeat, 𝑇::Real) = 𝗯(ξ, 𝑇 * u"K")
 
 import Base: cp
 
-cp┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = (𝗯(C, T); C.𝑓(T) / C.𝑅)
-cv┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = cp┆R(C, T) - one(ℙ)
-ga(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = (𝗯(C, T); x = C.𝑓(T); x / (x - C.𝑅))
+cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ξ.f┆R(ℙ(𝑇)))
+cp┆R(ξ::SpecificHeat, 𝑇::Real) = cp┆R(ξ, 𝑇 * u"K")
+cv┆R(ξ::SpecificHeat{ℙ}, 𝑇) where {ℙ <: FLOAT} = cp┆R(ξ, 𝑇) - one(ℙ)
+ga(ξ::SpecificHeat, 𝑇) = cp┆R(ξ, 𝑇) / cv┆R(ξ, 𝑇)
 
-function R(C::SpecificHeat, B::Symbol = :MA)
+function R(ξ::SpecificHeat, B::Symbol = :MA)
     @assert B in (:MA, :MO)
-    return B == :MO ? C.𝑅 : C.𝑅 / C.𝑀
+    return B == :MO ? ξ.𝑅 : ξ.𝑅 / ξ.𝑀
 end
 
-cp(C::SpecificHeat{ℙ}, T::Real, B::Symbol = :MA) where {ℙ <: FLOAT} = cp┆R(C, T) * R(C, B)
-cv(C::SpecificHeat{ℙ}, T::Real, B::Symbol = :MA) where {ℙ <: FLOAT} = cv┆R(C, T) * R(C, B)
-∫cp┆R(C::SpecificHeat{ℙ}, T::ℙ) where {ℙ <: FLOAT} = (𝗯(C, T); ∫(C.𝑓, C.Tref, T) / C.𝑅)
-∫cp┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cp┆R(C, ℙ(T))
-∫cv┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cp┆R(C, T) - ℙ(T) + C.Tref
-u┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cv┆R(C, T) + C.uref / C.𝑅
-h┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = u┆R(C, T) + ℙ(T)
-u(C::SpecificHeat{ℙ}, T::Real, B::Symbol = :MA) where {ℙ <: FLOAT} = u┆R(C, T) * R(C, B)
-h(C::SpecificHeat{ℙ}, T::Real, B::Symbol = :MA) where {ℙ <: FLOAT} = h┆R(C, T) * R(C, B)
-∫cp┆RT(C::SpecificHeat, T::Real) = (𝗯(C, T); ∫┆T(C, T) / C.𝑅)
-s0┆R(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ∫cp┆RT(C, T) + C.sref / C.𝑅
-s0(C::SpecificHeat{ℙ}, T::Real, B::Symbol = :MA) where {ℙ <: FLOAT} = s0┆R(C, T) * R(C, B)
-Pr(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = exp(∫cp┆RT(C, T))
-vr(C::SpecificHeat{ℙ}, T::Real) where {ℙ <: FLOAT} = ℙ(T) / Pr(C, T)
+cp(ξ::SpecificHeat, 𝑇, B = :MA) = cp┆R(ξ, 𝑇) * R(ξ, B)
+cv(ξ::SpecificHeat, 𝑇, B = :MA) = cv┆R(ξ, 𝑇) * R(ξ, B)
+∫cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ∫(ξ.f┆R, ξ.𝑇ref, ℙ(𝑇)))
+∫cp┆R(ξ::SpecificHeat, 𝑇::Real) = ∫cp┆R(ξ, 𝑇 * u"K")
+∫cv┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = ∫cp┆R(ξ, 𝑇) - ℙ(𝑇) + ξ.𝑇ref
+∫cv┆R(ξ::SpecificHeat, 𝑇::Real) = ∫cv┆R(ξ, 𝑇 * u"K")
+u┆R(ξ::SpecificHeat, 𝑇) = ∫cv┆R(ξ, 𝑇) + ξ.𝑢ref / ξ.𝑅
+h┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = u┆R(ξ, 𝑇) + ℙ(𝑇)
+h┆R(ξ::SpecificHeat, 𝑇::Real) = h┆R(ξ, 𝑇 * u"K")
+u(ξ::SpecificHeat, 𝑇, B = :MA) = u┆R(ξ, 𝑇) * R(ξ, B)
+h(ξ::SpecificHeat, 𝑇, B = :MA) = h┆R(ξ, 𝑇) * R(ξ, B)
+∫cp┆RT(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ∫(T -> ξ.f┆R(T) / T, ξ.𝑇ref, ℙ(𝑇)))
+∫cp┆RT(ξ::SpecificHeat, 𝑇::Real) = ∫cp┆RT(ξ, 𝑇 * u"K")
+s0┆R(ξ::SpecificHeat, 𝑇) = ∫cp┆RT(ξ, 𝑇) + ξ.𝑠ref / ξ.𝑅
+s0(ξ::SpecificHeat, 𝑇, B = :MA) = s0┆R(ξ, 𝑇) * R(ξ, B)
+Pr(ξ::SpecificHeat, 𝑇) = exp(∫cp┆RT(ξ, 𝑇))
+vr(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = ℙ(𝑇) / Pr(ξ, 𝑇)
+vr(ξ::SpecificHeat, 𝑇::Real) = vr(ξ, 𝑇 * u"K")
 
 # Base.getproperty
 # ----------------
@@ -210,49 +176,55 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
     end
     # Convenience accessors/transformers
     if sy == :f
-        return getfield(ξ, :𝑓)
-    elseif sy == :fMA
-        return T -> getfield(ξ, :𝑓)(T) / getfield(ξ, :𝑀)
-    end
-    # Porcelain accessors (with units)
-    if sy == :M
-        return getfield(ξ, :𝑀) * u"kg/kmol"
-    elseif sy == :R
-        return getfield(ξ, :𝑅) * u"kJ/kmol/K"
+        return getfield(ξ, :f┆R)
+    elseif sy == :M
+        return getfield(ξ, :𝑀)
+    elseif sy in (:R, :RMO)
+        return getfield(ξ, :𝑅)
     elseif sy == :RMA
-        return R(ξ, :MA) * u"kJ/kg/K"
+        return R(ξ, :MA)
+    elseif sy == :Tmin
+        return getfield(ξ, :𝑇min)
+    elseif sy == :Tref
+        return getfield(ξ, :𝑇ref)
+    elseif sy == :Tmax
+        return getfield(ξ, :𝑇max)
+    elseif sy == :uref
+        return getfield(ξ, :𝑢ref)
+    elseif sy == :sref
+        return getfield(ξ, :𝑠ref)
     end
     # Pretty print
     if sy == :view
-        xmin, xmax = getfield(ξ, :Tmin), getfield(ξ, :Tmax)
+        xmin, xmax = getfield(ξ, :𝑇min), getfield(ξ, :𝑇max)
         x = range(xmin, stop = xmax, length = 33)
         y = map(T -> cp(ξ, T, :MA), x)
         plt = lineplot(
-            x, y, xlabel = "T [K]", ylabel = "cp (T)", name = "⠤⠤⠤⠤ [kJ/kg·K]",
+            x, y, xlabel = "T", ylabel = "cp (T)",
             xlim = (xmin, xmax), width = 32, height = 6,
             border = :ascii, color = :white, compact_labels = true,
         )
-        return print(join([repr(ξ), string(plt)], "\n"))
+        return println(join([pretty(ξ), string(plt)], "\n"))
     end
     # OOP-style covenience functions (formerly exported ones)
     oop_style_funcs_1 = (
-        :cp┆R, :cv┆R, :ga, :R, :∫cp┆R, :∫cv┆R,
+        :cp┆R, :cv┆R, :ga, :∫cp┆R, :∫cv┆R,
         :u┆R, :h┆R, :∫cp┆RT, :s0┆R, :Pr, :vr,
     )
     oop_style_funcs_2 = (
         :cp, :cv, :u, :h, :s0,
     )
     if sy in oop_style_funcs_1
-        return (T::Real,) -> eval(sy)(ξ, T)
+        return T -> eval(sy)(ξ, T)
     elseif sy in oop_style_funcs_2
-        return (T::Real, B::Symbol = :MA) -> eval(sy)(ξ, T, B)
+        return (T, B = :MA) -> eval(sy)(ξ, T, B)
     end
 end
 
 Base.propertynames(::SpecificHeat) = (
-    :ID, :𝑓, :𝑀, :Tmin, :Tmax, :Tref, :uref, :sref, :𝑅,
-    :f, :fMA, :M, :R, :RMA, :view,
-    :cp┆R, :cv┆R, :ga, :R, :∫cp┆R, :∫cv┆R,
+    :ID, :f┆R, :𝑀, :𝑇min, :𝑇max, :𝑇ref, :𝑢ref, :𝑠ref, :𝑅,
+    :f, :M, :Tmin, :Tref, :Tmax, :uref, :sref, :R, :RMO, :RMA, :view,
+    :cp┆R, :cv┆R, :ga, :∫cp┆R, :∫cv┆R,
     :u┆R, :h┆R, :∫cp┆RT, :s0┆R, :Pr, :vr,
     :cp, :cv, :u, :h, :s0,
 )

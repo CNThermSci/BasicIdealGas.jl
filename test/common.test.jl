@@ -2,12 +2,11 @@ using QuadGK
 using NumericalIntegration
 
 import Base: ComposedFunction
-import BasicIdealGas: FLOAT, universal_R, subscript, pDeco, ⊚, ∫
+import BasicIdealGas: FLOAT, Ru, subscript, pDeco, ⊚, ∫
 
 @testset "common.test.jl: type aliases and constants                                " begin
     @test FLOAT === Base.IEEEFloat
-    @test universal_R == 8.31447
-    @test universal_R isa Float64
+    @test Ru isa Quantity{Float64, dimension(u"kJ/kmol/K"), typeof(u"kJ/kmol/K")}
 end
 
 @testset "common.test.jl: subscript utilities (subscript, pDeco)                    " begin
