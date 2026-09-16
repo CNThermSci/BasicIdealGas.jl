@@ -107,7 +107,7 @@ end
 
 # TODO: feat/units below
 
-# Internal, fast, positional, EoS functions
+# Internal, fast, positional, UNITFUL, EoS functions
 _P(ξ::IdealGas{ℙ}, T::Real, v::Real, B::Symbol = :MA) where {ℙ} = R(ξ, B) * ℙ(T / v)
 _T(ξ::IdealGas{ℙ}, P::Real, v::Real, B::Symbol = :MA) where {ℙ} = ℙ(P * v) / R(ξ, B)
 _v(ξ::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA) where {ℙ} = R(ξ, B) * ℙ(T / P)
