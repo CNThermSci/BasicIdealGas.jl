@@ -130,8 +130,6 @@ function _s(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {�
     return s0(ξ, 𝑇, B) - R(ξ, B) * log(ℙ(𝑃) / ξ.𝑃ref)
 end
 
-# Internal keyworded derived functions (accessible through properties, see below)
-
 # Base.getproperty
 # ----------------
 
@@ -167,7 +165,7 @@ function Base.getproperty(ξ::IdealGas, sy::Symbol)
             ;
             P::Union{Real, PRES},
             v::Union{Real, VOLU},
-            B::Symbol = :MA
+            B::Symbol = :MA,
         ) -> begin
             𝑃 = P isa PRES ? P : P * u"kPa"
             𝑣 = v isa VOLU ? v : v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
@@ -178,7 +176,7 @@ function Base.getproperty(ξ::IdealGas, sy::Symbol)
             ;
             P::Union{Real, PRES},
             T::Union{Real, TEMP},
-            B::Symbol = :MA
+            B::Symbol = :MA,
         ) -> begin
             𝑇 = T isa TEMP ? T : T * u"K"
             𝑃 = P isa PRES ? P : P * u"kPa"
@@ -189,7 +187,7 @@ function Base.getproperty(ξ::IdealGas, sy::Symbol)
             ;
             P::Union{Real, PRES},
             T::Union{Real, TEMP},
-            B::Symbol = :MA
+            B::Symbol = :MA,
         ) -> begin
             𝑇 = T isa TEMP ? T : T * u"K"
             𝑃 = P isa PRES ? P : P * u"kPa"
