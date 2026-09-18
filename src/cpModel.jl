@@ -218,6 +218,10 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
         return (
             t::Union{Real, TEMP, Missing} = missing;
             T::Union{Real, TEMP, Missing} = missing,
+            # Dummy kwargs (interfacing)
+            P = missing,
+            v = missing,
+            B = missing,
         ) -> eval(sy)(ξ, ismissing(T) ? t : T)
     elseif sy in oop_style_funcs_2
         return (
@@ -225,6 +229,9 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
             b::Symbol = :MA;
             T::Union{Real, TEMP, Missing} = missing,
             B::Union{Symbol, Missing} = missing,
+            # Dummy kwargs (interfacing)
+            P = missing,
+            v = missing,
         ) -> eval(sy)(ξ, ismissing(T) ? t : T, ismissing(B) ? b : B)
     end
 end
