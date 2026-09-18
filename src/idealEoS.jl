@@ -186,6 +186,14 @@ kwv = (
     _v(ξ, 𝑃, 𝑇, B)
 end
 
+kwρ = (
+    ξ::IdealGas;
+    P::Union{Real, PRES, Missing} = missing,
+    T::Union{Real, TEMP, Missing} = missing,
+    v::Union{Real, VOLU, Missing} = missing,
+    B::Symbol = :MA,
+) -> inv(kwv(ξ; P = P, T = T, B = B))
+
 # Base.getproperty
 # ----------------
 
