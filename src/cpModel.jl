@@ -167,6 +167,15 @@ vr(ξ::SpecificHeat, 𝑇::Real) = vr(ξ, 𝑇 * u"K")
 # Base.getproperty
 # ----------------
 
+props_T(ξ::SpecificHeat) = (
+    :cp┆R, :cv┆R, :ga, :∫cp┆R, :∫cv┆R,
+    :u┆R, :h┆R, :∫cp┆RT, :s0┆R, :Pr, :vr,
+)
+
+props_T_B(ξ::SpecificHeat) = (
+    :cp, :cv, :u, :h, :s0,
+)
+
 import Base: getproperty, propertynames
 
 function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
@@ -207,19 +216,12 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
         return println(join([pretty(ξ), string(plt)], "\n"))
     end
     # OOP-style covenience functions (formerly exported ones)
-    oop_style_funcs_1 = (
-        :cp┆R, :cv┆R, :ga, :∫cp┆R, :∫cv┆R,
-        :u┆R, :h┆R, :∫cp┆RT, :s0┆R, :Pr, :vr,
-    )
-    oop_style_funcs_2 = (
-        :cp, :cv, :u, :h, :s0,
-    )
-    if sy in oop_style_funcs_1
+    if sy in props_T(ξ)
         return (
             t::Union{Real, TEMP, Missing} = missing;
             T::Union{Real, TEMP, Missing} = missing,
         ) -> eval(sy)(ξ, ismissing(T) ? t : T)
-    elseif sy in oop_style_funcs_2
+    elseif sy in props_T_B(ξ)
         return (
             t::Union{Real, TEMP, Missing} = missing,
             b::Symbol = :MA;
@@ -229,10 +231,9 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
     end
 end
 
-Base.propertynames(::SpecificHeat) = (
+Base.propertynames(ξ::SpecificHeat) = (
     :ID, :f┆R, :𝑀, :𝑇min, :𝑇max, :𝑇ref, :𝑢ref, :𝑠ref, :𝑅,
     :f, :M, :Tmin, :Tref, :Tmax, :uref, :sref, :R, :RMO, :RMA, :view,
-    :cp┆R, :cv┆R, :ga, :∫cp┆R, :∫cv┆R,
-    :u┆R, :h┆R, :∫cp┆RT, :s0┆R, :Pr, :vr,
-    :cp, :cv, :u, :h, :s0,
+    props_T(ξ)...,
+    props_T_B(ξ)...,
 )
