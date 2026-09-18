@@ -152,18 +152,17 @@ PTv = (
     v::Union{Real, VOLU, Missing} = missing,
     B::Symbol = :MA,
 ) -> begin
-    count(x -> ismissing(x), (T, v)) >= 2 || throw(
+    count(x -> ismissing(x), (P, T, v)) <= 1 || throw(
         ArgumentError("Unspecified state: (P = $(P), T = $(T), v = $(v))")
     )
-    if !ismissing(P)
-        return P isa PRES ? uconvert(u"kPa", P) : P * u"kPa"
+    𝑃, 𝑇, 𝑣 = PP(P), TT(T), vv(v, B)
+    return if ismissing(𝑃)
+        _P(ξ, 𝑇, 𝑣, B), 𝑇, 𝑣
+    elseif ismissing(𝑇)
+        𝑃, _T(ξ, 𝑃, 𝑣, B), 𝑣
+    else
+        𝑃, 𝑇, _v(ξ, 𝑃, 𝑇, B)
     end
-    count(x -> ismissing(x), (T, v)) == 0 || throw(
-        ArgumentError("Unspecified state: (T = $(T), v = $(v))")
-    )
-    𝑇 = T isa TEMP ? T : T * u"K"
-    𝑣 = v isa VOLU ? v : v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
-    _P(ξ, 𝑇, 𝑣, B)
 end
 
 # Internal keyworded generic function
