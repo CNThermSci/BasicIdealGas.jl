@@ -32,7 +32,7 @@ function IdealGas{ℙ}(
         PREF::Union{Real, PRES} = one(ℙ) * u"kPa",
     ) where {ℙ}
     Pref = PREF isa PRES ? uconvert(u"kPa", PREF) : PREF * u"kPa"
-    IdealGas(FORM, NAME, ℙ.((HMOD, Pref))...)
+    return IdealGas(FORM, NAME, ℙ.((HMOD, Pref))...)
 end
 
 # Heat model type conversion / 2 indirections
@@ -42,7 +42,7 @@ function IdealGas(
         HMOD::SpecificHeat{ℙ},
         PREF::Union{Real, PRES} = one(ℙ) * u"kPa",
     ) where {ℙ}
-    IdealGas{ℙ}(FORM, NAME, HMOD, PREF)
+    return IdealGas{ℙ}(FORM, NAME, HMOD, PREF)
 end
 
 # Conversions
@@ -108,10 +108,21 @@ end
 # TODO: feat/units below
 
 # Internal, fast, positional, UNITFUL, EoS functions
-_P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU, B::Symbol = :MA) where {ℙ} = R(ξ, B) * ℙ(𝑇 / 𝑣)
-_T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU, B::Symbol = :MA) where {ℙ} = ℙ(P * v) / R(ξ, B)
-_v(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {ℙ} = R(ξ, B) * ℙ(T / P)
-_ρ(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {ℙ} = inv(_v(ξ, P, T, B))
+function _P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU, B::Symbol = :MA) where {ℙ}
+    return R(ξ, B) * ℙ(𝑇 / 𝑣)
+end
+
+function _T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU, B::Symbol = :MA) where {ℙ}
+    return ℙ(P * v) / R(ξ, B)
+end
+
+function _v(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {ℙ}
+    return R(ξ, B) * ℙ(T / P)
+end
+
+function _ρ(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {ℙ}
+    return inv(_v(ξ, P, T, B))
+end
 
 # Internal, fast, positional, entropy function
 function _s(ξ::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA)::ℙ where {ℙ}
