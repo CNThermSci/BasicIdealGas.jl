@@ -149,6 +149,24 @@ kwP = (
     _P(ξ, 𝑇, 𝑣, B)
 end
 
+kwT = (
+    ξ::IdealGas;
+    P::Union{Real, PRES, Missing} = missing,
+    T::Union{Real, TEMP, Missing} = missing,
+    v::Union{Real, VOLU, Missing} = missing,
+    B::Symbol = :MA,
+) -> begin
+    if !ismissing(T)
+        return T isa TEMP ? uconvert(u"K", T) : T * u"K"
+    end
+    count(x -> ismissing(x), (P, v)) > 0 && throw(
+        ArgumentError("Unspecified state: (P = $(P), v = $(v))")
+    )
+    𝑃 = P isa PRES ? P : P * u"kPa"
+    𝑣 = v isa VOLU ? v : v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
+    _T(ξ, 𝑃, 𝑣, B)
+end
+
 # Base.getproperty
 # ----------------
 
@@ -171,16 +189,7 @@ function Base.getproperty(ξ::IdealGas, sy::Symbol)
     if sy == :P
         return (; P = missing, T = missing, v = missing, B = :MA) -> kwP(ξ; P = P, T = T, v = v, B = B)
     elseif sy == :T
-        return (
-            ;
-            P::Union{Real, PRES},
-            v::Union{Real, VOLU},
-            B::Symbol = :MA,
-        ) -> begin
-            𝑃 = P isa PRES ? P : P * u"kPa"
-            𝑣 = v isa VOLU ? v : v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
-            _T(ξ, 𝑃, 𝑣, B)
-        end
+        return (; P = missing, T = missing, v = missing, B = :MA) -> kwT(ξ; P = P, T = T, v = v, B = B)
     elseif sy == :v
         return (
             ;
