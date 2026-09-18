@@ -168,7 +168,16 @@ function Base.getproperty(ξ::IdealGas, sy::Symbol)
             _T(ξ, 𝑃, 𝑣, B)
         end
     elseif sy == :v
-        return (; P::Real, T::Real, B::Symbol = :MA) -> _v(ξ, P, T, B)
+        return (
+            ;
+            P::Union{Real, PRES},
+            T::Union{Real, TEMP},
+            B::Symbol = :MA
+        ) -> begin
+            𝑇 = T isa TEMP ? T : T * u"K"
+            𝑃 = P isa PRES ? P : P * u"kPa"
+            _v(ξ, 𝑃, 𝑇, B)
+        end
     elseif sy == :ρ
         return (; P::Real, T::Real, B::Symbol = :MA) -> _ρ(ξ, P, T, B)
     elseif sy == :s
