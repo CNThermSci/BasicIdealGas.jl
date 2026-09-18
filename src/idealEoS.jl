@@ -165,6 +165,17 @@ PTv = (
     end
 end
 
+PTvs = (
+    ξ::IdealGas;
+    P::Union{Real, PRES, Missing} = missing,
+    T::Union{Real, TEMP, Missing} = missing,
+    v::Union{Real, VOLU, Missing} = missing,
+    B::Symbol = :MA,
+) -> begin
+    𝑃, 𝑇, 𝑣 = PTv(ξ, P=P, T=T, v=v, B=B)
+    𝑃, 𝑇, 𝑣, _s(ξ, 𝑃, 𝑇, B)
+end
+
 # Internal keyworded generic function
 kwP = (
     ξ::IdealGas;
