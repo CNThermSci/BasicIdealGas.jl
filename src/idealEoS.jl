@@ -109,19 +109,19 @@ end
 
 # Internal, fast, positional, UNITFUL, EoS functions
 function _P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU, B::Symbol = :MA) where {ℙ}
-    return R(ξ, B) * ℙ(𝑇 / 𝑣)
+    return uconvert(u"kPa", R(ξ, B) * ℙ(𝑇 / 𝑣))
 end
 
 function _T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU, B::Symbol = :MA) where {ℙ}
-    return ℙ(P * v) / R(ξ, B)
+    return ℙ(𝑃 * 𝑣) / R(ξ, B)
 end
 
 function _v(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {ℙ}
-    return R(ξ, B) * ℙ(T / P)
+    return R(ξ, B) * ℙ(𝑇 / 𝑃)
 end
 
 function _ρ(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {ℙ}
-    return inv(_v(ξ, P, T, B))
+    return inv(_v(ξ, 𝑃, 𝑇, B))
 end
 
 # Internal, fast, positional, entropy function
