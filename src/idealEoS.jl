@@ -141,7 +141,7 @@ kwP = (
     if !ismissing(P)
         return P isa PRES ? uconvert(u"kPa", P) : P * u"kPa"
     end
-    count(x -> ismissing(x), (T, v)) > 0 && throw(
+    count(x -> ismissing(x), (T, v)) == 0 || throw(
         ArgumentError("Unspecified state: (T = $(T), v = $(v))")
     )
     𝑇 = T isa TEMP ? T : T * u"K"
@@ -159,7 +159,7 @@ kwT = (
     if !ismissing(T)
         return T isa TEMP ? uconvert(u"K", T) : T * u"K"
     end
-    count(x -> ismissing(x), (P, v)) > 0 && throw(
+    count(x -> ismissing(x), (P, v)) == 0 || throw(
         ArgumentError("Unspecified state: (P = $(P), v = $(v))")
     )
     𝑃 = P isa PRES ? P : P * u"kPa"
@@ -178,7 +178,7 @@ kwv = (
         UNIT = B == :MA ? u"m^3/kg" : u"m^3/kmol"
         return v isa VOLU ? uconvert(UNIT, v) : v * UNIT
     end
-    count(x -> ismissing(x), (P, T)) > 0 && throw(
+    count(x -> ismissing(x), (P, T)) == 0 || throw(
         ArgumentError("Unspecified state: (P = $(P), T = $(T))")
     )
     𝑃 = P isa PRES ? P : P * u"kPa"
@@ -201,8 +201,9 @@ kws = (
     v::Union{Real, VOLU, Missing} = missing,
     B::Symbol = :MA,
 ) -> begin
-    count(x -> ismissing(x), (P, T, v)) == 1,
-        "exactly two P-T-v state functions must be specified!"
+    count(x -> ismissing(x), (P, T, v)) <= 1 || throw(
+        ArgumentError("Unspecified state: (P = $(P), T = $(T), v = $(v))")
+    )
     return if ismissing(P)
         𝑇 = T isa TEMP ? T : T * u"K"
         𝑣 = v isa VOLU ? v : v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
