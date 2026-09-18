@@ -113,7 +113,7 @@ function _P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU, B::Symbol = :MA) where {�
 end
 
 function _T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU, B::Symbol = :MA) where {ℙ}
-    return ℙ(𝑃 * 𝑣) / R(ξ, B)
+    return uconvert(u"K", ℙ(𝑃 * 𝑣) / R(ξ, B))
 end
 
 function _v(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {ℙ}
