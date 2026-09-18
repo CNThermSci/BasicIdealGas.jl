@@ -130,6 +130,77 @@ function _s(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {�
     return s0(ξ, 𝑇, B) - R(ξ, B) * log(ℙ(𝑃) / ξ.𝑃ref)
 end
 
+# Internal keyworded derived functions (accessible through properties, see below)
+igP = (
+    ξ::IdealGas;
+    T::Union{Real, TEMP},
+    v::Union{Real, VOLU},
+    B::Symbol = :MA,
+) -> begin
+    𝑇 = T isa TEMP ? T : T * u"K"
+    𝑣 = v isa VOLU ? v : v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
+    _P(ξ, 𝑇, 𝑣, B)
+end
+
+igT = (
+    ξ::IdealGas;
+    P::Union{Real, PRES},
+    v::Union{Real, VOLU},
+    B::Symbol = :MA,
+) -> begin
+    𝑃 = P isa PRES ? P : P * u"kPa"
+    𝑣 = v isa VOLU ? v : v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
+    _T(ξ, 𝑃, 𝑣, B)
+end
+
+igv = (
+    ξ::IdealGas;
+    P::Union{Real, PRES},
+    T::Union{Real, TEMP},
+    B::Symbol = :MA,
+) -> begin
+    𝑇 = T isa TEMP ? T : T * u"K"
+    𝑃 = P isa PRES ? P : P * u"kPa"
+    _v(ξ, 𝑃, 𝑇, B)
+end
+
+igρ = (
+    ξ::IdealGas;
+    P::Union{Real, PRES},
+    T::Union{Real, TEMP},
+    B::Symbol = :MA,
+) -> begin
+    𝑇 = T isa TEMP ? T : T * u"K"
+    𝑃 = P isa PRES ? P : P * u"kPa"
+    _ρ(ξ, 𝑃, 𝑇, B)
+end
+
+igs = (
+    ξ::IdealGas;
+    P::Union{Real, PRES, Missing} = missing,
+    T::Union{Real, TEMP, Missing} = missing,
+    v::Union{Real, VOLU, Missing} = missing,
+    B::Symbol = :MA,
+) -> begin
+    @assert(
+        count(x -> ismissing(x), (P, T, v)) == 1,
+        "exactly two P-T-v state functions must be specified!"
+    )
+    return if ismissing(P)
+        𝑇 = T isa TEMP ? T : T * u"K"
+        𝑣 = v isa VOLU ? v : v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
+        _s(ξ, _P(ξ, 𝑇, 𝑣, B), 𝑇, B)
+    elseif ismissing(T)
+        𝑃 = P isa PRES ? P : P * u"kPa"
+        𝑣 = v isa VOLU ? v : v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
+        _s(ξ, 𝑃, _T(ξ, 𝑃, 𝑣, B), B)
+    else
+        𝑇 = T isa TEMP ? T : T * u"K"
+        𝑃 = P isa PRES ? P : P * u"kPa"
+        _s(ξ, 𝑃, 𝑇, B)
+    end
+end
+
 # Base.getproperty
 # ----------------
 
@@ -150,75 +221,15 @@ function Base.getproperty(ξ::IdealGas, sy::Symbol)
     end
     # OOP-style covenience functions (formerly exported ones)
     if sy == :P
-        return (
-            ;
-            T::Union{Real, TEMP},
-            v::Union{Real, VOLU},
-            B::Symbol = :MA,
-        ) -> begin
-            𝑇 = T isa TEMP ? T : T * u"K"
-            𝑣 = v isa VOLU ? v : v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
-            _P(ξ, 𝑇, 𝑣, B)
-        end
+        return igP
     elseif sy == :T
-        return (
-            ;
-            P::Union{Real, PRES},
-            v::Union{Real, VOLU},
-            B::Symbol = :MA,
-        ) -> begin
-            𝑃 = P isa PRES ? P : P * u"kPa"
-            𝑣 = v isa VOLU ? v : v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
-            _T(ξ, 𝑃, 𝑣, B)
-        end
+        return igT
     elseif sy == :v
-        return (
-            ;
-            P::Union{Real, PRES},
-            T::Union{Real, TEMP},
-            B::Symbol = :MA,
-        ) -> begin
-            𝑇 = T isa TEMP ? T : T * u"K"
-            𝑃 = P isa PRES ? P : P * u"kPa"
-            _v(ξ, 𝑃, 𝑇, B)
-        end
+        return igv
     elseif sy == :ρ
-        return (
-            ;
-            P::Union{Real, PRES},
-            T::Union{Real, TEMP},
-            B::Symbol = :MA,
-        ) -> begin
-            𝑇 = T isa TEMP ? T : T * u"K"
-            𝑃 = P isa PRES ? P : P * u"kPa"
-            _ρ(ξ, 𝑃, 𝑇, B)
-        end
+        return igρ
     elseif sy == :s
-        return (
-            ;
-            P::Union{Real, PRES, Missing} = missing,
-            T::Union{Real, TEMP, Missing} = missing,
-            v::Union{Real, VOLU, Missing} = missing,
-            B::Symbol = :MA,
-        ) -> begin
-            @assert(
-                count(x -> ismissing(x), (P, T, v)) == 1,
-                "exactly two P-T-v state functions must be specified!"
-            )
-            return if ismissing(P)
-                𝑇 = T isa TEMP ? T : T * u"K"
-                𝑣 = v isa VOLU ? v : v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
-                _s(ξ, _P(ξ, 𝑇, 𝑣, B), 𝑇, B)
-            elseif ismissing(T)
-                𝑃 = P isa PRES ? P : P * u"kPa"
-                𝑣 = v isa VOLU ? v : v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
-                _s(ξ, 𝑃, _T(ξ, 𝑃, 𝑣, B), B)
-            else
-                𝑇 = T isa TEMP ? T : T * u"K"
-                𝑃 = P isa PRES ? P : P * u"kPa"
-                _s(ξ, 𝑃, 𝑇, B)
-            end
-        end
+        return igs
     end
 end
 
