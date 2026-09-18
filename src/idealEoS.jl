@@ -233,8 +233,15 @@ function Base.getproperty(ξ::IdealGas, sy::Symbol)
         return getfield(ξ, :𝑃ref)
     end
     # Short-circuit SpecificHeat model accessors
-    if sy in propertynames(getfield(ξ, :hmod)) && sy ∉ (:cp, :cv, :u, :h, :ga, :Pr, :vr)
-        return getproperty(getfield(ξ, :hmod), sy)
+    if sy in propertynames(getfield(ξ, :hmod))
+        if sy ∉ (:cp, :cv, :u, :h, :ga, :Pr, :vr)
+            return getproperty(getfield(ξ, :hmod), sy)
+        else
+            return (; P = missing, T = missing, v = missing, B = :MA) -> begin
+                𝑡 = kwT(ξ; P = P, T = T, v = v, B = B)
+                getproperty(getfield(ξ, :hmod), sy)(𝑡, B)
+            end
+        end
     end
     # OOP-style covenience functions (formerly exported ones)
     if sy == :P
