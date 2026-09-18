@@ -219,6 +219,20 @@ kws = (
     end
 end
 
+kwa = (
+    ξ::IdealGas;
+    P::Union{Real, PRES, Missing} = missing,
+    T::Union{Real, TEMP, Missing} = missing,
+    v::Union{Real, VOLU, Missing} = missing,
+    B::Symbol = :MA,
+) -> begin
+    𝑃 = kwP(ξ; P=P, T=T, v=v, B=B)  # 𝑃 from kwargs
+    𝑇 = kwT(ξ; P=𝑃, T=T, v=v, B=B)  # 𝑇 from kwargs, 𝑃
+    𝑢 = u(ξ, 𝑇, B)
+    𝑠 = _s(ξ, 𝑃, 𝑇, B)
+    𝑢 - 𝑇 * 𝑠
+end
+
 # Base.getproperty
 # ----------------
 
