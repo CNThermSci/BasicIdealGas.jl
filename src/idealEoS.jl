@@ -191,27 +191,9 @@ function Base.getproperty(ξ::IdealGas, sy::Symbol)
     elseif sy == :T
         return (; P = missing, T = missing, v = missing, B = :MA) -> kwT(ξ; P = P, T = T, v = v, B = B)
     elseif sy == :v
-        return (
-            ;
-            P::Union{Real, PRES},
-            T::Union{Real, TEMP},
-            B::Symbol = :MA,
-        ) -> begin
-            𝑇 = T isa TEMP ? T : T * u"K"
-            𝑃 = P isa PRES ? P : P * u"kPa"
-            _v(ξ, 𝑃, 𝑇, B)
-        end
+        return (; P = missing, T = missing, v = missing, B = :MA) -> kwv(ξ; P = P, T = T, v = v, B = B)
     elseif sy == :ρ
-        return (
-            ;
-            P::Union{Real, PRES},
-            T::Union{Real, TEMP},
-            B::Symbol = :MA,
-        ) -> begin
-            𝑇 = T isa TEMP ? T : T * u"K"
-            𝑃 = P isa PRES ? P : P * u"kPa"
-            _ρ(ξ, 𝑃, 𝑇, B)
-        end
+        return (; P = missing, T = missing, v = missing, B = :MA) -> kwρ(ξ; P = P, T = T, v = v, B = B)
     elseif sy == :s
         return (
             ;
