@@ -125,8 +125,6 @@ function _ρ(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {
     return inv(_v(ξ, 𝑃, 𝑇, B))
 end
 
-# TODO: feat/units below
-
 # Internal, fast, positional, entropy function
 function _s(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {ℙ}
     return s0(ξ, 𝑇, B) - R(ξ, B) * log(ℙ(𝑃) / ξ.𝑃ref)
@@ -148,7 +146,16 @@ function Base.getproperty(ξ::IdealGas, sy::Symbol)
     end
     # OOP-style covenience functions (formerly exported ones)
     if sy == :P
-        return (; T::Real, v::Real, B::Symbol = :MA) -> _P(ξ, T, v, B)
+        return (
+            ;
+            T::Union{Real, TEMP},
+            v::Union{Real, VOLU},
+            B::Symbol = :MA,
+        ) -> begin
+            𝑇 = T isa TEMP ? T : T * u"K"
+            𝑣 = v isa VOLU ? v : v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
+            _P(ξ, 𝑇, 𝑣, B)
+        end
     elseif sy == :T
         return (; P::Real, v::Real, B::Symbol = :MA) -> _T(ξ, P, v, B)
     elseif sy == :v
