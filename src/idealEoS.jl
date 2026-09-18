@@ -137,9 +137,9 @@ PP(P::PRES) = uconvert(u"kPa", P)
 PP(P::Real) = P * u"kPa"
 PP(P::Missing) = missing
 
-function TT(T::Union{Real, TEMP, Missing} = missing)
-    return ismissing(T) ? T : (T isa TEMP ? uconvert(u"K", T) : T * u"K")
-end
+TT(T::TEMP) = uconvert(u"K", T)
+TT(T::Real) = T * u"K"
+TT(T::Missing) = missing
 
 function vv(v::VOLU)
     UNIT = 𝑣 isa MASS ? u"m^3/kg" : u"m^3/kmol"
