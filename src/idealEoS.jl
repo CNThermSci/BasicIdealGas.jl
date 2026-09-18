@@ -140,6 +140,10 @@ function Base.getproperty(ξ::IdealGas, sy::Symbol)
     if sy in fieldnames(IdealGas)
         return getfield(ξ, sy)
     end
+    # Convenience raw field aliases
+    if sy == :Pref
+        return getfield(ξ, :𝑃ref)
+    end
     # Short-circuit SpecificHeat model accessors
     if sy in propertynames(getfield(ξ, :hmod))
         return getproperty(getfield(ξ, :hmod), sy)
@@ -220,5 +224,7 @@ end
 
 Base.propertynames(ξ::IdealGas) = (
     :form, :name, :hmod, :𝑃ref,
+    :Pref,
     propertynames(getfield(ξ, :hmod))...,
+    :P, :T, :v, :ρ, :s,
 )
