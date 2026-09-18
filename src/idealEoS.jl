@@ -109,9 +109,9 @@ end
 
 # Internal, fast, positional, UNITFUL, EoS functions
 _P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU, B::Symbol = :MA) where {ℙ} = R(ξ, B) * ℙ(𝑇 / 𝑣)
-_T(ξ::IdealGas{ℙ}, P::Real, v::Real, B::Symbol = :MA) where {ℙ} = ℙ(P * v) / R(ξ, B)
-_v(ξ::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA) where {ℙ} = R(ξ, B) * ℙ(T / P)
-_ρ(ξ::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA) where {ℙ} = inv(_v(ξ, P, T, B))
+_T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU, B::Symbol = :MA) where {ℙ} = ℙ(P * v) / R(ξ, B)
+_v(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {ℙ} = R(ξ, B) * ℙ(T / P)
+_ρ(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {ℙ} = inv(_v(ξ, P, T, B))
 
 # Internal, fast, positional, entropy function
 function _s(ξ::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA)::ℙ where {ℙ}
