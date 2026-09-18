@@ -93,6 +93,8 @@ for FUNC in (:R,)
     end
 end
 
+R(ξ::IdealGas, 𝑣::VOLU) = 𝑣 isa MASS ? R(ξ, :MA) : R(ξ, :MO)
+
 for FUNC in (:cp┆R, :cv┆R, :ga, :∫cp┆R, :∫cv┆R, :u┆R, :h┆R, :∫cp┆RT, :s0┆R, :Pr, :vr)
     @eval begin
         $FUNC(ξ::IdealGas, 𝑇::TEMP) = $FUNC(ξ.hmod, 𝑇)
@@ -108,8 +110,8 @@ for FUNC in (:cp, :cv, :u, :h, :s0)
 end
 
 # Internal positional EoS functions
-function _P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU, B::Symbol = :MA) where {ℙ}
-    return uconvert(u"kPa", R(ξ, B) * ℙ(𝑇 / 𝑣))
+function _P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU) where {ℙ}
+    return uconvert(u"kPa", R(ξ, 𝑣) * ℙ(𝑇 / 𝑣))
 end
 
 function _T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU, B::Symbol = :MA) where {ℙ}
