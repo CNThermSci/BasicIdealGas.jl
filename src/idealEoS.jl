@@ -233,18 +233,21 @@ function Base.getproperty(ξ::IdealGas, sy::Symbol)
         return getfield(ξ, :𝑃ref)
     end
     # Short-circuit SpecificHeat model accessors
-    if sy in propertynames(getfield(ξ, :hmod))
-        if sy ∉ (:cp, :cv, :u, :h, :s0, :ga, :Pr, :vr)
-            return getproperty(getfield(ξ, :hmod), sy)
-        elseif sy ∈ (:cp, :cv, :u, :h, :s0)
-            # This allows an 𝑓(T, B) be calc'd from 𝑓(T(P, T, v, B), B)
-            return (; P = missing, T = missing, v = missing, B = :MA) -> begin
-                getproperty(getfield(ξ, :hmod), sy)(kwT(ξ; P = P, T = T, v = v, B = B), B)
-            end
-        else
+    𝐶 = getfield(ξ, :hmod)
+    if sy in propertynames(𝐶)
+        if sy ∉ (props_T(𝐶)..., props_T_B(𝐶)...)
+            return getproperty(𝐶, sy)
+        elseif sy ∈ props_T(𝐶)
             # This allows an 𝑓(T) be calc'd from 𝑓(T(P, T, v, B))
+            # Makes sense only at the IdealGas level (can't fallback to SpecificHeat directly)
             return (; P = missing, T = missing, v = missing, B = :MA) -> begin
-                getproperty(getfield(ξ, :hmod), sy) ∘ kwT(ξ; P = P, T = T, v = v, B = B)
+                getproperty(𝐶, sy) ∘ kwT(ξ; P = P, T = T, v = v, B = B)
+            end
+        elseif sy ∈ props_T_B(𝐶)
+            # This allows an 𝑓(T, B) be calc'd from 𝑓(T(P, T, v, B), B)
+            # Makes sense only at the IdealGas level (can't fallback to SpecificHeat directly)
+            return (; P = missing, T = missing, v = missing, B = :MA) -> begin
+                getproperty(𝐶, sy)(kwT(ξ; P = P, T = T, v = v, B = B), B)
             end
         end
     end
