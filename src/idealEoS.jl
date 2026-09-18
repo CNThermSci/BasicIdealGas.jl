@@ -95,13 +95,15 @@ end
 
 for FUNC in (:cp┆R, :cv┆R, :ga, :∫cp┆R, :∫cv┆R, :u┆R, :h┆R, :∫cp┆RT, :s0┆R, :Pr, :vr)
     @eval begin
-        $FUNC(ξ::IdealGas, T::Real) = $FUNC(ξ.hmod, T)
+        $FUNC(ξ::IdealGas, 𝑇::TEMP) = $FUNC(ξ.hmod, 𝑇)
+        $FUNC(ξ::IdealGas, 𝑇::Real) = $FUNC(ξ.hmod, 𝑇)
     end
 end
 
 for FUNC in (:cp, :cv, :u, :h, :s0)
     @eval begin
-        $FUNC(ξ::IdealGas, T::Real, B::Symbol = :MA) = $FUNC(ξ.hmod, T, B)
+        $FUNC(ξ::IdealGas, 𝑇::TEMP, B::Symbol = :MA) = $FUNC(ξ.hmod, 𝑇, B)
+        $FUNC(ξ::IdealGas, 𝑇::Real, B::Symbol = :MA) = $FUNC(ξ.hmod, 𝑇, B)
     end
 end
 
@@ -126,8 +128,8 @@ end
 # TODO: feat/units below
 
 # Internal, fast, positional, entropy function
-function _s(ξ::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA)::ℙ where {ℙ}
-    return s0(ξ, T, B) - R(ξ, B) * log(ℙ(P) / ξ.𝑃ref)
+function _s(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {ℙ}
+    return s0(ξ, 𝑇, B) - R(ξ, B) * log(ℙ(𝑃) / ξ.𝑃ref)
 end
 
 # Base.getproperty
