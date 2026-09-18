@@ -133,17 +133,24 @@ function _s(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {�
 end
 
 # Internal helper functions
-PP(P::PRES) = uconvert(u"kPa", P)
-PP(P::Real) = P * u"kPa"
-PP(P::Missing) = missing
+frP(P::PRES) = uconvert(u"kPa", P)
+frP(P::Real) = P * u"kPa"
+frP(P::Missing) = missing
 
-TT(T::TEMP) = uconvert(u"K", T)
-TT(T::Real) = T * u"K"
-TT(T::Missing) = missing
+frT(T::TEMP) = uconvert(u"K", T)
+frT(T::Real) = T * u"K"
+frT(T::Missing) = missing
 
-vv(v::VOLU) = v isa MASS ? uconvert(u"m^3/kg", v) : uconvert(u"m^3/kmol", v)
-vv(v::Real, B::Symbol = :MA) = v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
-vv(v::Missing) = missing
+frv(v::VOLU) = v isa MASS ? uconvert(u"m^3/kg", v) : uconvert(u"m^3/kmol", v)
+frv(v::Real, B::Symbol = :MA) = v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
+frv(v::Missing) = missing
+
+frPTv(
+    P::Union{Real, PRES, Missing},
+    T::Union{Real, TEMP, Missing},
+    v::Union{Real, VOLU, Missing},
+    B::Symbol = :MA,
+) = frP(P), frT(T), v isa Real ? frv(v, B) : frv(v)
 
 # Internal keyworded PTv
 PTv = (
@@ -156,7 +163,7 @@ PTv = (
     count(x -> ismissing(x), (P, T, v)) <= 1 || throw(
         ArgumentError("Unspecified state: (P = $(P), T = $(T), v = $(v))")
     )
-    𝑃, 𝑇, 𝑣 = PP(P), TT(T), vv(v, B)
+    𝑃, 𝑇, 𝑣 = frPTv(P, T, v, B)
     return if ismissing(𝑃)
         _P(ξ, 𝑇, 𝑣, B), 𝑇, 𝑣
     elseif ismissing(𝑇)
