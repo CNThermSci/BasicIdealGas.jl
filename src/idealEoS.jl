@@ -141,15 +141,9 @@ TT(T::TEMP) = uconvert(u"K", T)
 TT(T::Real) = T * u"K"
 TT(T::Missing) = missing
 
-function vv(v::VOLU)
-    UNIT = 𝑣 isa MASS ? u"m^3/kg" : u"m^3/kmol"
-    return uconvert(UNIT, v)
-end
-
-function vv(v::Union{Real, VOLU, Missing} = missing, B::Symbol = :MA)
-    UNIT = B == :MA ? u"m^3/kg" : u"m^3/kmol"
-    return ismissing(v) ? v : (v isa VOLU ? uconvert(UNIT, v) : v * UNIT)
-end
+vv(v::VOLU) = v isa MASS ? uconvert(u"m^3/kg", v) : uconvert(u"m^3/kmol", v)
+vv(v::Real, B::Symbol = :MA) = v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
+vv(v::Missing) = missing
 
 # Internal keyworded PTv
 PTv = (
