@@ -105,8 +105,6 @@ for FUNC in (:cp, :cv, :u, :h, :s0)
     end
 end
 
-# TODO: feat/units below
-
 # Internal, fast, positional, UNITFUL, EoS functions
 function _P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU, B::Symbol = :MA) where {ℙ}
     return uconvert(u"kPa", R(ξ, B) * ℙ(𝑇 / 𝑣))
@@ -117,12 +115,15 @@ function _T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU, B::Symbol = :MA) where {�
 end
 
 function _v(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {ℙ}
-    return R(ξ, B) * ℙ(𝑇 / 𝑃)
+    UNIT = B == :MA ? u"m^3/kg" : u"m^3/kmol"
+    return uconvert(UNIT, R(ξ, B) * ℙ(𝑇 / 𝑃))
 end
 
 function _ρ(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {ℙ}
     return inv(_v(ξ, 𝑃, 𝑇, B))
 end
+
+# TODO: feat/units below
 
 # Internal, fast, positional, entropy function
 function _s(ξ::IdealGas{ℙ}, P::Real, T::Real, B::Symbol = :MA)::ℙ where {ℙ}
