@@ -130,6 +130,42 @@ function _s(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {�
     return s0(ξ, 𝑇, B) - R(ξ, B) * log(ℙ(𝑃) / ξ.𝑃ref)
 end
 
+# Internal helper functions
+function PP(P::Union{Real, PRES, Missing} = missing)
+    return ismissing(P) ? P : (P isa PRES ? uconvert(u"kPa", P) : P * u"kPa")
+end
+
+function TT(T::Union{Real, TEMP, Missing} = missing)
+    return ismissing(T) ? T : (T isa TEMP ? uconvert(u"K", T) : T * u"K")
+end
+
+function vv(v::Union{Real, VOLU, Missing} = missing, B::Symbol = :MA)
+    UNIT = B == :MA ? u"m^3/kg" : u"m^3/kmol"
+    return ismissing(v) ? v : (v isa VOLU ? uconvert(UNIT, v) : v * UNIT)
+end
+
+# Internal keyworded PTv
+PTv = (
+    ξ::IdealGas;
+    P::Union{Real, PRES, Missing} = missing,
+    T::Union{Real, TEMP, Missing} = missing,
+    v::Union{Real, VOLU, Missing} = missing,
+    B::Symbol = :MA,
+) -> begin
+    count(x -> ismissing(x), (T, v)) >= 2 || throw(
+        ArgumentError("Unspecified state: (P = $(P), T = $(T), v = $(v))")
+    )
+    if !ismissing(P)
+        return P isa PRES ? uconvert(u"kPa", P) : P * u"kPa"
+    end
+    count(x -> ismissing(x), (T, v)) == 0 || throw(
+        ArgumentError("Unspecified state: (T = $(T), v = $(v))")
+    )
+    𝑇 = T isa TEMP ? T : T * u"K"
+    𝑣 = v isa VOLU ? v : v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
+    _P(ξ, 𝑇, 𝑣, B)
+end
+
 # Internal keyworded generic function
 kwP = (
     ξ::IdealGas;
@@ -226,8 +262,8 @@ kwa = (
     v::Union{Real, VOLU, Missing} = missing,
     B::Symbol = :MA,
 ) -> begin
-    𝑃 = kwP(ξ; P=P, T=T, v=v, B=B)  # 𝑃 from kwargs
-    𝑇 = kwT(ξ; P=𝑃, T=T, v=v, B=B)  # 𝑇 from kwargs, 𝑃
+    𝑃 = kwP(ξ; P = P, T = T, v = v, B = B)  # 𝑃 from kwargs
+    𝑇 = kwT(ξ; P = 𝑃, T = T, v = v, B = B)  # 𝑇 from kwargs, 𝑃
     𝑢 = u(ξ, 𝑇, B)
     𝑠 = _s(ξ, 𝑃, 𝑇, B)
     𝑢 - 𝑇 * 𝑠
