@@ -167,6 +167,25 @@ kwT = (
     _T(ξ, 𝑃, 𝑣, B)
 end
 
+kwv = (
+    ξ::IdealGas;
+    P::Union{Real, PRES, Missing} = missing,
+    T::Union{Real, TEMP, Missing} = missing,
+    v::Union{Real, VOLU, Missing} = missing,
+    B::Symbol = :MA,
+) -> begin
+    if !ismissing(v)
+        UNIT = B == :MA ? u"m^3/kg" : u"m^3/kmol"
+        return v isa VOLU ? uconvert(UNIT, v) : v * UNIT
+    end
+    count(x -> ismissing(x), (P, T)) > 0 && throw(
+        ArgumentError("Unspecified state: (P = $(P), T = $(T))")
+    )
+    𝑃 = P isa PRES ? P : P * u"kPa"
+    𝑇 = T isa TEMP ? T : T * u"K"
+    _v(ξ, 𝑃, 𝑇, B)
+end
+
 # Base.getproperty
 # ----------------
 
