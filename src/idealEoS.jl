@@ -133,12 +133,17 @@ function _s(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {�
 end
 
 # Internal helper functions
-function PP(P::Union{Real, PRES, Missing} = missing)
-    return ismissing(P) ? P : (P isa PRES ? uconvert(u"kPa", P) : P * u"kPa")
-end
+PP(P::PRES) = uconvert(u"kPa", P)
+PP(P::Real) = P * u"kPa"
+PP(P::Missing) = missing
 
 function TT(T::Union{Real, TEMP, Missing} = missing)
     return ismissing(T) ? T : (T isa TEMP ? uconvert(u"K", T) : T * u"K")
+end
+
+function vv(v::VOLU)
+    UNIT = 𝑣 isa MASS ? u"m^3/kg" : u"m^3/kmol"
+    return uconvert(UNIT, v)
 end
 
 function vv(v::Union{Real, VOLU, Missing} = missing, B::Symbol = :MA)
