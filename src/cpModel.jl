@@ -218,12 +218,7 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
         return (
             t::Union{Real, TEMP, Missing} = missing;
             T::Union{Real, TEMP, Missing} = missing,
-        ) -> begin
-            getT(x) = x -> ismissing(x) ? x : (x isa TEMP ? x : x * u"K")
-            𝑇 = getT(t)
-            𝑇 = ismissing(𝑇) ? getT(T) : 𝑇
-            eval(sy)(ξ, 𝑇)
-        end
+        ) -> eval(sy)(ξ, ismissing(T) ? t : T)
     elseif sy in oop_style_funcs_2
         return (T, B = :MA) -> eval(sy)(ξ, T, B)
     end
