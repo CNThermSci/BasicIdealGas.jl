@@ -107,7 +107,7 @@ for FUNC in (:cp, :cv, :u, :h, :s0)
     end
 end
 
-# Internal, fast, positional, UNITFUL, EoS functions
+# Internal positional EoS functions
 function _P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU, B::Symbol = :MA) where {ℙ}
     return uconvert(u"kPa", R(ξ, B) * ℙ(𝑇 / 𝑣))
 end
@@ -125,10 +125,12 @@ function _ρ(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {
     return inv(_v(ξ, 𝑃, 𝑇, B))
 end
 
-# Internal, fast, positional, entropy function
+# Internal positional entropy function
 function _s(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {ℙ}
     return s0(ξ, 𝑇, B) - R(ξ, B) * log(ℙ(𝑃) / ξ.𝑃ref)
 end
+
+# Internal keyworded derived functions (accessible through properties, see below)
 
 # Base.getproperty
 # ----------------
