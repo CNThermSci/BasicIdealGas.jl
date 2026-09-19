@@ -237,6 +237,31 @@ kwβ = (
     inv(𝑇)
 end
 
+kwκT = (
+    ξ::IdealGas;
+    P::Union{Real, PRES, Missing} = missing,
+    T::Union{Real, TEMP, Missing} = missing,
+    v::Union{Real, VOLU, Missing} = missing,
+    B::Symbol = :MA,
+) -> begin
+    if !ismissing(P)
+        return inv(_P(ξ, P))
+    end
+    𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
+    inv(𝑃)
+end
+
+kwκs = (
+    ξ::IdealGas;
+    P::Union{Real, PRES, Missing} = missing,
+    T::Union{Real, TEMP, Missing} = missing,
+    v::Union{Real, VOLU, Missing} = missing,
+    B::Symbol = :MA,
+) -> begin
+    𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
+    inv(𝑃 * ga(ξ, 𝑇))
+end
+
 # Base.getproperty
 # ----------------
 
@@ -307,6 +332,10 @@ function Base.getproperty(ξ::IdealGas, sy::Symbol)
         (; P = missing, T = missing, v = missing) -> kwg(ξ; P = P, T = T, v = v, B = :MO)
     elseif sy in (:β, :beta)
         (; P = missing, T = missing, v = missing, B = :MA) -> kwβ(ξ; P = P, T = T, v = v, B = B)
+    elseif sy in (:κT, :kappaT)
+        (; P = missing, T = missing, v = missing, B = :MA) -> kwκT(ξ; P = P, T = T, v = v, B = B)
+    elseif sy in (:κs, :kappas)
+        (; P = missing, T = missing, v = missing, B = :MA) -> kwκs(ξ; P = P, T = T, v = v, B = B)
     end
 end
 
