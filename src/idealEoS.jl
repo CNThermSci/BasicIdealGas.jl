@@ -109,9 +109,8 @@ for FUNC in (:cp, :cv, :u, :h, :s0)
     end
 end
 
-#----------------------------------------------------------------------#
-#                  Internal positional EoS functions                   #
-#----------------------------------------------------------------------#
+# Internal Positional P, T, V, ρ, s functions
+# -------------------------------------------
 
 # Pressure
 function _P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU) where {ℙ}
@@ -159,46 +158,30 @@ function _s(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {�
     return s0(ξ, 𝑇, B) - R(ξ, B) * log(ℙ(𝑃) / ξ.𝑃ref)
 end
 
+# PTV helper
+# ----------
 
-
-
-# Internal helper functions
-frP(P::PRES) = uconvert(u"kPa", P)
-frP(P::Real) = P * u"kPa"
-frP(P::Missing) = missing
-
-frT(T::TEMP) = uconvert(u"K", T)
-frT(T::Real) = T * u"K"
-frT(T::Missing) = missing
-
-frv(v::VOLU) = v isa MASS ? uconvert(u"m^3/kg", v) : uconvert(u"m^3/kmol", v)
-frv(v::Real, B::Symbol = :MA) = v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
-frv(v::Missing) = missing
-
-frPTv(
-    P::Union{Real, PRES, Missing},
-    T::Union{Real, TEMP, Missing},
-    v::Union{Real, VOLU, Missing},
-    B::Symbol = :MA,
-) = frP(P), frT(T), v isa Real ? frv(v, B) : frv(v)
-
-# Internal keyworded PTv
-PTv = (
+PTV = (
     ξ::IdealGas;
     P::Union{Real, PRES, Missing} = missing,
     T::Union{Real, TEMP, Missing} = missing,
     v::Union{Real, VOLU, Missing} = missing,
     B::Symbol = :MA,
 ) -> begin
-    count(x -> ismissing(x), (P, T, v)) <= 1 || throw(
-        ArgumentError("Unspecified state: (P = $(P), T = $(T), v = $(v))")
-    )
-    𝑃, 𝑇, 𝑣 = frPTv(P, T, v, B)
-    return if ismissing(𝑃)
-        _P(ξ, 𝑇, 𝑣, B), 𝑇, 𝑣
-    elseif ismissing(𝑇)
-        𝑃, _T(ξ, 𝑃, 𝑣, B), 𝑣
+    miss = [ i[1] for i in [(:P, P), (:T, T), (:v, v)] if ismissing(i[2]) ]
+    length(miss) <= 1 ||
+        throw(ArgumentError(@sprintf("Underspecified state: missing (%s)", join(miss, ", "))))
+    return if ismissing(P)
+        𝑇 = _T(ξ, T)
+        𝑣 = v isa VOLU ? _v(ξ, v) : _v(ξ, v, B)
+        _P(ξ, 𝑇, 𝑣), 𝑇, 𝑣
+    elseif ismissing(T)
+        𝑃 = _P(ξ, P)
+        𝑣 = v isa VOLU ? _v(ξ, v) : _v(ξ, v, B)
+        𝑃, _T(ξ, 𝑃, 𝑣), 𝑣
     else
+        𝑃 = _P(ξ, P)
+        𝑇 = _T(ξ, T)
         𝑃, 𝑇, _v(ξ, 𝑃, 𝑇, B)
     end
 end
@@ -211,7 +194,7 @@ PTvs = (
     v::Union{Real, VOLU, Missing} = missing,
     B::Symbol = :MA,
 ) -> begin
-    𝑃, 𝑇, 𝑣 = PTv(ξ, P=P, T=T, v=v, B=B)
+    𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
     𝑃, 𝑇, 𝑣, _s(ξ, 𝑃, 𝑇, B)
 end
 
