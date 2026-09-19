@@ -161,7 +161,7 @@ end
 # PTV helper
 # ----------
 
-PTV = (
+PTv = (
     ξ::IdealGas;
     P::Union{Real, PRES, Missing} = missing,
     T::Union{Real, TEMP, Missing} = missing,
@@ -173,29 +173,17 @@ PTV = (
         throw(ArgumentError(@sprintf("Underspecified state: missing (%s)", join(miss, ", "))))
     return if ismissing(P)
         𝑇 = _T(ξ, T)
-        𝑣 = v isa VOLU ? _v(ξ, v) : _v(ξ, v, B)
+        𝑣 = _v(ξ, v, B)
         _P(ξ, 𝑇, 𝑣), 𝑇, 𝑣
     elseif ismissing(T)
         𝑃 = _P(ξ, P)
-        𝑣 = v isa VOLU ? _v(ξ, v) : _v(ξ, v, B)
+        𝑣 = _v(ξ, v, B)
         𝑃, _T(ξ, 𝑃, 𝑣), 𝑣
     else
         𝑃 = _P(ξ, P)
         𝑇 = _T(ξ, T)
         𝑃, 𝑇, _v(ξ, 𝑃, 𝑇, B)
     end
-end
-
-# Internal keyworded PTvs
-PTvs = (
-    ξ::IdealGas;
-    P::Union{Real, PRES, Missing} = missing,
-    T::Union{Real, TEMP, Missing} = missing,
-    v::Union{Real, VOLU, Missing} = missing,
-    B::Symbol = :MA,
-) -> begin
-    𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
-    𝑃, 𝑇, 𝑣, _s(ξ, 𝑃, 𝑇, B)
 end
 
 # Internal keyworded generic function
