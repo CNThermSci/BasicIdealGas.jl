@@ -223,6 +223,20 @@ kwg = (
     ℎ - 𝑇 * 𝑠
 end
 
+kwβ = (
+    ξ::IdealGas;
+    P::Union{Real, PRES, Missing} = missing,
+    T::Union{Real, TEMP, Missing} = missing,
+    v::Union{Real, VOLU, Missing} = missing,
+    B::Symbol = :MA,
+) -> begin
+    if !ismissing(T)
+        return inv(_T(ξ, T))
+    end
+    𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
+    inv(𝑇)
+end
+
 # Base.getproperty
 # ----------------
 
@@ -291,6 +305,8 @@ function Base.getproperty(ξ::IdealGas, sy::Symbol)
         (; P = missing, T = missing, v = missing) -> kwg(ξ; P = P, T = T, v = v, B = :MA)
     elseif sy == :gMO
         (; P = missing, T = missing, v = missing) -> kwg(ξ; P = P, T = T, v = v, B = :MO)
+    elseif sy in (:β, :beta)
+        (; P = missing, T = missing, v = missing, B = :MA) -> kwβ(ξ; P = P, T = T, v = v, B = B)
     end
 end
 
