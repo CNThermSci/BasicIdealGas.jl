@@ -233,27 +233,45 @@ function Base.getproperty(ξ::IdealGas, sy::Symbol)
             # This allows an 𝑓(T) be calc'd from 𝑓(T(P, T, v, B))
             # Makes sense only at the IdealGas level (can't fallback to SpecificHeat directly)
             return (; P = missing, T = missing, v = missing, B = :MA) -> begin
-                getproperty(𝐶, sy)(kwT(ξ; P = P, T = T, v = v, B = B))
+                getproperty(𝐶, sy)(PTv(ξ; P = P, T = T, v = v, B = B)[2])
             end
         elseif sy ∈ props_T_B(𝐶)
             # This allows an 𝑓(T, B) be calc'd from 𝑓(T(P, T, v, B), B)
             # Makes sense only at the IdealGas level (can't fallback to SpecificHeat directly)
             return (; P = missing, T = missing, v = missing, B = :MA) -> begin
-                getproperty(𝐶, sy)(kwT(ξ; P = P, T = T, v = v, B = B), B)
+                getproperty(𝐶, sy)(PTv(ξ; P = P, T = T, v = v, B = B)[2], B)
             end
         end
     end
     # OOP-style covenience functions (formerly exported ones)
-    if sy == :P
-        return (; P = missing, T = missing, v = missing, B = :MA) -> kwP(ξ; P = P, T = T, v = v, B = B)
+    return if sy == :P
+        (; P = missing, T = missing, v = missing, B = :MA) -> PTv(ξ; P = P, T = T, v = v, B = B)[1]
     elseif sy == :T
-        return (; P = missing, T = missing, v = missing, B = :MA) -> kwT(ξ; P = P, T = T, v = v, B = B)
+        (; P = missing, T = missing, v = missing, B = :MA) -> PTv(ξ; P = P, T = T, v = v, B = B)[2]
     elseif sy == :v
-        return (; P = missing, T = missing, v = missing, B = :MA) -> kwv(ξ; P = P, T = T, v = v, B = B)
+        (; P = missing, T = missing, v = missing, B = :MA) -> PTv(ξ; P = P, T = T, v = v, B = B)[3]
+    elseif sy == :vMA
+        (; P = missing, T = missing, v = missing) -> PTv(ξ; P = P, T = T, v = v, B = :MA)[3]
+    elseif sy == :vMO
+        (; P = missing, T = missing, v = missing) -> PTv(ξ; P = P, T = T, v = v, B = :MO)[3]
     elseif sy == :ρ
-        return (; P = missing, T = missing, v = missing, B = :MA) -> kwρ(ξ; P = P, T = T, v = v, B = B)
+        (; P = missing, T = missing, v = missing, B = :MA) -> inv(PTv(ξ; P = P, T = T, v = v, B = B)[3])
+    elseif sy == :ρMA
+        (; P = missing, T = missing, v = missing) -> inv(PTv(ξ; P = P, T = T, v = v, B = :MA)[3])
+    elseif sy == :ρMO
+        (; P = missing, T = missing, v = missing) -> inv(PTv(ξ; P = P, T = T, v = v, B = :MO)[3])
     elseif sy == :s
-        return (; P = missing, T = missing, v = missing, B = :MA) -> kws(ξ; P = P, T = T, v = v, B = B)
+        (; P = missing, T = missing, v = missing, B = :MA) -> kws(ξ; P = P, T = T, v = v, B = B)
+    elseif sy == :sMA
+        (; P = missing, T = missing, v = missing) -> kws(ξ; P = P, T = T, v = v, B = :MA)
+    elseif sy == :sMO
+        (; P = missing, T = missing, v = missing) -> kws(ξ; P = P, T = T, v = v, B = :MO)
+    elseif sy == :a
+        (; P = missing, T = missing, v = missing, B = :MA) -> kwa(ξ; P = P, T = T, v = v, B = B)
+    elseif sy == :aMA
+        (; P = missing, T = missing, v = missing) -> kwa(ξ; P = P, T = T, v = v, B = :MA)
+    elseif sy == :aMO
+        (; P = missing, T = missing, v = missing) -> kwa(ξ; P = P, T = T, v = v, B = :MO)
     end
 end
 
