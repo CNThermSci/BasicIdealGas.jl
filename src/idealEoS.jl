@@ -186,70 +186,6 @@ PTv = (
     end
 end
 
-# Internal keyworded generic function
-kwP = (
-    ξ::IdealGas;
-    P::Union{Real, PRES, Missing} = missing,
-    T::Union{Real, TEMP, Missing} = missing,
-    v::Union{Real, VOLU, Missing} = missing,
-    B::Symbol = :MA,
-) -> begin
-    if !ismissing(P)
-        return P isa PRES ? uconvert(u"kPa", P) : P * u"kPa"
-    end
-    count(x -> ismissing(x), (T, v)) == 0 || throw(
-        ArgumentError("Unspecified state: (T = $(T), v = $(v))")
-    )
-    𝑇 = T isa TEMP ? T : T * u"K"
-    𝑣 = v isa VOLU ? v : v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
-    _P(ξ, 𝑇, 𝑣, B)
-end
-
-kwT = (
-    ξ::IdealGas;
-    P::Union{Real, PRES, Missing} = missing,
-    T::Union{Real, TEMP, Missing} = missing,
-    v::Union{Real, VOLU, Missing} = missing,
-    B::Symbol = :MA,
-) -> begin
-    if !ismissing(T)
-        return T isa TEMP ? uconvert(u"K", T) : T * u"K"
-    end
-    count(x -> ismissing(x), (P, v)) == 0 || throw(
-        ArgumentError("Unspecified state: (P = $(P), v = $(v))")
-    )
-    𝑃 = P isa PRES ? P : P * u"kPa"
-    𝑣 = v isa VOLU ? v : v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
-    _T(ξ, 𝑃, 𝑣, B)
-end
-
-kwv = (
-    ξ::IdealGas;
-    P::Union{Real, PRES, Missing} = missing,
-    T::Union{Real, TEMP, Missing} = missing,
-    v::Union{Real, VOLU, Missing} = missing,
-    B::Symbol = :MA,
-) -> begin
-    if !ismissing(v)
-        UNIT = B == :MA ? u"m^3/kg" : u"m^3/kmol"
-        return v isa VOLU ? uconvert(UNIT, v) : v * UNIT
-    end
-    count(x -> ismissing(x), (P, T)) == 0 || throw(
-        ArgumentError("Unspecified state: (P = $(P), T = $(T))")
-    )
-    𝑃 = P isa PRES ? P : P * u"kPa"
-    𝑇 = T isa TEMP ? T : T * u"K"
-    _v(ξ, 𝑃, 𝑇, B)
-end
-
-kwρ = (
-    ξ::IdealGas;
-    P::Union{Real, PRES, Missing} = missing,
-    T::Union{Real, TEMP, Missing} = missing,
-    v::Union{Real, VOLU, Missing} = missing,
-    B::Symbol = :MA,
-) -> inv(kwv(ξ; P = P, T = T, B = B))
-
 kws = (
     ξ::IdealGas;
     P::Union{Real, PRES, Missing} = missing,
@@ -257,22 +193,8 @@ kws = (
     v::Union{Real, VOLU, Missing} = missing,
     B::Symbol = :MA,
 ) -> begin
-    count(x -> ismissing(x), (P, T, v)) <= 1 || throw(
-        ArgumentError("Unspecified state: (P = $(P), T = $(T), v = $(v))")
-    )
-    return if ismissing(P)
-        𝑇 = T isa TEMP ? T : T * u"K"
-        𝑣 = v isa VOLU ? v : v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
-        _s(ξ, _P(ξ, 𝑇, 𝑣, B), 𝑇, B)
-    elseif ismissing(T)
-        𝑃 = P isa PRES ? P : P * u"kPa"
-        𝑣 = v isa VOLU ? v : v * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
-        _s(ξ, 𝑃, _T(ξ, 𝑃, 𝑣, B), B)
-    else
-        𝑇 = T isa TEMP ? T : T * u"K"
-        𝑃 = P isa PRES ? P : P * u"kPa"
-        _s(ξ, 𝑃, 𝑇, B)
-    end
+    𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
+    _s(ξ, 𝑃, 𝑇, B)
 end
 
 kwa = (
@@ -282,10 +204,9 @@ kwa = (
     v::Union{Real, VOLU, Missing} = missing,
     B::Symbol = :MA,
 ) -> begin
-    𝑃 = kwP(ξ; P = P, T = T, v = v, B = B)  # 𝑃 from kwargs
-    𝑇 = kwT(ξ; P = 𝑃, T = T, v = v, B = B)  # 𝑇 from kwargs, 𝑃
-    𝑢 = u(ξ, 𝑇, B)
+    𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
     𝑠 = _s(ξ, 𝑃, 𝑇, B)
+    𝑢 = u(ξ, 𝑇, B)
     𝑢 - 𝑇 * 𝑠
 end
 
