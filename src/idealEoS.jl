@@ -109,28 +109,58 @@ for FUNC in (:cp, :cv, :u, :h, :s0)
     end
 end
 
-# Internal positional EoS functions
+#----------------------------------------------------------------------#
+#                  Internal positional EoS functions                   #
+#----------------------------------------------------------------------#
+
+# Pressure
 function _P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU) where {ℙ}
     return uconvert(u"kPa", R(ξ, 𝑣) * ℙ(𝑇 / 𝑣))
 end
+_P(ξ::IdealGas{ℙ}, 𝑃::PRES) where {ℙ} = uconvert(u"kPa", ℙ(𝑃))
+_P(ξ::IdealGas{ℙ}, P::Real) where {ℙ} = ℙ(P) * u"kPa"
 
+# Temperature
 function _T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU) where {ℙ}
     return uconvert(u"K", ℙ(𝑃 * 𝑣) / R(ξ, 𝑣))
 end
+_T(ξ::IdealGas{ℙ}, 𝑇::TEMP) where {ℙ} = uconvert(u"K", ℙ(T))
+_T(ξ::IdealGas{ℙ}, T::Real) where {ℙ} = ℙ(T) * u"K"
 
+# Specific volume
 function _v(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {ℙ}
     UNIT = B == :MA ? u"m^3/kg" : u"m^3/kmol"
     return uconvert(UNIT, R(ξ, B) * ℙ(𝑇 / 𝑃))
 end
-
-function _ρ(ξ::IdealGas, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA)
-    return inv(_v(ξ, 𝑃, 𝑇, B))
+function _v(ξ::IdealGas{ℙ}, 𝑣::VOLU) where {ℙ}
+    UNIT = 𝑣 isa MASS ? u"m^3/kg" : u"m^3/kmol"
+    return uconvert(UNIT, ℙ(𝑣))
+end
+function _v(ξ::IdealGas{ℙ}, 𝑣::VOLU, B::Symbol) where {ℙ}
+    iUNIT = 𝑣 isa MASS ? u"m^3/kg" : u"m^3/kmol"
+    oUNIT = B == :MA ? u"m^3/kg" : u"m^3/kmol"
+    return if iUNIT == oUNIT
+        # No base change / same dims / units can still differ
+        uconvert(oUNIT, ℙ(𝑣))
+    else
+        # Base change to B
+        uconvert(oUNIT, B == :MA ? 𝑣 / ξ.𝑀 : 𝑣 * ξ.𝑀)
+    end
+end
+function _v(ξ::IdealGas{ℙ}, v::Real, B::Symbol = :MA) where {ℙ}
+    return ℙ(v) * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
 end
 
-# Internal positional entropy function
+# Density
+_ρ(ξ::IdealGas, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) = inv(_v(ξ, 𝑃, 𝑇, B))
+
+# Specific entropy
 function _s(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {ℙ}
     return s0(ξ, 𝑇, B) - R(ξ, B) * log(ℙ(𝑃) / ξ.𝑃ref)
 end
+
+
+
 
 # Internal helper functions
 frP(P::PRES) = uconvert(u"kPa", P)
