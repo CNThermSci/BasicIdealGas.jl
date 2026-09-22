@@ -336,6 +336,8 @@ function Base.getproperty(ξ::IdealGas, sy::Symbol)
         (; P = missing, T = missing, v = missing, B = :MA) -> __κT(ξ; P = P, T = T, v = v, B = B)
     elseif sy in (:κs, :kappas)
         (; P = missing, T = missing, v = missing, B = :MA) -> __κs(ξ; P = P, T = T, v = v, B = B)
+    elseif sy == :k
+        (; P = missing, T = missing, v = missing, B = :MA) -> getproperty(𝐶, :ga)(_T(ξ, T))
     end
 end
 
