@@ -143,6 +143,24 @@ function _T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU) where {ℙ}
 end
 _T(ξ::IdealGas{ℙ}, 𝑇::TEMP) where {ℙ} = uconvert(u"K", ℙ(T))
 _T(ξ::IdealGas{ℙ}, T::Real) where {ℙ} = ℙ(T) * u"K"
+function _T(
+        ξ::IdealGas{ℙ};
+        P::Union{Real, PRES, Missing} = missing,
+        T::Union{Real, TEMP, Missing} = missing,
+        v::Union{Real, VOLU, Missing} = missing,
+        B::Symbol = :MA,
+    ) where {ℙ}
+    if !ismissing(T)
+        return _T(ξ, T)
+    else
+        miss = [ i[1] for i in [(:P, P), (:T, T), (:v, v)] if ismissing(i[2]) ]
+        length(miss) <= 1 ||
+            throw(ArgumentError(@sprintf("Underspecified state: missing (%s)", join(miss, ", "))))
+        𝑃 = _P(ξ, P)
+        𝑣 = _v(ξ, v, B)
+        _T(ξ, 𝑃, 𝑣)
+    end
+end
 
 # Specific volume
 function _v(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {ℙ}
