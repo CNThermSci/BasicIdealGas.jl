@@ -186,7 +186,7 @@ PTv = (
     end
 end
 
-kws = (
+__s = (
     ξ::IdealGas;
     P::Union{Real, PRES, Missing} = missing,
     T::Union{Real, TEMP, Missing} = missing,
@@ -197,7 +197,7 @@ kws = (
     _s(ξ, 𝑃, 𝑇, B)
 end
 
-kwa = (
+__a = (
     ξ::IdealGas;
     P::Union{Real, PRES, Missing} = missing,
     T::Union{Real, TEMP, Missing} = missing,
@@ -210,7 +210,7 @@ kwa = (
     𝑢 - 𝑇 * 𝑠
 end
 
-kwg = (
+__g = (
     ξ::IdealGas;
     P::Union{Real, PRES, Missing} = missing,
     T::Union{Real, TEMP, Missing} = missing,
@@ -223,7 +223,7 @@ kwg = (
     ℎ - 𝑇 * 𝑠
 end
 
-kwβ = (
+__β = (
     ξ::IdealGas;
     P::Union{Real, PRES, Missing} = missing,
     T::Union{Real, TEMP, Missing} = missing,
@@ -237,7 +237,7 @@ kwβ = (
     inv(𝑇)
 end
 
-kwκT = (
+__κT = (
     ξ::IdealGas;
     P::Union{Real, PRES, Missing} = missing,
     T::Union{Real, TEMP, Missing} = missing,
@@ -251,7 +251,7 @@ kwκT = (
     inv(𝑃)
 end
 
-kwκs = (
+__κs = (
     ξ::IdealGas;
     P::Union{Real, PRES, Missing} = missing,
     T::Union{Real, TEMP, Missing} = missing,
@@ -285,13 +285,13 @@ function Base.getproperty(ξ::IdealGas, sy::Symbol)
             # This allows an 𝑓(T) be calc'd from 𝑓(T(P, T, v, B))
             # Makes sense only at the IdealGas level (can't fallback to SpecificHeat directly)
             return (; P = missing, T = missing, v = missing, B = :MA) -> begin
-                getproperty(𝐶, sy)(PTv(ξ; P = P, T = T, v = v, B = B)[2])
+                getproperty(𝐶, sy)(_T(ξ, T))
             end
         elseif sy ∈ props_T_B(𝐶)
             # This allows an 𝑓(T, B) be calc'd from 𝑓(T(P, T, v, B), B)
             # Makes sense only at the IdealGas level (can't fallback to SpecificHeat directly)
             return (; P = missing, T = missing, v = missing, B = :MA) -> begin
-                getproperty(𝐶, sy)(PTv(ξ; P = P, T = T, v = v, B = B)[2], B)
+                getproperty(𝐶, sy)(_T(ξ, T), B)
             end
         end
     end
@@ -313,29 +313,29 @@ function Base.getproperty(ξ::IdealGas, sy::Symbol)
     elseif sy == :ρMO
         (; P = missing, T = missing, v = missing) -> inv(PTv(ξ; P = P, T = T, v = v, B = :MO)[3])
     elseif sy == :s
-        (; P = missing, T = missing, v = missing, B = :MA) -> kws(ξ; P = P, T = T, v = v, B = B)
+        (; P = missing, T = missing, v = missing, B = :MA) -> __s(ξ; P = P, T = T, v = v, B = B)
     elseif sy == :sMA
-        (; P = missing, T = missing, v = missing) -> kws(ξ; P = P, T = T, v = v, B = :MA)
+        (; P = missing, T = missing, v = missing) -> __s(ξ; P = P, T = T, v = v, B = :MA)
     elseif sy == :sMO
-        (; P = missing, T = missing, v = missing) -> kws(ξ; P = P, T = T, v = v, B = :MO)
+        (; P = missing, T = missing, v = missing) -> __s(ξ; P = P, T = T, v = v, B = :MO)
     elseif sy == :a
-        (; P = missing, T = missing, v = missing, B = :MA) -> kwa(ξ; P = P, T = T, v = v, B = B)
+        (; P = missing, T = missing, v = missing, B = :MA) -> __a(ξ; P = P, T = T, v = v, B = B)
     elseif sy == :aMA
-        (; P = missing, T = missing, v = missing) -> kwa(ξ; P = P, T = T, v = v, B = :MA)
+        (; P = missing, T = missing, v = missing) -> __a(ξ; P = P, T = T, v = v, B = :MA)
     elseif sy == :aMO
-        (; P = missing, T = missing, v = missing) -> kwa(ξ; P = P, T = T, v = v, B = :MO)
+        (; P = missing, T = missing, v = missing) -> __a(ξ; P = P, T = T, v = v, B = :MO)
     elseif sy == :g
-        (; P = missing, T = missing, v = missing, B = :MA) -> kwg(ξ; P = P, T = T, v = v, B = B)
+        (; P = missing, T = missing, v = missing, B = :MA) -> __g(ξ; P = P, T = T, v = v, B = B)
     elseif sy == :gMA
-        (; P = missing, T = missing, v = missing) -> kwg(ξ; P = P, T = T, v = v, B = :MA)
+        (; P = missing, T = missing, v = missing) -> __g(ξ; P = P, T = T, v = v, B = :MA)
     elseif sy == :gMO
-        (; P = missing, T = missing, v = missing) -> kwg(ξ; P = P, T = T, v = v, B = :MO)
+        (; P = missing, T = missing, v = missing) -> __g(ξ; P = P, T = T, v = v, B = :MO)
     elseif sy in (:β, :beta)
-        (; P = missing, T = missing, v = missing, B = :MA) -> kwβ(ξ; P = P, T = T, v = v, B = B)
+        (; P = missing, T = missing, v = missing, B = :MA) -> __β(ξ; P = P, T = T, v = v, B = B)
     elseif sy in (:κT, :kappaT)
-        (; P = missing, T = missing, v = missing, B = :MA) -> kwκT(ξ; P = P, T = T, v = v, B = B)
+        (; P = missing, T = missing, v = missing, B = :MA) -> __κT(ξ; P = P, T = T, v = v, B = B)
     elseif sy in (:κs, :kappas)
-        (; P = missing, T = missing, v = missing, B = :MA) -> kwκs(ξ; P = P, T = T, v = v, B = B)
+        (; P = missing, T = missing, v = missing, B = :MA) -> __κs(ξ; P = P, T = T, v = v, B = B)
     end
 end
 
