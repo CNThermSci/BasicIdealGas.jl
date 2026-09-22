@@ -118,6 +118,24 @@ function _P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU) where {ℙ}
 end
 _P(ξ::IdealGas{ℙ}, 𝑃::PRES) where {ℙ} = uconvert(u"kPa", ℙ(𝑃))
 _P(ξ::IdealGas{ℙ}, P::Real) where {ℙ} = ℙ(P) * u"kPa"
+function _P(
+        ξ::IdealGas{ℙ};
+        P::Union{Real, PRES, Missing} = missing,
+        T::Union{Real, TEMP, Missing} = missing,
+        v::Union{Real, VOLU, Missing} = missing,
+        B::Symbol = :MA,
+    ) where {ℙ}
+    if !ismissing(P)
+        return _P(ξ, P)
+    else
+        miss = [ i[1] for i in [(:P, P), (:T, T), (:v, v)] if ismissing(i[2]) ]
+        length(miss) <= 1 ||
+            throw(ArgumentError(@sprintf("Underspecified state: missing (%s)", join(miss, ", "))))
+        𝑇 = _T(ξ, T)
+        𝑣 = _v(ξ, v, B)
+        _P(ξ, 𝑇, 𝑣)
+    end
+end
 
 # Temperature
 function _T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU) where {ℙ}
@@ -312,6 +330,12 @@ function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
         (; P = missing, T = missing, v = missing) -> inv(PTv(ξ; P = P, T = T, v = v, B = :MA)[3])
     elseif sy == :ρMO
         (; P = missing, T = missing, v = missing) -> inv(PTv(ξ; P = P, T = T, v = v, B = :MO)[3])
+    elseif sy == :uMA
+        (; P = missing, T = missing, v = missing) -> begin
+            getproperty(𝐶, :u)(ξ, PTv(ξ; P = P, T = T, v = v, B = B)[2], B = :MA)
+        end
+    elseif sy == :uMO
+        (; P = missing, T = missing, v = missing) -> getproperty(𝐶, :u)(ξ; P = P, T = T, v = v, B = :MO)
     elseif sy == :s
         (; P = missing, T = missing, v = missing, B = :MA) -> __s(ξ; P = P, T = T, v = v, B = B)
     elseif sy == :sMA
