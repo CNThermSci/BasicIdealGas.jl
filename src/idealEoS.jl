@@ -123,7 +123,7 @@ function _P(
         P::Union{Real, PRES, Missing} = missing,
         T::Union{Real, TEMP, Missing} = missing,
         v::Union{Real, VOLU, Missing} = missing,
-        B::Symbol = :MA,
+        B::Union{Symbol, Missing} = missing,
     ) where {ℙ}
     if !ismissing(P)
         return _P(ξ, P)
@@ -132,7 +132,7 @@ function _P(
         length(miss) <= 1 ||
             throw(ArgumentError(@sprintf("Underspecified state: missing (%s)", join(miss, ", "))))
         𝑇 = _T(ξ, T)
-        𝑣 = _v(ξ, v, B)
+        𝑣 = _v(ξ, v, ismissing(B) ? :MA : B)
         _P(ξ, 𝑇, 𝑣)
     end
 end
@@ -148,7 +148,7 @@ function _T(
         P::Union{Real, PRES, Missing} = missing,
         T::Union{Real, TEMP, Missing} = missing,
         v::Union{Real, VOLU, Missing} = missing,
-        B::Symbol = :MA,
+        B::Union{Symbol, Missing} = missing,
     ) where {ℙ}
     if !ismissing(T)
         return _T(ξ, T)
@@ -157,7 +157,7 @@ function _T(
         length(miss) <= 1 ||
             throw(ArgumentError(@sprintf("Underspecified state: missing (%s)", join(miss, ", "))))
         𝑃 = _P(ξ, P)
-        𝑣 = _v(ξ, v, B)
+        𝑣 = _v(ξ, v, ismissing(B) ? :MA : B)
         _T(ξ, 𝑃, 𝑣)
     end
 end
@@ -338,14 +338,14 @@ function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
         elseif sy ∈ props_T(𝐶)
             # This allows an 𝑓(T) be calc'd from 𝑓(T(P, T, v, B))
             # Makes sense only at the IdealGas level (can't fallback to SpecificHeat directly)
-            return (; P = missing, T = missing, v = missing, B = :MA) -> begin
-                getproperty(𝐶, sy)(_T(ξ, T))
+            return (; P = missing, T = missing, v = missing, B = missing) -> begin
+                getproperty(𝐶, sy)(_T(ξ; P = P, T = T, v = v, B = B))
             end
         elseif sy ∈ props_T_B(𝐶)
             # This allows an 𝑓(T, B) be calc'd from 𝑓(T(P, T, v, B), B)
             # Makes sense only at the IdealGas level (can't fallback to SpecificHeat directly)
-            return (; P = missing, T = missing, v = missing, B = :MA) -> begin
-                getproperty(𝐶, sy)(_T(ξ, T), B)
+            return (; P = missing, T = missing, v = missing, B = missing) -> begin
+                getproperty(𝐶, sy)(_T(ξ; P = P, T = T, v = v), ismissing(B) ? :MA : B)
             end
         end
     end
@@ -367,11 +367,13 @@ function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
     elseif sy == :ρMO
         (; P = missing, T = missing, v = missing) -> inv(PTv(ξ; P = P, T = T, v = v, B = :MO)[3])
     elseif sy == :uMA
-        (; P = missing, T = missing, v = missing) -> begin
-            getproperty(𝐶, :u)(ξ, PTv(ξ; P = P, T = T, v = v, B = B)[2], B = :MA)
+        (; P = missing, T = missing, v = missing, B = missing) -> begin
+            getproperty(𝐶, :u)(ξ, _T(ξ; P = P, T = T, v = v, B = B), ismissing(B) ? :MA : B)
         end
     elseif sy == :uMO
-        (; P = missing, T = missing, v = missing) -> getproperty(𝐶, :u)(ξ; P = P, T = T, v = v, B = :MO)
+        (; P = missing, T = missing, v = missing) -> begin
+            getproperty(𝐶, :u)(ξ, _T(ξ; P = P, T = T, v = v), B = :MO)
+        end
     elseif sy == :s
         (; P = missing, T = missing, v = missing, B = :MA) -> __s(ξ; P = P, T = T, v = v, B = B)
     elseif sy == :sMA
