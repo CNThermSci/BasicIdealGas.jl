@@ -185,6 +185,24 @@ end
 function _v(ξ::IdealGas{ℙ}, v::Real, B::Symbol = :MA) where {ℙ}
     return ℙ(v) * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
 end
+function _v(
+        ξ::IdealGas{ℙ};
+        P::Union{Real, PRES, Missing} = missing,
+        T::Union{Real, TEMP, Missing} = missing,
+        v::Union{Real, VOLU, Missing} = missing,
+        B::Union{Symbol, Missing} = missing,
+    ) where {ℙ}
+    if !ismissing(v)
+        return ismissing(B) ? _v(ξ, v) : _v(ξ, v, B)
+    else
+        miss = [ i[1] for i in [(:P, P), (:T, T), (:v, v)] if ismissing(i[2]) ]
+        length(miss) <= 1 ||
+            throw(ArgumentError(@sprintf("Underspecified state: missing (%s)", join(miss, ", "))))
+        𝑃 = _P(ξ, P)
+        𝑇 = _T(ξ, T)
+        return ismissing(B) ? _v(ξ, 𝑃, 𝑇) : _v(ξ, 𝑃, 𝑇, B)
+    end
+end
 
 # Density
 _ρ(ξ::IdealGas, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) = inv(_v(ξ, 𝑃, 𝑇, B))
