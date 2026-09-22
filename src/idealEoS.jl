@@ -345,9 +345,9 @@ function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
             𝑅 = getproperty(𝐶, :RMA)
             uconvert(u"m/s", √(γ * 𝑅 * 𝑇))
         end
-    elseif sy in (:muJT, :μJT)
+    elseif sy in (:μJT, :muJT)
         (; P = missing, T = missing, v = missing, B = :MA) -> zero(ℙ) * u"K/kPa"
-    elseif sy in (:mus, :μs)
+    elseif sy in (:μs, :mus)
         (; P = missing, T = missing, v = missing, B = :MA) -> begin
             𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
             uconvert(u"K/kPa", 𝑣 / getproperty(𝐶, :cp)(𝑇))
@@ -359,5 +359,7 @@ Base.propertynames(ξ::IdealGas) = (
     :form, :name, :hmod, :𝑃ref,
     :Pref,
     propertynames(getfield(ξ, :hmod))...,
-    :P, :T, :v, :ρ, :s,
+    :P, :T, :v, :vMA, :vMO, :ρ, :ρMA, :ρMO, :s, :sMA, :sMO,
+    :a, :aMA, :aMO, :g, :gMA, :gMO, :β, :beta, :κT, :kappaT,
+    :κs, :kappas, :k, :c, :μJT, :muJT, :μs, :mus,
 )
