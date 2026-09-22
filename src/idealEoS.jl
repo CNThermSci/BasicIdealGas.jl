@@ -351,15 +351,15 @@ function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
     end
     # OOP-style covenience functions (formerly exported ones)
     return if sy == :P
-        (; P = missing, T = missing, v = missing, B = :MA) -> PTv(ξ; P = P, T = T, v = v, B = B)[1]
+        (; P = missing, T = missing, v = missing, B = missing) -> _P(ξ; P = P, T = T, v = v, B = B)
     elseif sy == :T
-        (; P = missing, T = missing, v = missing, B = :MA) -> PTv(ξ; P = P, T = T, v = v, B = B)[2]
+        (; P = missing, T = missing, v = missing, B = missing) -> _T(ξ; P = P, T = T, v = v, B = B)
     elseif sy == :v
-        (; P = missing, T = missing, v = missing, B = :MA) -> PTv(ξ; P = P, T = T, v = v, B = B)[3]
+        (; P = missing, T = missing, v = missing, B = missing) -> _v(ξ; P = P, T = T, v = v, B = B)
     elseif sy == :vMA
-        (; P = missing, T = missing, v = missing) -> PTv(ξ; P = P, T = T, v = v, B = :MA)[3]
+        (; P = missing, T = missing, v = missing) -> _v(ξ; P = P, T = T, v = v, B = :MA)
     elseif sy == :vMO
-        (; P = missing, T = missing, v = missing) -> PTv(ξ; P = P, T = T, v = v, B = :MO)[3]
+        (; P = missing, T = missing, v = missing) -> _v(ξ; P = P, T = T, v = v, B = :MO)
     elseif sy == :ρ
         (; P = missing, T = missing, v = missing, B = :MA) -> inv(PTv(ξ; P = P, T = T, v = v, B = B)[3])
     elseif sy == :ρMA
