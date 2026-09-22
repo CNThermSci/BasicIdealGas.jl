@@ -120,7 +120,8 @@ function ∫(𝑔::𝔽, a::HILIM, b::HILIM) where {𝔽 <: Function}
 end
 
 function ∫(𝑔::𝔽, a::LOLIM, b::LOLIM) where {𝔽 <: Function}
-    a ≈ b && return zero(Float16)
+    # isapprox(a, b, atol = max(eps(a), eps(b))) && return zero(Float16) * unit(𝑔(a) * a)
+    a != b || return zero(Float16) * unit(𝑔(a) * a)
     sa, sb, ss = b > a ? Float16.((a, b, 1)) : Float16.((b, a, -1))
     n = min(Int(trunc((sb - sa) / eps(sb))), 256)
     x = range(sa, step = (sb - sa) / n, length = n + 1) |> collect
