@@ -267,7 +267,7 @@ end
 
 import Base: getproperty, propertynames
 
-function Base.getproperty(ξ::IdealGas, sy::Symbol)
+function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
     # Raw fields
     if sy in fieldnames(IdealGas)
         return getfield(ξ, sy)
@@ -338,6 +338,15 @@ function Base.getproperty(ξ::IdealGas, sy::Symbol)
         (; P = missing, T = missing, v = missing, B = :MA) -> __κs(ξ; P = P, T = T, v = v, B = B)
     elseif sy == :k
         (; P = missing, T = missing, v = missing, B = :MA) -> getproperty(𝐶, :ga)(_T(ξ, T))
+    elseif sy == :c
+        (; P = missing, T = missing, v = missing, B = :MA) -> begin
+            𝑇 = _T(ξ, T)
+            γ = getproperty(𝐶, :ga)(𝑇)
+            𝑅 = getproperty(𝐶, :RMA)
+            uconvert(u"m/s", √(γ * 𝑅 * 𝑇))
+        end
+    elseif sy in (:muJT, :μJT)
+        (; P = missing, T = missing, v = missing, B = :MA) -> zero(ℙ) * u"K/kPa"
     end
 end
 
