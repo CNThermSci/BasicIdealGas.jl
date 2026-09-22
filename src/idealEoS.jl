@@ -347,6 +347,11 @@ function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
         end
     elseif sy in (:muJT, :μJT)
         (; P = missing, T = missing, v = missing, B = :MA) -> zero(ℙ) * u"K/kPa"
+    elseif sy in (:mus, :μs)
+        (; P = missing, T = missing, v = missing, B = :MA) -> begin
+            𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
+            uconvert(u"K/kPa", 𝑣 / getproperty(𝐶, :cp)(𝑇))
+        end
     end
 end
 
