@@ -144,7 +144,7 @@ end
 # Primitives
 cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ξ.f┆R(ℙ(𝑇)))
 cp┆R(ξ::SpecificHeat, T::Real) = cp┆R(ξ, T * u"K")
-cv┆R(ξ::SpecificHeat{ℙ}, 𝑇) where {ℙ <: FLOAT} = cp┆R(ξ, 𝑇) - one(ℙ)
+cv┆R(ξ::SpecificHeat{ℙ}, θ::Union{Real, TEMP}) where {ℙ <: FLOAT} = cp┆R(ξ, θ) - one(ℙ)
 
 # Base-selected R
 function R(ξ::SpecificHeat, B::Symbol)
@@ -155,7 +155,7 @@ R(ξ::SpecificHeat, B::MASS) = R(ξ, :MA)
 R(ξ::SpecificHeat, B::MOLR) = R(ξ, :MO)
 
 # Derived, base-independent properties
-ga(ξ::SpecificHeat, θ::Union{Real, TEMP}) = cp┆R(ξ, θ) / cv┆R(ξ, θ)
+γ(ξ::SpecificHeat, θ::Union{Real, TEMP}) = cp┆R(ξ, θ) / cv┆R(ξ, θ)
 ∫cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ∫(ξ.f┆R, ξ.𝑇ref, ℙ(𝑇)))
 ∫cp┆R(ξ::SpecificHeat, 𝑇::Real) = ∫cp┆R(ξ, 𝑇 * u"K")
 ∫cv┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = ∫cp┆R(ξ, 𝑇) - ℙ(𝑇) + ξ.𝑇ref
@@ -181,7 +181,7 @@ s0(ξ::SpecificHeat, 𝑇, B::Union{Symbol, MASS, MOLR}) = s0┆R(ξ, 𝑇) * R(
 # ----------------
 
 props_T(ξ::SpecificHeat) = (
-    :cp┆R, :cv┆R, :ga, :∫cp┆R, :∫cv┆R,
+    :cp┆R, :cv┆R, :γ, :∫cp┆R, :∫cv┆R,
     :u┆R, :h┆R, :∫cp┆RT, :s0┆R, :Pr, :vr,
 )
 
