@@ -109,6 +109,7 @@ v(ξ::IdealGas{ℙ}, υ::Union{Real, VOLU}) where {ℙ} = ℙ(v(υ))
 P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU) where {ℙ} = P(R(ξ.hmod, 𝑣) * ℙ(𝑇 / 𝑣))
 T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU) where {ℙ} = T(ℙ(𝑃 * 𝑣) / R(ξ.hmod, 𝑣))
 v(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = v(R(ξ.hmod, B) * ℙ(𝑇 / 𝑃))
+ρ(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = inv(v(ξ, 𝑃, 𝑇, B))
 
 # Internal Positional P, T, V, ρ, s functions
 # -------------------------------------------
