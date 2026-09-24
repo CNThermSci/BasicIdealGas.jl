@@ -91,11 +91,16 @@ end
 # -----------------------------------------------------------------------
 
 # Helper functions
-𝑣(vB::Tuple{Real, Symbol}) = vB[1] * (vB[2] == :MA ? u"m^3/kg" : u"m^3/kmol")
+𝑃(P::PRES) = P
+𝑃(P::Real) = P * u"kPa"
+𝑇(T::TEMP) = T
+𝑇(T::Real) = T * u"K"
 𝑣(vB::VOLU) = vB
+𝑣(vB::Tuple{Real, Symbol}) = vB[1] * (vB[2] == :MA ? u"m^3/kg" : u"m^3/kmol")
 
 # Internal Positional P, T, V, ρ, s functions
 # -------------------------------------------
+
 
 # Pressure
 function _P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU) where {ℙ}
