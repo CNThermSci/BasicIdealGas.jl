@@ -123,8 +123,8 @@ function Base.show(io::IO, ::MIME"text/plain", ξ::SpecificHeat{ℙ}) where {ℙ
     return print(io, pretty(ξ))
 end
 
-# User-facing functions
-# ---------------------
+# Internal Property Calculations: positional, dispatched args
+# -----------------------------------------------------------
 
 𝗯(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = begin
     T = ℙ(𝑇)
