@@ -179,28 +179,26 @@ props_T_B(ξ::SpecificHeat) = (
 import Base: getproperty, propertynames
 
 function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
-    # Raw fields
-    if sy in fieldnames(SpecificHeat)
-        return getfield(ξ, sy)
-    end
     # Convenience accessors/transformers
-    if sy == :f
+    if sy == :ID
+        return getfield(ξ, :ID)
+    elseif sy in (:f┆R, :f)
         return getfield(ξ, :f┆R)
-    elseif sy == :M
+    elseif sy in (:𝑀, :M)
         return getfield(ξ, :𝑀)
-    elseif sy in (:R, :RMO)
+    elseif sy in (:𝑅, :R, :RMO)
         return getfield(ξ, :𝑅)
     elseif sy == :RMA
         return R(ξ, :MA)
-    elseif sy == :Tmin
+    elseif sy in (:𝑇min, :Tmin)
         return getfield(ξ, :𝑇min)
-    elseif sy == :Tref
+    elseif sy in (:𝑇ref, :Tref)
         return getfield(ξ, :𝑇ref)
-    elseif sy == :Tmax
+    elseif sy in (:𝑇max, :Tmax)
         return getfield(ξ, :𝑇max)
-    elseif sy == :uref
+    elseif sy in (:𝑢ref, :uref)
         return getfield(ξ, :𝑢ref)
-    elseif sy == :sref
+    elseif sy in (:𝑠ref, :sref)
         return getfield(ξ, :𝑠ref)
     end
     # Pretty print
