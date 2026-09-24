@@ -163,6 +163,7 @@ end
 end
 
 @testset "cpModel.test.jl: thermodynamic consistencies                              " begin
+    R = BasicIdealGas.R
     cp┆R = BasicIdealGas.cp┆R
     cv┆R = BasicIdealGas.cv┆R
     ∫cp┆R = BasicIdealGas.∫cp┆R
@@ -178,17 +179,17 @@ end
         C = SpecificHeat{ℙ}(:cubic, cp_R[:cubic], 𝑀, Tmin, Tref, Tmax, uref, sref)
         G = SpecificHeat{ℙ}(:const, cp_R[:const], 𝑀, Tmin, Tref, Tmax, uref, sref)
         for T in (Tmin, (Tmin + Tmax) / 2, Tmax)
-            @test C.f┆R(T) isa ℙ
-            @test cp┆R(C, T) ≈ C.f┆R(T)
-            @test cv┆R(C, T) ≈ C.f┆R(T) - one(ℙ)
-            @test C.γ(T) ≈ cp┆R(C, T) / cv┆R(C, T) ≈ cp(C, T) / cv(C, T)
-            @test R(C, :MO) == C.𝑅
-            @test R(C, :MA) ≈ C.𝑅 / C.𝑀
+            @test C.f(T) isa ℙ
+            @test cp┆R(C, T) ≈ C.f(T)
+            @test cv┆R(C, T) ≈ C.f(T) - one(ℙ)
+            @test C.γ(T) ≈ cp┆R(C, T) / cv┆R(C, T) ≈ C.cp(T) / C.cv(T)
+            @test C.R == C.RMO
+            @test C.RMA ≈ C.R / C.M
             for B in (:MA, :MO)
-                @test cp(C, T, B) ≈ cp┆R(C, T) * R(C, B)
-                @test cv(C, T, B) ≈ cv┆R(C, T) * R(C, B)
-                @test cp(C, T, B) ≈ cv(C, T, B) + R(C, B)
-                @test ga(C, T) ≈ cp(C, T, B) / cv(C, T, B)
+                @test C.cp(T, B) ≈ cp┆R(C, T) * R(C, B)
+                @test C.cv(T, B) ≈ cv┆R(C, T) * R(C, B)
+                @test C.cp(T, B) ≈ cv(C, T, B) + R(C, B)
+                @test C.γ(T) ≈ cp(C, T, B) / cv(C, T, B)
             end
             @test ∫cp┆R(G, T) ≈ (5 // 2) * (ℙ(T) - C.Tref)
             @test ∫cv┆R(G, T) ≈ (3 // 2) * (ℙ(T) - C.Tref)
