@@ -171,9 +171,9 @@ vr(ξ::SpecificHeat{ℙ}, θ::Union{Real, TEMP}) where {ℙ <: FLOAT} = ℙ(θ) 
 # Derived, based properties
 cp(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = cp┆R(ξ, θ) * R(ξ, B)
 cv(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = cv┆R(ξ, θ) * R(ξ, B)
-u(ξ::SpecificHeat, 𝑇, B::Union{Symbol, MASS, MOLR}) = u┆R(ξ, 𝑇) * R(ξ, B)
-h(ξ::SpecificHeat, 𝑇, B::Union{Symbol, MASS, MOLR}) = h┆R(ξ, 𝑇) * R(ξ, B)
-s0(ξ::SpecificHeat, 𝑇, B::Union{Symbol, MASS, MOLR}) = s0┆R(ξ, 𝑇) * R(ξ, B)
+u(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = u┆R(ξ, θ) * R(ξ, B)
+h(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = h┆R(ξ, θ) * R(ξ, B)
+s0(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = s0┆R(ξ, θ) * R(ξ, B)
 
 # Base.getproperty
 # ----------------
