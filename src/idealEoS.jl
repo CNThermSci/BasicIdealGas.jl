@@ -92,6 +92,7 @@ end
 
 # Helper functions
 𝑣(vB::Tuple{Real, Symbol}) = vB[1] * (vB[2] == :MA ? u"m^3/kg" : u"m^3/kmol")
+𝑣(vB::VOLU) = vB
 
 # Internal Positional P, T, V, ρ, s functions
 # -------------------------------------------
