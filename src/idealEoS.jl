@@ -87,6 +87,9 @@ function Base.show(io::IO, ::MIME"text/plain", ξ::IdealGas{ℙ}) where {ℙ <: 
     )
 end
 
+# Internal Property Calculations: positional, dispatched, no default args
+# -----------------------------------------------------------------------
+
 for FUNC in (:R,)
     @eval begin
         $FUNC(ξ::IdealGas, B::Symbol = :MA) = $FUNC(ξ.hmod, B)
@@ -316,8 +319,8 @@ __κs = (
     inv(𝑃 * ga(ξ, 𝑇))
 end
 
-# Base.getproperty
-# ----------------
+# Base.getproperty - user-facing, oop-style
+# -----------------------------------------
 
 import Base: getproperty, propertynames
 
