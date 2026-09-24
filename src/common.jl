@@ -1,8 +1,15 @@
+# IEEE-754 normalized floating point types of half, single, and double precision
+# ------------------------------------------------------------------------------
+
+FLOAT = Base.IEEEFloat
+
+# Abstract types
+# --------------
+
+abstract type ThermModel{ℙ <: FLOAT} end
+
 # Type aliasing
 # -------------
-
-# IEEE-754 normalized floating point types of half, single, and double precision
-FLOAT = Base.IEEEFloat
 
 # Thermodynamic state function Quantity type alias - dimension set (for arguments)
 const PRES = Quantity{ℙ, dimension(u"kPa")} where {ℙ <: Real}
