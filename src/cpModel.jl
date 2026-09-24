@@ -149,6 +149,8 @@ function R(ξ::SpecificHeat, B::Symbol = :MA)
     @assert B in (:MA, :MO)
     return B == :MO ? ξ.𝑅 : ξ.𝑅 / ξ.𝑀
 end
+R(ξ::SpecificHeat, B::MASS) = R(ξ, :MA)
+R(ξ::SpecificHeat, B::MOLR) = R(ξ, :MO)
 
 cp(ξ::SpecificHeat, 𝑇, B = :MA) = cp┆R(ξ, 𝑇) * R(ξ, B)
 cv(ξ::SpecificHeat, 𝑇, B = :MA) = cv┆R(ξ, 𝑇) * R(ξ, B)
