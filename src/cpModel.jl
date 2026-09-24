@@ -157,18 +157,16 @@ R(ξ::SpecificHeat, B::MOLR) = R(ξ, :MO)
 # Derived, base-independent properties
 γ(ξ::SpecificHeat, θ::Union{Real, TEMP}) = cp┆R(ξ, θ) / cv┆R(ξ, θ)
 ∫cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ∫(ξ.f┆R, ξ.𝑇ref, ℙ(𝑇)))
-∫cp┆R(ξ::SpecificHeat, 𝑇::Real) = ∫cp┆R(ξ, 𝑇 * u"K")
+∫cp┆R(ξ::SpecificHeat, T::Real) = ∫cp┆R(ξ, T * u"K")
 ∫cv┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = ∫cp┆R(ξ, 𝑇) - ℙ(𝑇) + ξ.𝑇ref
-∫cv┆R(ξ::SpecificHeat, 𝑇::Real) = ∫cv┆R(ξ, 𝑇 * u"K")
-u┆R(ξ::SpecificHeat, 𝑇) = ∫cv┆R(ξ, 𝑇) + ξ.𝑢ref / ξ.𝑅
-h┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = u┆R(ξ, 𝑇) + ℙ(𝑇)
-h┆R(ξ::SpecificHeat, 𝑇::Real) = h┆R(ξ, 𝑇 * u"K")
+∫cv┆R(ξ::SpecificHeat, T::Real) = ∫cv┆R(ξ, T * u"K")
+u┆R(ξ::SpecificHeat, θ::Union{Real, TEMP}) = ∫cv┆R(ξ, θ) + ξ.𝑢ref / ξ.𝑅
+h┆R(ξ::SpecificHeat{ℙ}, θ::Union{Real, TEMP}) where {ℙ <: FLOAT} = u┆R(ξ, θ) + ℙ(θ)
 ∫cp┆RT(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ∫(T -> ξ.f┆R(T) / T, ξ.𝑇ref, ℙ(𝑇)))
-∫cp┆RT(ξ::SpecificHeat, 𝑇::Real) = ∫cp┆RT(ξ, 𝑇 * u"K")
-s0┆R(ξ::SpecificHeat, 𝑇) = ∫cp┆RT(ξ, 𝑇) + ξ.𝑠ref / ξ.𝑅
-Pr(ξ::SpecificHeat, 𝑇) = exp(∫cp┆RT(ξ, 𝑇))
-vr(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = ℙ(𝑇) / Pr(ξ, 𝑇)
-vr(ξ::SpecificHeat, 𝑇::Real) = vr(ξ, 𝑇 * u"K")
+∫cp┆RT(ξ::SpecificHeat, T::Real) = ∫cp┆RT(ξ, T * u"K")
+s0┆R(ξ::SpecificHeat, θ::Union{Real, TEMP}) = ∫cp┆RT(ξ, θ) + ξ.𝑠ref / ξ.𝑅
+Pr(ξ::SpecificHeat, θ::Union{Real, TEMP}) = exp(∫cp┆RT(ξ, θ))
+vr(ξ::SpecificHeat{ℙ}, θ::Union{Real, TEMP}) where {ℙ <: FLOAT} = ℙ(θ) / Pr(ξ, θ)
 
 # Derived, based properties
 cp(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = cp┆R(ξ, θ) * R(ξ, B)
