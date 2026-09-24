@@ -91,23 +91,24 @@ end
 # -----------------------------------------------------------------------
 
 # Helper functions
-P(P::PRES) = P
+P(P::PRES) = uconvert(u"kPa", P)
 P(P::Real) = P * u"kPa"
 P(ξ::IdealGas{ℙ}, 𝜋::Union{Real, PRES}) where {ℙ} = ℙ(P(𝜋))
 
-T(T::TEMP) = T
+T(T::TEMP) = uconvert(u"K", T)
 T(T::Real) = T * u"K"
 T(ξ::IdealGas{ℙ}, θ::Union{Real, TEMP}) where {ℙ} = ℙ(T(θ))
 
-v(vB::VOLU) = vB
-v(vB::Tuple{Real, Symbol}) = vB[1] * (vB[2] == :MA ? u"m^3/kg" : u"m^3/kmol")
+v(v::VOLU) = v isa MASS ? uconvert(u"m^3/kg", v) : uconvert(u"m^3/kmol", v)
+v(v::Tuple{Real, Symbol}) = v[1] * (v[2] == :MA ? u"m^3/kg" : u"m^3/kmol")
 v(ξ::IdealGas{ℙ}, υ::Union{Real, VOLU}) where {ℙ} = ℙ(v(υ))
 
 # Internal, positional, dispatched, no default args P, T, v, ρ functions
 # ----------------------------------------------------------------------
 
-P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU) where {ℙ} = uconvert(u"kPa", R(ξ.hmod, 𝑣) * ℙ(𝑇 / 𝑣))
-T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU) where {ℙ} = uconvert(u"K", ℙ(𝑃 * 𝑣) / R(ξ.hmod, 𝑣))
+P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU) where {ℙ} = P(R(ξ.hmod, 𝑣) * ℙ(𝑇 / 𝑣))
+T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU) where {ℙ} = T(ℙ(𝑃 * 𝑣) / R(ξ.hmod, 𝑣))
+v(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = v(R(ξ.hmod, B) * ℙ(𝑇 / 𝑃))
 
 # Internal Positional P, T, V, ρ, s functions
 # -------------------------------------------
