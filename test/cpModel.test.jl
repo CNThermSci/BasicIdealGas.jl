@@ -162,7 +162,7 @@ end
     @test_throws AssertionError bounds(C, nextfloat(C.Tmax))
 end
 
-@testset "cpModel.test.jl: user-facing functions: thermodynamic consistencies       " begin
+@testset "cpModel.test.jl: thermodynamic consistencies                              " begin
     cp┆R = BasicIdealGas.cp┆R
     cv┆R = BasicIdealGas.cv┆R
     ga = BasicIdealGas.ga
