@@ -90,27 +90,8 @@ end
 # Internal Property Calculations: positional, dispatched, no default args
 # -----------------------------------------------------------------------
 
-for FUNC in (:R,)
-    @eval begin
-        $FUNC(ξ::IdealGas, B::Symbol = :MA) = $FUNC(ξ.hmod, B)
-    end
-end
-
-R(ξ::IdealGas, 𝑣::VOLU) = 𝑣 isa MASS ? R(ξ, :MA) : R(ξ, :MO)
-
-for FUNC in (:cp┆R, :cv┆R, :ga, :∫cp┆R, :∫cv┆R, :u┆R, :h┆R, :∫cp┆RT, :s0┆R, :Pr, :vr)
-    @eval begin
-        $FUNC(ξ::IdealGas, 𝑇::TEMP) = $FUNC(ξ.hmod, 𝑇)
-        $FUNC(ξ::IdealGas, 𝑇::Real) = $FUNC(ξ.hmod, 𝑇)
-    end
-end
-
-for FUNC in (:cp, :cv, :u, :h, :s0)
-    @eval begin
-        $FUNC(ξ::IdealGas, 𝑇::TEMP, B::Symbol = :MA) = $FUNC(ξ.hmod, 𝑇, B)
-        $FUNC(ξ::IdealGas, 𝑇::Real, B::Symbol = :MA) = $FUNC(ξ.hmod, 𝑇, B)
-    end
-end
+# Helper functions
+𝑣(vB::Tuple{Real, Symbol}) = vB[1] * (vB[2] == :MA ? u"m^3/kg" : u"m^3/kmol")
 
 # Internal Positional P, T, V, ρ, s functions
 # -------------------------------------------
