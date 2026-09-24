@@ -67,36 +67,6 @@ s(s::ENTR) = s isa MASS ? uconvert(u"kJ/kg/K", s) : uconvert(u"kJ/kmol/K", s)
 s(s::Tuple{Real, Symbol}) = s[1] * (s[2] == :MA ? u"kJ/kg/K" : u"kJ/kmol/K")
 s(ξ::ThermModel{ℙ}, ς::Union{Real, ENTR}) where {ℙ} = ℙ(s(ς))
 
-# Thermodynamic unit conversion/stripping
-kSI(x::Real) = x
-kSI(x::PRES) = uconvert(u"kPa", x).val
-kSI(x::TEMP) = uconvert(u"K", x).val
-kSI(x::MOLW) = uconvert(u"kg/kmol", x).val
-
-function kSI(x::MASS)
-    return if x isa VOLU
-        uconvert(u"m^3/kg", x).val
-    elseif x isa ENER
-        uconvert(u"kJ/kg", x).val
-    elseif x isa ENTR
-        uconvert(u"kJ/kg/K", x).val
-    elseif x isa DENS
-        uconvert(u"kg/m^3", x).val
-    end
-end
-
-function kSI(x::MOLR)
-    return if x isa VOLU
-        uconvert(u"m^3/kmol", x).val
-    elseif x isa ENER
-        uconvert(u"kJ/kmol", x).val
-    elseif x isa ENTR
-        uconvert(u"kJ/kmol/K", x).val
-    elseif x isa DENS
-        uconvert(u"kmol/m^3", x).val
-    end
-end
-
 # Constants
 # ---------
 
