@@ -107,6 +107,7 @@ v(ξ::IdealGas{ℙ}, υ::Union{Real, VOLU}) where {ℙ} = ℙ(v(υ))
 # ----------------------------------------------------------------------
 
 P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU) where {ℙ} = uconvert(u"kPa", R(ξ.hmod, 𝑣) * ℙ(𝑇 / 𝑣))
+T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU) where {ℙ} = uconvert(u"K", ℙ(𝑃 * 𝑣) / R(ξ.hmod, 𝑣))
 
 # Internal Positional P, T, V, ρ, s functions
 # -------------------------------------------
@@ -133,9 +134,6 @@ function _P(
 end
 
 # Temperature
-function _T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU) where {ℙ}
-    return uconvert(u"K", ℙ(𝑃 * 𝑣) / R(ξ, 𝑣))
-end
 _T(ξ::IdealGas{ℙ}, 𝑇::TEMP) where {ℙ} = uconvert(u"K", ℙ(T))
 _T(ξ::IdealGas{ℙ}, T::Real) where {ℙ} = ℙ(T) * u"K"
 function _T(
