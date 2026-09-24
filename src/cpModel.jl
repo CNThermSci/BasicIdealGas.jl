@@ -126,19 +126,24 @@ end
 # Internal Property Calculations: positional, dispatched args
 # -----------------------------------------------------------
 
+# Temperature args types:
+#   𝑇::TEMP                 => dispatched fallback
+#   T::Real                 => add units and fallback
+#   θ::Union{Real, TEMP}    => fallback
+
 𝗯(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = begin
     T = ℙ(𝑇)
     msg = "T = $(@sprintf("%.*g K", 5, T.val)) out of bounds"
     @assert(ξ.𝑇min <= T <= ξ.𝑇max, msg)
 end
-𝗯(ξ::SpecificHeat, 𝑇::Real) = 𝗯(ξ, 𝑇 * u"K")
+𝗯(ξ::SpecificHeat, T::Real) = 𝗯(ξ, T * u"K")
 
 import Base: cp
 
 cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ξ.f┆R(ℙ(𝑇)))
-cp┆R(ξ::SpecificHeat, 𝑇::Real) = cp┆R(ξ, 𝑇 * u"K")
+cp┆R(ξ::SpecificHeat, T::Real) = cp┆R(ξ, T * u"K")
 cv┆R(ξ::SpecificHeat{ℙ}, 𝑇) where {ℙ <: FLOAT} = cp┆R(ξ, 𝑇) - one(ℙ)
-ga(ξ::SpecificHeat, 𝑇) = cp┆R(ξ, 𝑇) / cv┆R(ξ, 𝑇)
+ga(ξ::SpecificHeat, θ::Union{Real, TEMP}) = cp┆R(ξ, θ) / cv┆R(ξ, θ)
 
 function R(ξ::SpecificHeat, B::Symbol = :MA)
     @assert B in (:MA, :MO)
