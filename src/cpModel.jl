@@ -235,7 +235,7 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
             B::Union{Symbol, Missing} = missing,
             kw...,
         ) -> eval(sy)(ξ, ismissing(T) ? 𝑇 : T, ismissing(B) ? 𝐵 : B)
-    elseif sy in [ Symbol(string(i) * string(j)) for i in props_T_B(C) for j in (:MA, :MO) ]
+    elseif sy in [ Symbol(string(i) * string(j)) for i in props_T_B(ξ) for j in (:MA, :MO) ]
         fn = Symbol(string(sy)[1:end-2])
         BA = Symbol(last(string(sy), 2))
         return (
