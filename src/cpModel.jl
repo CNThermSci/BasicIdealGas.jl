@@ -223,17 +223,26 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
     # OOP-style covenience functions (formerly exported ones)
     if sy in props_T(ξ)
         return (
-            𝑇::Union{TEMP, Missing} = missing;
+            𝑇::Union{Real, TEMP, Missing} = missing;
             T::Union{Real, TEMP, Missing} = missing,
             kw...,
         ) -> eval(sy)(ξ, ismissing(T) ? 𝑇 : T)
     elseif sy in props_T_B(ξ)
         return (
-            𝑇::Union{TEMP, Missing} = missing,
-            b::Symbol = :MA;
+            𝑇::Union{Real, TEMP, Missing} = missing,
+            𝐵::Symbol = :MA;
             T::Union{Real, TEMP, Missing} = missing,
             B::Union{Symbol, Missing} = missing,
-        ) -> eval(sy)(ξ, ismissing(T) ? t : T, ismissing(B) ? b : B)
+            kw...,
+        ) -> eval(sy)(ξ, ismissing(T) ? 𝑇 : T, ismissing(B) ? 𝐵 : B)
+    elseif sy in [ Symbol(string(i) * string(j)) for i in props_T_B(C) for j in (:MA, :MO) ]
+        fn = Symbol(string(sy)[1:end-2])
+        BA = Symbol(last(string(sy), 2))
+        return (
+            𝑇::Union{Real, TEMP, Missing} = missing;
+            T::Union{Real, TEMP, Missing} = missing,
+            kw...,
+        ) -> eval(fn)(ξ, ismissing(T) ? 𝑇 : T, BA)
     end
 end
 
