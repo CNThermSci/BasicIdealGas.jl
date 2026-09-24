@@ -131,6 +131,7 @@ end
 #   T::Real                 => add units and fallback
 #   θ::Union{Real, TEMP}    => fallback
 
+# Ancillary: bounds
 𝗯(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = begin
     T = ℙ(𝑇)
     msg = "T = $(@sprintf("%.*g K", 5, T.val)) out of bounds"
@@ -138,13 +139,13 @@ end
 end
 𝗯(ξ::SpecificHeat, T::Real) = 𝗯(ξ, T * u"K")
 
-import Base: cp
-
+# Primitives
 cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ξ.f┆R(ℙ(𝑇)))
 cp┆R(ξ::SpecificHeat, T::Real) = cp┆R(ξ, T * u"K")
 cv┆R(ξ::SpecificHeat{ℙ}, 𝑇) where {ℙ <: FLOAT} = cp┆R(ξ, 𝑇) - one(ℙ)
 ga(ξ::SpecificHeat, θ::Union{Real, TEMP}) = cp┆R(ξ, θ) / cv┆R(ξ, θ)
 
+# Base-selected R
 function R(ξ::SpecificHeat, B::Symbol)
     @assert B in (:MA, :MO)
     return B == :MO ? ξ.𝑅 : ξ.𝑅 / ξ.𝑀
@@ -152,8 +153,10 @@ end
 R(ξ::SpecificHeat, B::MASS) = R(ξ, :MA)
 R(ξ::SpecificHeat, B::MOLR) = R(ξ, :MO)
 
-cp(ξ::SpecificHeat, θ::Union{Real, TEMP}, B = :MA) = cp┆R(ξ, θ) * R(ξ, B)
-cv(ξ::SpecificHeat, θ::Union{Real, TEMP}, B = :MA) = cv┆R(ξ, θ) * R(ξ, B)
+import Base: cp
+
+cp(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = cp┆R(ξ, θ) * R(ξ, B)
+cv(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = cv┆R(ξ, θ) * R(ξ, B)
 ∫cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ∫(ξ.f┆R, ξ.𝑇ref, ℙ(𝑇)))
 ∫cp┆R(ξ::SpecificHeat, 𝑇::Real) = ∫cp┆R(ξ, 𝑇 * u"K")
 ∫cv┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = ∫cp┆R(ξ, 𝑇) - ℙ(𝑇) + ξ.𝑇ref
@@ -161,12 +164,12 @@ cv(ξ::SpecificHeat, θ::Union{Real, TEMP}, B = :MA) = cv┆R(ξ, θ) * R(ξ, B)
 u┆R(ξ::SpecificHeat, 𝑇) = ∫cv┆R(ξ, 𝑇) + ξ.𝑢ref / ξ.𝑅
 h┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = u┆R(ξ, 𝑇) + ℙ(𝑇)
 h┆R(ξ::SpecificHeat, 𝑇::Real) = h┆R(ξ, 𝑇 * u"K")
-u(ξ::SpecificHeat, 𝑇, B = :MA) = u┆R(ξ, 𝑇) * R(ξ, B)
-h(ξ::SpecificHeat, 𝑇, B = :MA) = h┆R(ξ, 𝑇) * R(ξ, B)
+u(ξ::SpecificHeat, 𝑇, B::Union{Symbol, MASS, MOLR}) = u┆R(ξ, 𝑇) * R(ξ, B)
+h(ξ::SpecificHeat, 𝑇, B::Union{Symbol, MASS, MOLR}) = h┆R(ξ, 𝑇) * R(ξ, B)
 ∫cp┆RT(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ∫(T -> ξ.f┆R(T) / T, ξ.𝑇ref, ℙ(𝑇)))
 ∫cp┆RT(ξ::SpecificHeat, 𝑇::Real) = ∫cp┆RT(ξ, 𝑇 * u"K")
 s0┆R(ξ::SpecificHeat, 𝑇) = ∫cp┆RT(ξ, 𝑇) + ξ.𝑠ref / ξ.𝑅
-s0(ξ::SpecificHeat, 𝑇, B = :MA) = s0┆R(ξ, 𝑇) * R(ξ, B)
+s0(ξ::SpecificHeat, 𝑇, B::Union{Symbol, MASS, MOLR}) = s0┆R(ξ, 𝑇) * R(ξ, B)
 Pr(ξ::SpecificHeat, 𝑇) = exp(∫cp┆RT(ξ, 𝑇))
 vr(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = ℙ(𝑇) / Pr(ξ, 𝑇)
 vr(ξ::SpecificHeat, 𝑇::Real) = vr(ξ, 𝑇 * u"K")
