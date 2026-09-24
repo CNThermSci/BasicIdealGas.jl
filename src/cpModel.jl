@@ -123,8 +123,8 @@ function Base.show(io::IO, ::MIME"text/plain", ξ::SpecificHeat{ℙ}) where {ℙ
     return print(io, pretty(ξ))
 end
 
-# Internal Property Calculations: positional, dispatched args
-# -----------------------------------------------------------
+# Internal Property Calculations: positional, dispatched, no default args
+# -----------------------------------------------------------------------
 
 # Temperature args types:
 #   𝑇::TEMP                 => dispatched fallback
