@@ -178,14 +178,9 @@ s0(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = s0�
 # Base.getproperty
 # ----------------
 
-props_T(ξ::SpecificHeat) = (
-    :cp┆R, :cv┆R, :γ, :∫cp┆R, :∫cv┆R,
-    :u┆R, :h┆R, :∫cp┆RT, :s0┆R, :Pr, :vr,
-)
+props_T(ξ::SpecificHeat) = (:γ, :Pr, :vr)
 
-props_T_B(ξ::SpecificHeat) = (
-    :cp, :cv, :u, :h, :s0,
-)
+props_T_B(ξ::SpecificHeat) = (:cp, :cv, :u, :h, :s0)
 
 import Base: getproperty, propertynames
 
