@@ -126,6 +126,8 @@ end
 # Internal Property Calculations: positional, dispatched, no default args
 # -----------------------------------------------------------------------
 
+import Base: cp
+
 # Temperature args types:
 #   𝑇::TEMP                 => dispatched fallback
 #   T::Real                 => add units and fallback
@@ -143,7 +145,6 @@ end
 cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ξ.f┆R(ℙ(𝑇)))
 cp┆R(ξ::SpecificHeat, T::Real) = cp┆R(ξ, T * u"K")
 cv┆R(ξ::SpecificHeat{ℙ}, 𝑇) where {ℙ <: FLOAT} = cp┆R(ξ, 𝑇) - one(ℙ)
-ga(ξ::SpecificHeat, θ::Union{Real, TEMP}) = cp┆R(ξ, θ) / cv┆R(ξ, θ)
 
 # Base-selected R
 function R(ξ::SpecificHeat, B::Symbol)
@@ -153,10 +154,8 @@ end
 R(ξ::SpecificHeat, B::MASS) = R(ξ, :MA)
 R(ξ::SpecificHeat, B::MOLR) = R(ξ, :MO)
 
-import Base: cp
-
-cp(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = cp┆R(ξ, θ) * R(ξ, B)
-cv(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = cv┆R(ξ, θ) * R(ξ, B)
+# Derived, base-independent properties
+ga(ξ::SpecificHeat, θ::Union{Real, TEMP}) = cp┆R(ξ, θ) / cv┆R(ξ, θ)
 ∫cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ∫(ξ.f┆R, ξ.𝑇ref, ℙ(𝑇)))
 ∫cp┆R(ξ::SpecificHeat, 𝑇::Real) = ∫cp┆R(ξ, 𝑇 * u"K")
 ∫cv┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = ∫cp┆R(ξ, 𝑇) - ℙ(𝑇) + ξ.𝑇ref
@@ -164,15 +163,19 @@ cv(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = cv�
 u┆R(ξ::SpecificHeat, 𝑇) = ∫cv┆R(ξ, 𝑇) + ξ.𝑢ref / ξ.𝑅
 h┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = u┆R(ξ, 𝑇) + ℙ(𝑇)
 h┆R(ξ::SpecificHeat, 𝑇::Real) = h┆R(ξ, 𝑇 * u"K")
-u(ξ::SpecificHeat, 𝑇, B::Union{Symbol, MASS, MOLR}) = u┆R(ξ, 𝑇) * R(ξ, B)
-h(ξ::SpecificHeat, 𝑇, B::Union{Symbol, MASS, MOLR}) = h┆R(ξ, 𝑇) * R(ξ, B)
 ∫cp┆RT(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ∫(T -> ξ.f┆R(T) / T, ξ.𝑇ref, ℙ(𝑇)))
 ∫cp┆RT(ξ::SpecificHeat, 𝑇::Real) = ∫cp┆RT(ξ, 𝑇 * u"K")
 s0┆R(ξ::SpecificHeat, 𝑇) = ∫cp┆RT(ξ, 𝑇) + ξ.𝑠ref / ξ.𝑅
-s0(ξ::SpecificHeat, 𝑇, B::Union{Symbol, MASS, MOLR}) = s0┆R(ξ, 𝑇) * R(ξ, B)
 Pr(ξ::SpecificHeat, 𝑇) = exp(∫cp┆RT(ξ, 𝑇))
 vr(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = ℙ(𝑇) / Pr(ξ, 𝑇)
 vr(ξ::SpecificHeat, 𝑇::Real) = vr(ξ, 𝑇 * u"K")
+
+# Derived, based properties
+cp(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = cp┆R(ξ, θ) * R(ξ, B)
+cv(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = cv┆R(ξ, θ) * R(ξ, B)
+u(ξ::SpecificHeat, 𝑇, B::Union{Symbol, MASS, MOLR}) = u┆R(ξ, 𝑇) * R(ξ, B)
+h(ξ::SpecificHeat, 𝑇, B::Union{Symbol, MASS, MOLR}) = h┆R(ξ, 𝑇) * R(ξ, B)
+s0(ξ::SpecificHeat, 𝑇, B::Union{Symbol, MASS, MOLR}) = s0┆R(ξ, 𝑇) * R(ξ, B)
 
 # Base.getproperty
 # ----------------
