@@ -189,7 +189,7 @@ end
                 @test C.cp(T, B) ≈ cp┆R(C, T) * R(C, B)
                 @test C.cv(T, B) ≈ cv┆R(C, T) * R(C, B)
                 @test C.cp(T, B) ≈ cv(C, T, B) + R(C, B)
-                @test C.γ(T) ≈ cp(C, T, B) / cv(C, T, B)
+                @test C.γ(T) ≈ C.cp(T, B) / C.cv(T, B)
             end
             @test ∫cp┆R(G, T) ≈ (5 // 2) * (ℙ(T) - C.Tref)
             @test ∫cv┆R(G, T) ≈ (3 // 2) * (ℙ(T) - C.Tref)
@@ -199,18 +199,18 @@ end
                 @test h┆R(H, T) ≈ u┆R(H, T) + ℙ(T)
             end
             for B in (:MA, :MO)
-                @test u(C, T) ≈ u┆R(C, T) * R(C)
-                @test h(C, T) ≈ h┆R(C, T) * R(C)
-                @test h(C, T) ≈ u(C, T) + R(C) * ℙ(T)
+                @test C.u(T, B) ≈ u┆R(C, T) * R(C, B)
+                @test C.h(T, B) ≈ h┆R(C, T) * R(C, B)
+                @test C.h(T, B) ≈ C.u(T, B) + R(C, B) * ℙ(T)
             end
             @test ∫cp┆RT(G, T) ≈ (5 // 2) * log(ℙ(T) / C.Tref)
-            @test s0┆R(G, T) ≈ ∫cp┆RT(G, T) + C.sref / C.𝑅
+            @test s0┆R(G, T) ≈ ∫cp┆RT(G, T) + C.sref / C.R
             for B in (:MA, :MO)
-                @test s0(C, T) ≈ s0┆R(C, T) * R(C)
+                @test C.s0(T, B) ≈ s0┆R(C, T) * R(C, B)
             end
-            @test Pr(C, C.Tref) ≈ one(ℙ)
-            @test Pr(C, T) ≈ exp(∫cp┆RT(C, T))
-            @test vr(C, T) * Pr(C, T) ≈ ℙ(T)
+            @test C.Pr(C.Tref) ≈ one(ℙ)
+            @test C.Pr(T) ≈ exp(∫cp┆RT(C, T))
+            @test C.vr(T) * C.Pr(T) ≈ ℙ(T)
         end
     end
 end
