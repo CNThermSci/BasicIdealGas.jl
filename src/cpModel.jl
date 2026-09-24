@@ -156,6 +156,7 @@ R(ξ::SpecificHeat, B::MOLR) = R(ξ, :MO)
 
 # Derived, base-independent properties
 γ(ξ::SpecificHeat, θ::Union{Real, TEMP}) = cp┆R(ξ, θ) / cv┆R(ξ, θ)
+k = γ
 ∫cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ∫(ξ.f┆R, ξ.𝑇ref, ℙ(𝑇)))
 ∫cp┆R(ξ::SpecificHeat, T::Real) = ∫cp┆R(ξ, T * u"K")
 ∫cv┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = ∫cp┆R(ξ, 𝑇) - ℙ(𝑇) + ξ.𝑇ref
@@ -178,8 +179,8 @@ s0(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = s0�
 # Base.getproperty
 # ----------------
 
-props_T(ξ::SpecificHeat) = (:γ, :Pr, :vr)
-
+fields(ξ::SpecificHeat) = (:ID, :f, :M, :R, :RMO, :RMA, :Tmin, :Tref, :Tmax, :uref, :sref)
+props_T(ξ::SpecificHeat) = (:γ, :k, :Pr, :vr)
 props_T_B(ξ::SpecificHeat) = (:cp, :cv, :u, :h, :s0)
 
 import Base: getproperty, propertynames
@@ -222,12 +223,13 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
     # OOP-style covenience functions (formerly exported ones)
     if sy in props_T(ξ)
         return (
-            t::Union{Real, TEMP, Missing} = missing;
+            𝑇::Union{TEMP, Missing} = missing;
             T::Union{Real, TEMP, Missing} = missing,
-        ) -> eval(sy)(ξ, ismissing(T) ? t : T)
+            kw...,
+        ) -> eval(sy)(ξ, ismissing(T) ? 𝑇 : T)
     elseif sy in props_T_B(ξ)
         return (
-            t::Union{Real, TEMP, Missing} = missing,
+            𝑇::Union{TEMP, Missing} = missing,
             b::Symbol = :MA;
             T::Union{Real, TEMP, Missing} = missing,
             B::Union{Symbol, Missing} = missing,
@@ -235,9 +237,4 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
     end
 end
 
-Base.propertynames(ξ::SpecificHeat) = (
-    :ID, :f┆R, :𝑀, :𝑇min, :𝑇max, :𝑇ref, :𝑢ref, :𝑠ref, :𝑅,
-    :f, :M, :Tmin, :Tref, :Tmax, :uref, :sref, :R, :RMO, :RMA, :view,
-    props_T(ξ)...,
-    props_T_B(ξ)...,
-)
+Base.propertynames(ξ::SpecificHeat) = (fields(ξ)..., props_T(ξ)..., props_T_B(ξ)..., :view)
