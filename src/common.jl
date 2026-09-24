@@ -126,7 +126,3 @@ function ∫(𝑔::𝔽, a::LOLIM, b::LOLIM) where {𝔽 <: Function}
     y = map(𝑔, x)
     return integrate(x, y, Trapezoidal()) * ss
 end
-
-## function ∫(𝑔::𝔽, a::Quantity{𝔸}, b::Quantity{𝔹}) where {𝔽 <: Function, 𝔸 <: LOTYP, 𝔹 <: LOTYP}
-##     return ∫(𝑔.f┆R, a.val, b.val) * unit(a) * unit(𝑔(a))
-## end
