@@ -176,8 +176,8 @@ u(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = u┆R
 h(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = h┆R(ξ, θ) * R(ξ, B)
 s0(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = s0┆R(ξ, θ) * R(ξ, B)
 
-# Base.getproperty
-# ----------------
+# Base.getproperty - user-facing, oop-style
+# -----------------------------------------
 
 fields(ξ::SpecificHeat) = (:ID, :f, :M, :R, :RMO, :RMA, :Tmin, :Tref, :Tmax, :uref, :sref)
 props_T(ξ::SpecificHeat) = (:γ, :k, :Pr, :vr)
