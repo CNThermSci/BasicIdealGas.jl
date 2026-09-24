@@ -188,7 +188,7 @@ end
             for B in (:MA, :MO)
                 @test C.cp(T, B) ≈ cp┆R(C, T) * R(C, B)
                 @test C.cv(T, B) ≈ cv┆R(C, T) * R(C, B)
-                @test C.cp(T, B) ≈ cv(C, T, B) + R(C, B)
+                @test C.cp(T, B) ≈ C.cv(T, B) + R(C, B)
                 @test C.γ(T) ≈ C.cp(T, B) / C.cv(T, B)
             end
             @test ∫cp┆R(G, T) ≈ (5 // 2) * (ℙ(T) - C.Tref)
