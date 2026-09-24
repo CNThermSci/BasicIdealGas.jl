@@ -152,8 +152,8 @@ end
 R(ξ::SpecificHeat, B::MASS) = R(ξ, :MA)
 R(ξ::SpecificHeat, B::MOLR) = R(ξ, :MO)
 
-cp(ξ::SpecificHeat, 𝑇, B = :MA) = cp┆R(ξ, 𝑇) * R(ξ, B)
-cv(ξ::SpecificHeat, 𝑇, B = :MA) = cv┆R(ξ, 𝑇) * R(ξ, B)
+cp(ξ::SpecificHeat, θ::Union{Real, TEMP}, B = :MA) = cp┆R(ξ, θ) * R(ξ, B)
+cv(ξ::SpecificHeat, θ::Union{Real, TEMP}, B = :MA) = cv┆R(ξ, θ) * R(ξ, B)
 ∫cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ∫(ξ.f┆R, ξ.𝑇ref, ℙ(𝑇)))
 ∫cp┆R(ξ::SpecificHeat, 𝑇::Real) = ∫cp┆R(ξ, 𝑇 * u"K")
 ∫cv┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = ∫cp┆R(ξ, 𝑇) - ℙ(𝑇) + ξ.𝑇ref
