@@ -3,7 +3,7 @@
 # Structure (type) definition
 # ---------------------------
 
-struct SpecificHeat{ℙ <: FLOAT}
+struct SpecificHeat{ℙ <: FLOAT} <: ThermModel{ℙ}
     ID::Symbol      # Model ID, as in :cubic, etc...
     f┆R::Function   # Unitless function cp(T)/R: ℙ -> ℙ
     𝑀::Quantity{ℙ, dimension(u"kg/kmol"), typeof(u"kg/kmol")}
