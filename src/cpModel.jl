@@ -145,7 +145,7 @@ cp┆R(ξ::SpecificHeat, T::Real) = cp┆R(ξ, T * u"K")
 cv┆R(ξ::SpecificHeat{ℙ}, 𝑇) where {ℙ <: FLOAT} = cp┆R(ξ, 𝑇) - one(ℙ)
 ga(ξ::SpecificHeat, θ::Union{Real, TEMP}) = cp┆R(ξ, θ) / cv┆R(ξ, θ)
 
-function R(ξ::SpecificHeat, B::Symbol = :MA)
+function R(ξ::SpecificHeat, B::Symbol)
     @assert B in (:MA, :MO)
     return B == :MO ? ξ.𝑅 : ξ.𝑅 / ξ.𝑀
 end
