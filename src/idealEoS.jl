@@ -135,8 +135,6 @@ function _P(
 end
 
 # Temperature
-_T(ξ::IdealGas{ℙ}, 𝑇::TEMP) where {ℙ} = uconvert(u"K", ℙ(T))
-_T(ξ::IdealGas{ℙ}, T::Real) where {ℙ} = ℙ(T) * u"K"
 function _T(
         ξ::IdealGas{ℙ};
         P::Union{Real, PRES, Missing} = missing,
@@ -157,28 +155,6 @@ function _T(
 end
 
 # Specific volume
-function _v(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {ℙ}
-    UNIT = B == :MA ? u"m^3/kg" : u"m^3/kmol"
-    return uconvert(UNIT, R(ξ, B) * ℙ(𝑇 / 𝑃))
-end
-function _v(ξ::IdealGas{ℙ}, 𝑣::VOLU) where {ℙ}
-    UNIT = 𝑣 isa MASS ? u"m^3/kg" : u"m^3/kmol"
-    return uconvert(UNIT, ℙ(𝑣))
-end
-function _v(ξ::IdealGas{ℙ}, 𝑣::VOLU, B::Symbol) where {ℙ}
-    iUNIT = 𝑣 isa MASS ? u"m^3/kg" : u"m^3/kmol"
-    oUNIT = B == :MA ? u"m^3/kg" : u"m^3/kmol"
-    return if iUNIT == oUNIT
-        # No base change / same dims / units can still differ
-        uconvert(oUNIT, ℙ(𝑣))
-    else
-        # Base change to B
-        uconvert(oUNIT, B == :MA ? 𝑣 / ξ.𝑀 : 𝑣 * ξ.𝑀)
-    end
-end
-function _v(ξ::IdealGas{ℙ}, v::Real, B::Symbol = :MA) where {ℙ}
-    return ℙ(v) * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
-end
 function _v(
         ξ::IdealGas{ℙ};
         P::Union{Real, PRES, Missing} = missing,
