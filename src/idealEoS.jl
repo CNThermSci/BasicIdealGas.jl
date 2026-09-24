@@ -3,7 +3,7 @@
 # Structure (type) definition
 # ---------------------------
 
-struct IdealGas{ℙ <: FLOAT}
+struct IdealGas{ℙ <: FLOAT} <: ThermModel{ℙ}
     form::String            # formula
     name::String            # name
     hmod::SpecificHeat{ℙ}   # heat model
@@ -93,23 +93,23 @@ end
 # Helper functions
 P(P::PRES) = uconvert(u"kPa", P)
 P(P::Real) = P * u"kPa"
-P(ξ::IdealGas{ℙ}, 𝜋::Union{Real, PRES}) where {ℙ} = ℙ(P(𝜋))
+P(ξ::ThermModel{ℙ}, 𝜋::Union{Real, PRES}) where {ℙ} = ℙ(P(𝜋))
 
 T(T::TEMP) = uconvert(u"K", T)
 T(T::Real) = T * u"K"
-T(ξ::IdealGas{ℙ}, θ::Union{Real, TEMP}) where {ℙ} = ℙ(T(θ))
+T(ξ::ThermModel{ℙ}, θ::Union{Real, TEMP}) where {ℙ} = ℙ(T(θ))
 
 v(v::VOLU) = v isa MASS ? uconvert(u"m^3/kg", v) : uconvert(u"m^3/kmol", v)
 v(v::Tuple{Real, Symbol}) = v[1] * (v[2] == :MA ? u"m^3/kg" : u"m^3/kmol")
-v(ξ::IdealGas{ℙ}, υ::Union{Real, VOLU}) where {ℙ} = ℙ(v(υ))
+v(ξ::ThermModel{ℙ}, υ::Union{Real, VOLU}) where {ℙ} = ℙ(v(υ))
 
 e(e::ENER) = e isa MASS ? uconvert(u"kJ/kg", e) : uconvert(u"kJ/kmol", e)
 e(e::Tuple{Real, Symbol}) = e[1] * (e[2] == :MA ? u"kJ/kg" : u"kJ/kmol")
-e(ξ::IdealGas{ℙ}, ϵ::Union{Real, ENER}) where {ℙ} = ℙ(e(ϵ))
+e(ξ::ThermModel{ℙ}, ϵ::Union{Real, ENER}) where {ℙ} = ℙ(e(ϵ))
 
 s(s::ENTR) = s isa MASS ? uconvert(u"kJ/kg/K", s) : uconvert(u"kJ/kmol/K", s)
 s(s::Tuple{Real, Symbol}) = s[1] * (s[2] == :MA ? u"kJ/kg/K" : u"kJ/kmol/K")
-s(ξ::IdealGas{ℙ}, ς::Union{Real, ENTR}) where {ℙ} = ℙ(s(ς))
+s(ξ::ThermModel{ℙ}, ς::Union{Real, ENTR}) where {ℙ} = ℙ(s(ς))
 
 
 # Internal, positional, dispatched, no default args P, T, v, ρ functions
