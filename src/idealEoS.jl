@@ -93,21 +93,26 @@ end
 # Helper functions
 P(P::PRES) = P
 P(P::Real) = P * u"kPa"
+P(ξ::IdealGas{ℙ}, 𝜋::Union{Real, PRES}) where {ℙ} = ℙ(P(𝜋))
+
 T(T::TEMP) = T
 T(T::Real) = T * u"K"
+T(ξ::IdealGas{ℙ}, θ::Union{Real, TEMP}) where {ℙ} = ℙ(T(θ))
+
 v(vB::VOLU) = vB
 v(vB::Tuple{Real, Symbol}) = vB[1] * (vB[2] == :MA ? u"m^3/kg" : u"m^3/kmol")
+v(ξ::IdealGas{ℙ}, υ::Union{Real, VOLU}) where {ℙ} = ℙ(v(υ))
+
+# Internal, positional, dispatched, no default args P, T, v, ρ functions
+# ----------------------------------------------------------------------
+
+P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU) where {ℙ} = uconvert(u"kPa", R(ξ.hmod, 𝑣) * ℙ(𝑇 / 𝑣))
 
 # Internal Positional P, T, V, ρ, s functions
 # -------------------------------------------
 
 
 # Pressure
-function _P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU) where {ℙ}
-    return uconvert(u"kPa", R(ξ, 𝑣) * ℙ(𝑇 / 𝑣))
-end
-_P(ξ::IdealGas{ℙ}, 𝑃::PRES) where {ℙ} = uconvert(u"kPa", ℙ(𝑃))
-_P(ξ::IdealGas{ℙ}, P::Real) where {ℙ} = ℙ(P) * u"kPa"
 function _P(
         ξ::IdealGas{ℙ};
         P::Union{Real, PRES, Missing} = missing,
