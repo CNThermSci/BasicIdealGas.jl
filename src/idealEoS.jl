@@ -220,22 +220,18 @@ function g(
     return ℎ - 𝑇 * 𝑠
 end
 
-# TODO: below
-
-
-__β = (
-    ξ::IdealGas;
-    P::Union{Real, PRES, Missing} = missing,
-    T::Union{Real, TEMP, Missing} = missing,
-    v::Union{Real, VOLU, Missing} = missing,
-    B::Symbol = :MA,
-) -> begin
-    if !ismissing(T)
-        return inv(_T(ξ, T))
-    end
-    𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
-    inv(𝑇)
+# Coefficient of volume expansion, β
+function β(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        kw...,
+    )
+    return inv(T(ξ, P = P, T = T, v = v))
 end
+
+# TODO: below
 
 __κT = (
     ξ::IdealGas;
