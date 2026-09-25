@@ -275,12 +275,13 @@ function cs(
         kw...,
     )
     𝑇 = T(ξ, P = P, T = T, v = v)
-    return √(γ(ξ.hmod, 𝑇) * R(ξ.hmod, :MA) * 𝑇)
+    return uconvert(u"m/s", √(γ(ξ.hmod, 𝑇) * R(ξ.hmod, :MA) * 𝑇))
 end
 
 # Joule-Thomson coefficient, μJT
 μJT(ξ::IdealGas{ℙ}; kw...,) where {ℙ} = zero(ℙ) * u"K/kPa"
 
+# Isentropic expansion coefficient, μs
 
 # Base.getproperty - user-facing, oop-style
 # -----------------------------------------
