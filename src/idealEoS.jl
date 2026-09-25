@@ -112,21 +112,12 @@ end
 # Temperature
 function _T(
         ξ::IdealGas{ℙ};
-        P::Union{Real, PRES, Missing} = missing,
-        T::Union{Real, TEMP, Missing} = missing,
-        v::Union{Real, VOLU, Missing} = missing,
-        B::Union{Symbol, Missing} = missing,
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        kw...,
     ) where {ℙ}
-    if !ismissing(T)
-        return _T(ξ, T)
-    else
-        miss = [ i[1] for i in [(:P, P), (:T, T), (:v, v)] if ismissing(i[2]) ]
-        length(miss) <= 1 ||
-            throw(ArgumentError(@sprintf("Underspecified state: missing (%s)", join(miss, ", "))))
-        𝑃 = _P(ξ, P)
-        𝑣 = _v(ξ, v, ismissing(B) ? :MA : B)
-        _T(ξ, 𝑃, 𝑣)
-    end
+    return ismissing(T) ? T(ξ, PP(ξ, P), vv(ξ, v)) : TT(ξ, T)
 end
 
 # Specific volume
@@ -157,30 +148,30 @@ _ρ(ξ::IdealGas, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) = inv(_v(ξ, 𝑃, �
 # PTV helper
 # ----------
 
-PTv = (
-    ξ::IdealGas;
-    P::Union{Real, PRES, Missing} = missing,
-    T::Union{Real, TEMP, Missing} = missing,
-    v::Union{Real, VOLU, Missing} = missing,
-    B::Symbol = :MA,
-) -> begin
-    miss = [ i[1] for i in [(:P, P), (:T, T), (:v, v)] if ismissing(i[2]) ]
-    length(miss) <= 1 ||
-        throw(ArgumentError(@sprintf("Underspecified state: missing (%s)", join(miss, ", "))))
-    return if ismissing(P)
-        𝑇 = _T(ξ, T)
-        𝑣 = _v(ξ, v, B)
-        _P(ξ, 𝑇, 𝑣), 𝑇, 𝑣
-    elseif ismissing(T)
-        𝑃 = _P(ξ, P)
-        𝑣 = _v(ξ, v, B)
-        𝑃, _T(ξ, 𝑃, 𝑣), 𝑣
-    else
-        𝑃 = _P(ξ, P)
-        𝑇 = _T(ξ, T)
-        𝑃, 𝑇, _v(ξ, 𝑃, 𝑇, B)
-    end
-end
+## PTv = (
+##     ξ::IdealGas;
+##     P::Union{Real, PRES, Missing} = missing,
+##     T::Union{Real, TEMP, Missing} = missing,
+##     v::Union{Real, VOLU, Missing} = missing,
+##     B::Symbol = :MA,
+## ) -> begin
+##     miss = [ i[1] for i in [(:P, P), (:T, T), (:v, v)] if ismissing(i[2]) ]
+##     length(miss) <= 1 ||
+##         throw(ArgumentError(@sprintf("Underspecified state: missing (%s)", join(miss, ", "))))
+##     return if ismissing(P)
+##         𝑇 = _T(ξ, T)
+##         𝑣 = _v(ξ, v, B)
+##         _P(ξ, 𝑇, 𝑣), 𝑇, 𝑣
+##     elseif ismissing(T)
+##         𝑃 = _P(ξ, P)
+##         𝑣 = _v(ξ, v, B)
+##         𝑃, _T(ξ, 𝑃, 𝑣), 𝑣
+##     else
+##         𝑃 = _P(ξ, P)
+##         𝑇 = _T(ξ, T)
+##         𝑃, 𝑇, _v(ξ, 𝑃, 𝑇, B)
+##     end
+## end
 
 __s = (
     ξ::IdealGas;
