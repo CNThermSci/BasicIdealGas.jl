@@ -99,6 +99,7 @@ s(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = ss(s0(ξ, 
 # Internal, keyworded, default base property functions
 # ----------------------------------------------------
 
+# Pressure
 function P(
         ξ::IdealGas{ℙ};
         P::Union{PRES, Real, Missing} = missing,
@@ -106,7 +107,7 @@ function P(
         v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
         kw...,
     ) where {ℙ}
-    return ismissing(P) ? P(ξ, TT(ξ, T), vv(ξ, v)) : PP(ξ, P)
+    return ismissing(P) ? BasicIdealGas.P(ξ, TT(ξ, T), vv(ξ, v)) : PP(ξ, P)
 end
 
 # Temperature
@@ -117,7 +118,7 @@ function T(
         v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
         kw...,
     ) where {ℙ}
-    return ismissing(T) ? T(ξ, PP(ξ, P), vv(ξ, v)) : TT(ξ, T)
+    return ismissing(T) ? BasicIdealGas.T(ξ, PP(ξ, P), vv(ξ, v)) : TT(ξ, T)
 end
 
 # Specific volume
@@ -130,7 +131,7 @@ function v(
         kw...,
     ) where {ℙ}
     return if ismissing(v)
-        v(ξ, PP(ξ, P), TT(ξ, T), ismissing(B) ? :MA : B)
+        BasicIdealGas.v(ξ, PP(ξ, P), TT(ξ, T), ismissing(B) ? :MA : B)
     else
         𝑣 = vv(ξ, v)
         if ismissing(B) || (𝑣 isa MASS && B == :MA) || (𝑣 isa MOLR && B == :MO)
