@@ -182,13 +182,13 @@ end
 
 # Specific entropy
 function s(
-        ξ::IdealGas;
+        ξ::IdealGas{ℙ};
         P::Union{PRES, Real, Missing} = missing,
         T::Union{TEMP, Real, Missing} = missing,
         v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
         B::Union{Symbol, Missing} = missing,
         kw...,
-    )
+    ) where {ℙ}
     return s(ξ, PT(ξ, P = P, T = T, v = v)..., ismissing(B) ? :MA : B)
 end
 
