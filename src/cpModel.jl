@@ -91,8 +91,6 @@ function convert(::Type{SpecificHeat{ℙ}}, ξ::SpecificHeat{ℚ}) where {ℙ <:
     end
 end
 
-import Base: Float16, Float32, Float64
-
 Float16(ξ::SpecificHeat) = convert(SpecificHeat{Float16}, ξ)
 Float32(ξ::SpecificHeat) = convert(SpecificHeat{Float32}, ξ)
 Float64(ξ::SpecificHeat) = convert(SpecificHeat{Float64}, ξ)
