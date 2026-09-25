@@ -93,7 +93,7 @@ end
 P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU) where {ℙ} = PP(R(ξ.hmod, 𝑣) * ℙ(𝑇 / 𝑣))
 T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU) where {ℙ} = TT(ℙ(𝑃 * 𝑣) / R(ξ.hmod, 𝑣))
 v(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = vv(R(ξ.hmod, B) * ℙ(𝑇 / 𝑃))
-ρ(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = inv(v(ξ, 𝑃, 𝑇, B))
+ρ(ξ::IdealGas, 𝑃::PRES, 𝑇::TEMP, B::Symbol) inv(v(ξ, 𝑃, 𝑇, B))
 s(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = ss(s0(ξ.hmod, 𝑇, B) - R(ξ.hmod, B) * log(ℙ(𝑃) / ξ.𝑃ref))
 
 # Internal, keyworded, default base property functions
@@ -101,35 +101,35 @@ s(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = ss(s0(ξ.h
 
 # Pressure
 function P(
-        ξ::IdealGas{ℙ};
+        ξ::IdealGas;
         P::Union{PRES, Real, Missing} = missing,
         T::Union{TEMP, Real, Missing} = missing,
         v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
         kw...,
-    ) where {ℙ}
+    )
     return ismissing(P) ? BasicIdealGas.P(ξ, TT(ξ, T), vv(ξ, v)) : PP(ξ, P)
 end
 
 # Temperature
 function T(
-        ξ::IdealGas{ℙ};
+        ξ::IdealGas;
         P::Union{PRES, Real, Missing} = missing,
         T::Union{TEMP, Real, Missing} = missing,
         v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
         kw...,
-    ) where {ℙ}
+    )
     return ismissing(T) ? BasicIdealGas.T(ξ, PP(ξ, P), vv(ξ, v)) : TT(ξ, T)
 end
 
 # Specific volume
 function v(
-        ξ::IdealGas{ℙ};
+        ξ::IdealGas;
         P::Union{PRES, Real, Missing} = missing,
         T::Union{TEMP, Real, Missing} = missing,
         v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
         B::Union{Symbol, Missing} = missing,
         kw...,
-    ) where {ℙ}
+    )
     return if ismissing(v)
         BasicIdealGas.v(ξ, PP(ξ, P), TT(ξ, T), ismissing(B) ? :MA : B)
     else
@@ -144,13 +144,13 @@ end
 
 # Density
 function ρ(
-        ξ::IdealGas{ℙ};
+        ξ::IdealGas;
         P::Union{PRES, Real, Missing} = missing,
         T::Union{TEMP, Real, Missing} = missing,
         v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
         B::Union{Symbol, Missing} = missing,
         kw...,
-    ) where {ℙ}
+    )
     return inv(BasicIdealGas.v(ξ; P = P, T = T, v = v, B = B, kw...))
 end
 
@@ -178,19 +178,19 @@ function PT(
     end
 end
 
-# TODO: below
-
 # Specific entropy
 function s(
-        ξ::IdealGas{ℙ};
+        ξ::IdealGas;
         P::Union{PRES, Real, Missing} = missing,
         T::Union{TEMP, Real, Missing} = missing,
         v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
         B::Union{Symbol, Missing} = missing,
         kw...,
-    ) where {ℙ}
+    )
     return s(ξ, PT(ξ, P = P, T = T, v = v)..., ismissing(B) ? :MA : B)
 end
+
+# TODO: below
 
 __a = (
     ξ::IdealGas;
