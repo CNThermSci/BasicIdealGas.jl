@@ -87,10 +87,6 @@ function Base.show(io::IO, ::MIME"text/plain", ξ::IdealGas{ℙ}) where {ℙ <: 
     )
 end
 
-# Internal Property Calculations: positional, dispatched, no default args
-# -----------------------------------------------------------------------
-
-
 # Internal, positional, dispatched, no default args P, T, v, ρ functions
 # ----------------------------------------------------------------------
 
