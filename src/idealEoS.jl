@@ -254,7 +254,7 @@ function β(
         v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
         kw...,
     )
-    return inv(T(ξ, P = P, T = T, v = v))
+    return inv(BasicIdealGas.T(ξ, P = P, T = T, v = v))
 end
 
 # Isothermal compressibility, κT
