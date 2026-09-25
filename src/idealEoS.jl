@@ -110,7 +110,7 @@ function P(
         v::Union{Tuple{Real, Symbol}, VOLU, Missing} = missing,
         kw...,
     ) where {ℙ}
-    𝑃, 𝑇, 𝑣 = PP(P), TT(T), vv(v)
+    𝑃, 𝑇, 𝑣 = PTv(P, T, v)
     if !ismissing(P)
         return _P(ξ, P)
     else
