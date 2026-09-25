@@ -110,7 +110,7 @@ function P(
 end
 
 # Temperature
-function _T(
+function T(
         ξ::IdealGas{ℙ};
         P::Union{PRES, Real, Missing} = missing,
         T::Union{TEMP, Real, Missing} = missing,
@@ -121,7 +121,7 @@ function _T(
 end
 
 # Specific volume
-function _v(
+function v(
         ξ::IdealGas{ℙ};
         P::Union{PRES, Real, Missing} = missing,
         T::Union{TEMP, Real, Missing} = missing,
