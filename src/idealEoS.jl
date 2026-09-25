@@ -205,20 +205,23 @@ function a(
     return 𝑢 - 𝑇 * 𝑠
 end
 
+# Specific Gibbs energy
+function g(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        B::Union{Symbol, Missing} = missing,
+        kw...,
+    )
+    𝑃, 𝑇 = PT(ξ, P = P, T = T, v = v)
+    ℎ = h(ξ.hmod, T, ismissing(B) ? :MA : B)
+    𝑠 = s(ξ, 𝑃, 𝑇, ismissing(B) ? :MA : B)
+    return ℎ - 𝑇 * 𝑠
+end
+
 # TODO: below
 
-__g = (
-    ξ::IdealGas;
-    P::Union{Real, PRES, Missing} = missing,
-    T::Union{Real, TEMP, Missing} = missing,
-    v::Union{Real, VOLU, Missing} = missing,
-    B::Symbol = :MA,
-) -> begin
-    𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
-    𝑠 = _s(ξ, 𝑃, 𝑇, B)
-    ℎ = h(ξ, 𝑇, B)
-    ℎ - 𝑇 * 𝑠
-end
 
 __β = (
     ξ::IdealGas;
