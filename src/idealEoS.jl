@@ -123,20 +123,17 @@ end
 # Specific volume
 function _v(
         ξ::IdealGas{ℙ};
-        P::Union{Real, PRES, Missing} = missing,
-        T::Union{Real, TEMP, Missing} = missing,
-        v::Union{Real, VOLU, Missing} = missing,
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
         B::Union{Symbol, Missing} = missing,
+        kw...,
     ) where {ℙ}
-    if !ismissing(v)
-        return ismissing(B) ? _v(ξ, v) : _v(ξ, v, B)
+    return if ismissing(v)
+        v(ξ, PP(ξ, P), TT(ξ, T), ismissing(B) ? :MA : B)
     else
-        miss = [ i[1] for i in [(:P, P), (:T, T), (:v, v)] if ismissing(i[2]) ]
-        length(miss) <= 1 ||
-            throw(ArgumentError(@sprintf("Underspecified state: missing (%s)", join(miss, ", "))))
-        𝑃 = _P(ξ, P)
-        𝑇 = _T(ξ, T)
-        return ismissing(B) ? _v(ξ, 𝑃, 𝑇) : _v(ξ, 𝑃, 𝑇, B)
+        # TODO
+        vv(ξ, v)
     end
 end
 
