@@ -242,21 +242,50 @@ function κT(
     return inv(P(ξ, P = P, T = T, v = v))
 end
 
-# TODO: below
-
-__κs = (
-    ξ::IdealGas;
-    P::Union{Real, PRES, Missing} = missing,
-    T::Union{Real, TEMP, Missing} = missing,
-    v::Union{Real, VOLU, Missing} = missing,
-    B::Symbol = :MA,
-) -> begin
-    𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
-    inv(𝑃 * ga(ξ, 𝑇))
+# Isentropic compressibility, κs
+function κs(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        kw...,
+    )
+    𝑃, 𝑇 = PT(ξ, P = P, T = T, v = v)
+    return inv(𝑃 * γ(ξ.hmod, 𝑇))
 end
+
+# Isentropic expansion exponent, k
+function k(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        kw...,
+    )
+    𝑇 = T(ξ, P = P, T = T, v = v)
+    return γ(ξ.hmod, 𝑇)
+end
+
+# Adiabatic speed of sound, cs
+function cs(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        kw...,
+    )
+    𝑇 = T(ξ, P = P, T = T, v = v)
+    return √(γ(ξ.hmod, 𝑇) * R(ξ.hmod, :MA) * 𝑇)
+end
+
+# Joule-Thomson coefficient, μJT
+μJT(ξ::IdealGas{ℙ}; kw...,) where {ℙ} = zero(ℙ) * u"K/kPa"
+
 
 # Base.getproperty - user-facing, oop-style
 # -----------------------------------------
+
+# TODO: below
 
 import Base: getproperty, propertynames
 
