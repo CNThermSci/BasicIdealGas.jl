@@ -265,7 +265,7 @@ function κT(
         v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
         kw...,
     )
-    return inv(P(ξ, P = P, T = T, v = v))
+    return inv(BasicIdealGas.P(ξ, P = P, T = T, v = v))
 end
 
 # Isentropic compressibility, κs
