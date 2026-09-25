@@ -154,7 +154,6 @@ R(ξ::SpecificHeat, B::MOLR) = R(ξ, :MO)
 
 # Derived, base-independent properties
 γ(ξ::SpecificHeat, θ::Union{Real, TEMP}) = cp┆R(ξ, θ) / cv┆R(ξ, θ)
-k = γ
 ∫cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ∫(ξ.f┆R, ξ.𝑇ref, ℙ(𝑇)))
 ∫cp┆R(ξ::SpecificHeat, T::Real) = ∫cp┆R(ξ, TT(T))
 ∫cv┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = ∫cp┆R(ξ, 𝑇) - ℙ(𝑇) + ξ.𝑇ref
@@ -178,7 +177,7 @@ s0(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = s0�
 # -----------------------------------------
 
 fields(ξ::SpecificHeat) = (:ID, :f, :M, :R, :RMO, :RMA, :Tmin, :Tref, :Tmax, :uref, :sref)
-props_T(ξ::SpecificHeat) = (:γ, :k, :Pr, :vr)
+props_T(ξ::SpecificHeat) = (:γ, :Pr, :vr)
 props_T_B(ξ::SpecificHeat) = (:cp, :cv, :u, :h, :s0)
 
 import Base: getproperty, propertynames
