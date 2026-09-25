@@ -71,6 +71,10 @@ const MOLR = Union{
 𝑠(s::Tuple{Real, Symbol}) = s[1] * (s[2] == :MA ? u"kJ/kg/K" : u"kJ/kmol/K")
 𝑠(ξ::ThermModel{ℙ}, ς::Union{Real, ENTR}) where {ℙ} = ℙ(𝑠(ς))
 
+𝜌(ρ::DENS) = ρ isa MASS ? uconvert(u"kg/m^3", ρ) : uconvert(u"kmol/m^3", ρ)
+𝜌(ρ::Tuple{Real, Symbol}) = ρ[1] * (ρ[2] == :MA ? u"kg/m^3" : u"kmol/m^3")
+𝜌(ξ::ThermModel{ℙ}, ϱ::Union{Real, DENS}) where {ℙ} = ℙ(𝜌(ϱ))
+
 # Constants
 # ---------
 
