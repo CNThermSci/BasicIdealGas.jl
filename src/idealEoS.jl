@@ -142,7 +142,16 @@ function v(
 end
 
 # Density
-_ρ(ξ::IdealGas, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) = inv(_v(ξ, 𝑃, 𝑇, B))
+function ρ(
+        ξ::IdealGas{ℙ};
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        B::Union{Symbol, Missing} = missing,
+        kw...,
+    ) where {ℙ}
+    return inv(BasicIdealGas.v(ξ; P = P, T = T, v = v, B = B, kw...))
+end
 
 # Specific entropy
 
