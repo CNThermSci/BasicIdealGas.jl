@@ -323,8 +323,9 @@ end
 # -----------------------------------------
 
 # TODO: below
-
-import Base: getproperty, propertynames
+fields(ξ::IdealGas) = (:ID, :f, :M, :R, :RMO, :RMA, :Tmin, :Tref, :Tmax, :uref, :sref)
+props_T(ξ::IdealGas) = (:γ, :Pr, :vr)
+props_T_B(ξ::IdealGas) = (:cp, :cv, :u, :h, :s0)
 
 function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
     # Raw fields
