@@ -327,12 +327,14 @@ props(ξ::IdealGas) = (:P, :T, :v, :ρ, :u, :h, :s, :a, :g, :β, :κT, :κs, :k,
 
 # TODO: below
 function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
-    # Raw fields
-    if sy in fieldnames(IdealGas)
-        return getfield(ξ, sy)
-    end
-    # Convenience raw field aliases
-    if sy == :Pref
+    # Convenience raw field accessors
+    if sy == :form
+        return getfield(ξ, :form)
+    elseif sy == :name
+        return getfield(ξ, :name)
+    elseif sy in (:hmod, :heat)
+        return getfield(ξ, :hmod)
+    elseif sy in (:𝑃ref, :Pref)
         return getfield(ξ, :𝑃ref)
     end
     # Short-circuit SpecificHeat model accessors
