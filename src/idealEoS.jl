@@ -322,11 +322,10 @@ end
 # Base.getproperty - user-facing, oop-style
 # -----------------------------------------
 
-# TODO: below
-fields(ξ::IdealGas) = (:ID, :f, :M, :R, :RMO, :RMA, :Tmin, :Tref, :Tmax, :uref, :sref)
-props_T(ξ::IdealGas) = (:γ, :Pr, :vr)
-props_T_B(ξ::IdealGas) = (:cp, :cv, :u, :h, :s0)
+fields(ξ::IdealGas) = (:form, :name, :hmod, :Pref)
+props(ξ::IdealGas) = (:P, :T, :v, :ρ, :u, :h, :s, :a, :g, :β, :κT, :κs, :k, :cs, :μJT, :μs)
 
+# TODO: below
 function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
     # Raw fields
     if sy in fieldnames(IdealGas)
