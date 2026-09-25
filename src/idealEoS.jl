@@ -106,16 +106,7 @@ function P(
         v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
         kw...,
     ) where {ℙ}
-    return if !ismissing(P)
-        PP(ξ, P)
-    else
-        miss = [ i[1] for i in [(:P, P), (:T, T), (:v, v)] if ismissing(i[2]) ]
-        length(miss) <= 1 ||
-            throw(ArgumentError(@sprintf("Underspecified state: missing (%s)", join(miss, ", "))))
-        𝑇 = TT(ξ, T)
-        𝑣 = vv(ξ, v)
-        P(ξ, 𝑇, 𝑣)
-    end
+    return ismissing(P) ? P(ξ, TT(ξ, T), vv(ξ, v)) : PP(ξ, P)
 end
 
 # Temperature
