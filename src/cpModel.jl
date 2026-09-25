@@ -50,7 +50,7 @@ function SpecificHeat{ℙ}(
         𝑅::ENTR = ℙ(Ru),
     ) where {ℙ <: FLOAT}
     M = 𝑀 isa MOLW ? uconvert(u"kg/kmol", 𝑀) : 𝑀 * u"kg/kmol"
-    Tmin = 𝑇min isa TEMP ? uconvert(u"K", 𝑇min) : 𝑇min * u"K"
+    Tmin = 𝑇(𝑇min)
     Tref = 𝑇ref isa TEMP ? uconvert(u"K", 𝑇ref) : 𝑇ref * u"K"
     Tmax = 𝑇max isa TEMP ? uconvert(u"K", 𝑇max) : 𝑇max * u"K"
     uref = 𝑢ref isa MASS ? uconvert(u"kJ/kmol", 𝑢ref * 𝑀) : uconvert(u"kJ/kmol", 𝑢ref)
