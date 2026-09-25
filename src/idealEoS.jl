@@ -231,21 +231,18 @@ function β(
     return inv(T(ξ, P = P, T = T, v = v))
 end
 
-# TODO: below
-
-__κT = (
-    ξ::IdealGas;
-    P::Union{Real, PRES, Missing} = missing,
-    T::Union{Real, TEMP, Missing} = missing,
-    v::Union{Real, VOLU, Missing} = missing,
-    B::Symbol = :MA,
-) -> begin
-    if !ismissing(P)
-        return inv(_P(ξ, P))
-    end
-    𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
-    inv(𝑃)
+# Isothermal compressibility, κT
+function κT(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        kw...,
+    )
+    return inv(P(ξ, P = P, T = T, v = v))
 end
+
+# TODO: below
 
 __κs = (
     ξ::IdealGas;
