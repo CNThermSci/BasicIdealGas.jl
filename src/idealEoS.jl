@@ -282,6 +282,16 @@ end
 μJT(ξ::IdealGas{ℙ}; kw...,) where {ℙ} = zero(ℙ) * u"K/kPa"
 
 # Isentropic expansion coefficient, μs
+function μs(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        kw...,
+    )
+    𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = :MA)
+    return uconvert(u"K/kPa", 𝑣 / cp(ξ.hmod, 𝑇, :MA))
+end
 
 # Base.getproperty - user-facing, oop-style
 # -----------------------------------------
