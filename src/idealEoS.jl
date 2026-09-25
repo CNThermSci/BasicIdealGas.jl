@@ -154,7 +154,7 @@ function ρ(
     return inv(BasicIdealGas.v(ξ; P = P, T = T, v = v, B = B, kw...))
 end
 
-# Helper PT function
+# Helper PT, PTv functions
 function PT(
         ξ::IdealGas;
         P::Union{PRES, Real, Missing} = missing,
@@ -175,6 +175,32 @@ function PT(
         𝑃, BasicIdealGas.T(ξ, 𝑃, 𝑣)
     else
         PP(ξ, P), TT(ξ, T)
+    end
+end
+
+function PTv(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        B::Union{Symbol, Missing} = missing,
+        kw...,
+    )
+    miss = [ i[1] for i in [(:P, P), (:T, T), (:v, v)] if ismissing(i[2]) ]
+    length(miss) <= 1 ||
+        throw(ArgumentError(@sprintf("Underspecified state: missing (%s)", join(miss, ", "))))
+    return if ismissing(P)
+        𝑇 = TT(ξ, T)
+        𝑣 = vv(ξ, v)
+        BasicIdealGas.P(ξ, 𝑇, 𝑣), 𝑇, 𝑣
+    elseif ismissing(T)
+        𝑃 = PP(ξ, P)
+        𝑣 = vv(ξ, v)
+        𝑃, BasicIdealGas.T(ξ, 𝑃, 𝑣), 𝑣
+    else
+        𝑃 = PP(ξ, P)
+        𝑇 = TT(ξ, T)
+        return 𝑃, 𝑇, BasicIdealGas.v(ξ, 𝑃, 𝑇, ismissing(B) ? :MA : B)
     end
 end
 
