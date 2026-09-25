@@ -132,8 +132,12 @@ function v(
     return if ismissing(v)
         v(ξ, PP(ξ, P), TT(ξ, T), ismissing(B) ? :MA : B)
     else
-        # TODO
-        vv(ξ, v)
+        𝑣 = vv(ξ, v)
+        if ismissing(B) || (𝑣 isa MASS && B == :MA) || (𝑣 isa MOLR && B == :MO)
+            𝑣
+        else
+            𝑣 isa MASS ? 𝑣 * ξ.M : 𝑣 / ξ.M
+        end
     end
 end
 
