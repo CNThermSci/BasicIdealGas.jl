@@ -100,18 +100,17 @@ v(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = v(R(ξ.hmo
 ρ(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = inv(v(ξ, 𝑃, 𝑇, B))
 s(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = s(s0(ξ, 𝑇, B) - R(ξ.hmod, B) * log(ℙ(𝑃) / ξ.𝑃ref))
 
-# Internal Positional P, T, V, ρ, s functions
-# -------------------------------------------
+# Internal, keyworded, default base property functions
+# ----------------------------------------------------
 
-
-# Pressure
-function _P(
+function P(
         ξ::IdealGas{ℙ};
         P::Union{Real, PRES, Missing} = missing,
         T::Union{Real, TEMP, Missing} = missing,
-        v::Union{Real, VOLU, Missing} = missing,
-        B::Union{Symbol, Missing} = missing,
+        v::Union{Tuple{Real, Symbol}, VOLU, Missing} = missing,
+        kw...,
     ) where {ℙ}
+    𝑃, 𝑇, 𝑣 = PP(P), TT(T), vv(v)
     if !ismissing(P)
         return _P(ξ, P)
     else
