@@ -325,7 +325,6 @@ end
 fields(ξ::IdealGas) = (:form, :name, :hmod, :Pref)
 props(ξ::IdealGas) = (:P, :T, :v, :ρ, :u, :h, :s, :a, :g, :β, :κT, :κs, :k, :cs, :μJT, :μs)
 
-# TODO: below
 function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
     # Convenience raw field accessors
     if sy == :form
@@ -339,6 +338,10 @@ function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
     end
     # Short-circuit SpecificHeat model accessors
     𝐶 = getfield(ξ, :hmod)
+    if sy in fields(𝐶)
+        return getproperty(𝐶, sy)
+    end
+# TODO: below
     if sy in propertynames(𝐶)
         if sy ∉ (props_T(𝐶)..., props_T_B(𝐶)...)
             return getproperty(𝐶, sy)
