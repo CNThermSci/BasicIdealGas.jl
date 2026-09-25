@@ -47,33 +47,33 @@ const MOLR = Union{
 } where {ℙ <: Real}
 
 # Unit-dressing helper functions
-𝑃(P::PRES) = uconvert(u"kPa", P)
-𝑃(P::Real) = P * u"kPa"
-𝑃(ξ::ThermModel{ℙ}, 𝜋::Union{Real, PRES}) where {ℙ} = ℙ(𝑃(𝜋))
+PP(P::PRES) = uconvert(u"kPa", P)
+PP(P::Real) = P * u"kPa"
+PP(ξ::ThermModel{ℙ}, 𝜋::Union{Real, PRES}) where {ℙ} = ℙ(PP(𝜋))
 
-𝑇(T::TEMP) = uconvert(u"K", T)
-𝑇(T::Real) = T * u"K"
-𝑇(ξ::ThermModel{ℙ}, θ::Union{Real, TEMP}) where {ℙ} = ℙ(𝑇(θ))
+TT(T::TEMP) = uconvert(u"K", T)
+TT(T::Real) = T * u"K"
+TT(ξ::ThermModel{ℙ}, θ::Union{Real, TEMP}) where {ℙ} = ℙ(TT(θ))
 
-𝑀(M::MOLW) = uconvert(u"kg/kmol", M)
-𝑀(T::Real) = M * u"kg/kmol"
-𝑀(ξ::ThermModel{ℙ}, μ::Union{Real, TEMP}) where {ℙ} = ℙ(𝑀(μ))
+MM(M::MOLW) = uconvert(u"kg/kmol", M)
+MM(M::Real) = M * u"kg/kmol"
+MM(ξ::ThermModel{ℙ}, μ::Union{Real, TEMP}) where {ℙ} = ℙ(MM(μ))
 
-𝑣(v::VOLU) = v isa MASS ? uconvert(u"m^3/kg", v) : uconvert(u"m^3/kmol", v)
-𝑣(v::Tuple{Real, Symbol}) = v[1] * (v[2] == :MA ? u"m^3/kg" : u"m^3/kmol")
-𝑣(ξ::ThermModel{ℙ}, υ::Union{Real, VOLU}) where {ℙ} = ℙ(𝑣(υ))
+vv(v::VOLU) = v isa MASS ? uconvert(u"m^3/kg", v) : uconvert(u"m^3/kmol", v)
+vv(v::Tuple{Real, Symbol}) = v[1] * (v[2] == :MA ? u"m^3/kg" : u"m^3/kmol")
+vv(ξ::ThermModel{ℙ}, υ::Union{Real, VOLU}) where {ℙ} = ℙ(vv(υ))
 
-𝑒(e::ENER) = e isa MASS ? uconvert(u"kJ/kg", e) : uconvert(u"kJ/kmol", e)
-𝑒(e::Tuple{Real, Symbol}) = e[1] * (e[2] == :MA ? u"kJ/kg" : u"kJ/kmol")
-𝑒(ξ::ThermModel{ℙ}, ϵ::Union{Real, ENER}) where {ℙ} = ℙ(𝑒(ϵ))
+ee(e::ENER) = e isa MASS ? uconvert(u"kJ/kg", e) : uconvert(u"kJ/kmol", e)
+ee(e::Tuple{Real, Symbol}) = e[1] * (e[2] == :MA ? u"kJ/kg" : u"kJ/kmol")
+ee(ξ::ThermModel{ℙ}, ϵ::Union{Real, ENER}) where {ℙ} = ℙ(ee(ϵ))
 
-𝑠(s::ENTR) = s isa MASS ? uconvert(u"kJ/kg/K", s) : uconvert(u"kJ/kmol/K", s)
-𝑠(s::Tuple{Real, Symbol}) = s[1] * (s[2] == :MA ? u"kJ/kg/K" : u"kJ/kmol/K")
-𝑠(ξ::ThermModel{ℙ}, ς::Union{Real, ENTR}) where {ℙ} = ℙ(𝑠(ς))
+ss(s::ENTR) = s isa MASS ? uconvert(u"kJ/kg/K", s) : uconvert(u"kJ/kmol/K", s)
+ss(s::Tuple{Real, Symbol}) = s[1] * (s[2] == :MA ? u"kJ/kg/K" : u"kJ/kmol/K")
+ss(ξ::ThermModel{ℙ}, ς::Union{Real, ENTR}) where {ℙ} = ℙ(ss(ς))
 
-𝜌(ρ::DENS) = ρ isa MASS ? uconvert(u"kg/m^3", ρ) : uconvert(u"kmol/m^3", ρ)
-𝜌(ρ::Tuple{Real, Symbol}) = ρ[1] * (ρ[2] == :MA ? u"kg/m^3" : u"kmol/m^3")
-𝜌(ξ::ThermModel{ℙ}, ϱ::Union{Real, DENS}) where {ℙ} = ℙ(𝜌(ϱ))
+ρρ(ρ::DENS) = ρ isa MASS ? uconvert(u"kg/m^3", ρ) : uconvert(u"kmol/m^3", ρ)
+ρρ(ρ::Tuple{Real, Symbol}) = ρ[1] * (ρ[2] == :MA ? u"kg/m^3" : u"kmol/m^3")
+ρρ(ξ::ThermModel{ℙ}, ϱ::Union{Real, DENS}) where {ℙ} = ℙ(ρρ(ϱ))
 
 # Constants
 # ---------
