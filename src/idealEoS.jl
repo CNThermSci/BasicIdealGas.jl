@@ -154,45 +154,43 @@ function ρ(
     return inv(BasicIdealGas.v(ξ; P = P, T = T, v = v, B = B, kw...))
 end
 
-# Specific entropy
-
-# PTV helper
-# ----------
-
-## PTv = (
-##     ξ::IdealGas;
-##     P::Union{Real, PRES, Missing} = missing,
-##     T::Union{Real, TEMP, Missing} = missing,
-##     v::Union{Real, VOLU, Missing} = missing,
-##     B::Symbol = :MA,
-## ) -> begin
-##     miss = [ i[1] for i in [(:P, P), (:T, T), (:v, v)] if ismissing(i[2]) ]
-##     length(miss) <= 1 ||
-##         throw(ArgumentError(@sprintf("Underspecified state: missing (%s)", join(miss, ", "))))
-##     return if ismissing(P)
-##         𝑇 = _T(ξ, T)
-##         𝑣 = _v(ξ, v, B)
-##         _P(ξ, 𝑇, 𝑣), 𝑇, 𝑣
-##     elseif ismissing(T)
-##         𝑃 = _P(ξ, P)
-##         𝑣 = _v(ξ, v, B)
-##         𝑃, _T(ξ, 𝑃, 𝑣), 𝑣
-##     else
-##         𝑃 = _P(ξ, P)
-##         𝑇 = _T(ξ, T)
-##         𝑃, 𝑇, _v(ξ, 𝑃, 𝑇, B)
-##     end
-## end
-
-__s = (
-    ξ::IdealGas;
-    P::Union{Real, PRES, Missing} = missing,
-    T::Union{Real, TEMP, Missing} = missing,
-    v::Union{Real, VOLU, Missing} = missing,
-    B::Symbol = :MA,
+# Helper PT function
+PT = (
+    ξ::IdealGas{ℙ};
+	P::Union{PRES, Real, Missing} = missing,
+	T::Union{TEMP, Real, Missing} = missing,
+	v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+    kw...,
 ) -> begin
+    miss = [ i[1] for i in [(:P, P), (:T, T), (:v, v)] if ismissing(i[2]) ]
+    length(miss) <= 1 ||
+        throw(ArgumentError(@sprintf("Underspecified state: missing (%s)", join(miss, ", "))))
+    return if ismissing(P)
+        𝑇 = TT(ξ, T)
+        𝑣 = vv(ξ, v)
+        P(ξ, 𝑇, 𝑣), 𝑇
+    elseif ismissing(T)
+        𝑃 = PP(ξ, P)
+        𝑣 = vv(ξ, v)
+        𝑃, T(ξ, 𝑃, 𝑣)
+    else
+        P(ξ, P), T(ξ, T)
+    end
+end
+
+# TODO: below
+
+# Specific entropy
+function s(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        B::Union{Symbol, Missing} = missing,
+        kw...,
+    )
     𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
-    _s(ξ, 𝑃, 𝑇, B)
+    return _s(ξ, 𝑃, 𝑇, B)
 end
 
 __a = (
