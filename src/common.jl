@@ -55,6 +55,10 @@ const MOLR = Union{
 𝑇(T::Real) = T * u"K"
 𝑇(ξ::ThermModel{ℙ}, θ::Union{Real, TEMP}) where {ℙ} = ℙ(𝑇(θ))
 
+𝑀(M::MOLW) = uconvert(u"kg/kmol", M)
+𝑀(T::Real) = M * u"kg/kmol"
+𝑀(ξ::ThermModel{ℙ}, μ::Union{Real, TEMP}) where {ℙ} = ℙ(𝑀(μ))
+
 𝑣(v::VOLU) = v isa MASS ? uconvert(u"m^3/kg", v) : uconvert(u"m^3/kmol", v)
 𝑣(v::Tuple{Real, Symbol}) = v[1] * (v[2] == :MA ? u"m^3/kg" : u"m^3/kmol")
 𝑣(ξ::ThermModel{ℙ}, υ::Union{Real, VOLU}) where {ℙ} = ℙ(𝑣(υ))
