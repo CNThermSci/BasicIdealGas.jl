@@ -139,7 +139,7 @@ import Base: cp
     msg = "T = $(@sprintf("%.*g K", 5, T.val)) out of bounds"
     @assert(ξ.𝑇min <= T <= ξ.𝑇max, msg)
 end
-𝗯(ξ::SpecificHeat, T::Real) = 𝗯(ξ, T * u"K")
+𝗯(ξ::SpecificHeat, T::Real) = 𝗯(ξ, TT(T))
 
 # Primitives
 cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ξ.f┆R(ℙ(𝑇)))
