@@ -49,13 +49,13 @@ function SpecificHeat{ℙ}(
         𝑠ref::ENTR,
         𝑅::ENTR = ℙ(Ru),
     ) where {ℙ <: FLOAT}
-    M = 𝑀 isa MOLW ? uconvert(u"kg/kmol", 𝑀) : 𝑀 * u"kg/kmol"
-    Tmin = 𝑇(𝑇min)
-    Tref = 𝑇ref isa TEMP ? uconvert(u"K", 𝑇ref) : 𝑇ref * u"K"
-    Tmax = 𝑇max isa TEMP ? uconvert(u"K", 𝑇max) : 𝑇max * u"K"
-    uref = 𝑢ref isa MASS ? uconvert(u"kJ/kmol", 𝑢ref * 𝑀) : uconvert(u"kJ/kmol", 𝑢ref)
-    sref = 𝑠ref isa MASS ? uconvert(u"kJ/kmol/K", 𝑠ref * 𝑀) : uconvert(u"kJ/kmol/K", 𝑠ref)
-    R = 𝑅 isa MASS ? uconvert(u"kJ/kmol/K", 𝑅 * 𝑀) : uconvert(u"kJ/kmol/K", 𝑅)
+    M = MM(𝑀)
+    Tmin = TT(𝑇min)
+    Tref = TT(𝑇ref)
+    Tmax = TT(𝑇max)
+    uref = ee(𝑢ref)
+    sref = ss(𝑠ref)
+    R = ss(𝑅)
     return SpecificHeat(ID, f┆R, ℙ.((M, Tmin, Tref, Tmax, uref, sref, 𝑅))...)
 end
 
