@@ -93,7 +93,7 @@ end
 P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU) where {ℙ} = PP(R(ξ.hmod, 𝑣) * ℙ(𝑇 / 𝑣))
 T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU) where {ℙ} = TT(ℙ(𝑃 * 𝑣) / R(ξ.hmod, 𝑣))
 v(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = vv(R(ξ.hmod, B) * ℙ(𝑇 / 𝑃))
-ρ(ξ::IdealGas, 𝑃::PRES, 𝑇::TEMP, B::Symbol) inv(v(ξ, 𝑃, 𝑇, B))
+ρ(ξ::IdealGas, 𝑃::PRES, 𝑇::TEMP, B::Symbol) = inv(v(ξ, 𝑃, 𝑇, B))
 s(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = ss(s0(ξ.hmod, 𝑇, B) - R(ξ.hmod, B) * log(ℙ(𝑃) / ξ.𝑃ref))
 
 # Internal, keyworded, default base property functions
