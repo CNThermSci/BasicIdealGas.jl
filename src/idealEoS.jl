@@ -94,7 +94,7 @@ P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU) where {ℙ} = PP(R(ξ.hmod, 𝑣) *
 T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU) where {ℙ} = TT(ℙ(𝑃 * 𝑣) / R(ξ.hmod, 𝑣))
 v(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = vv(R(ξ.hmod, B) * ℙ(𝑇 / 𝑃))
 ρ(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = inv(v(ξ, 𝑃, 𝑇, B))
-s(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = ss(s0(ξ, 𝑇, B) - R(ξ.hmod, B) * log(ℙ(𝑃) / ξ.𝑃ref))
+s(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = ss(s0(ξ.hmod, 𝑇, B) - R(ξ.hmod, B) * log(ℙ(𝑃) / ξ.𝑃ref))
 
 # Internal, keyworded, default base property functions
 # ----------------------------------------------------
@@ -156,12 +156,12 @@ end
 
 # Helper PT function
 function PT(
-        ξ::IdealGas{ℙ};
+        ξ::IdealGas;
         P::Union{PRES, Real, Missing} = missing,
         T::Union{TEMP, Real, Missing} = missing,
         v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
         kw...,
-    ) where {ℙ}
+    )
     miss = [ i[1] for i in [(:P, P), (:T, T), (:v, v)] if ismissing(i[2]) ]
     length(miss) <= 1 ||
         throw(ArgumentError(@sprintf("Underspecified state: missing (%s)", join(miss, ", "))))
@@ -189,7 +189,7 @@ function s(
         B::Union{Symbol, Missing} = missing,
         kw...,
     )
-    return s(ξ, PT(ξ, P = P, T = T, v = v)..., B)
+    return s(ξ, PT(ξ, P = P, T = T, v = v)..., ismissing(B) ? :MA : B)
 end
 
 __a = (
