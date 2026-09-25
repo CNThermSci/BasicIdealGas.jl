@@ -8,6 +8,15 @@ FLOAT = Base.IEEEFloat
 
 abstract type ThermModel{ℙ <: FLOAT} end
 
+# Precision conversion
+# --------------------
+
+import Base: Float16, Float32, Float64
+
+Float16(x::Missing) = missing
+Float32(x::Missing) = missing
+Float64(x::Missing) = missing
+
 # Type aliasing
 # -------------
 
@@ -50,37 +59,37 @@ const MOLR = Union{
 PP(P::PRES) = uconvert(u"kPa", P)
 PP(P::Real) = P * u"kPa"
 PP(P::Missing) = missing
-PP(ξ::ThermModel{ℙ}, 𝜋::Union{Real, PRES}) where {ℙ} = ℙ(PP(𝜋))
+PP(ξ::ThermModel{ℙ}, 𝜋::Union{PRES, Real, Missing}) where {ℙ} = ℙ(PP(𝜋))
 
 TT(T::TEMP) = uconvert(u"K", T)
 TT(T::Real) = T * u"K"
 TT(T::Missing) = missing
-TT(ξ::ThermModel{ℙ}, θ::Union{Real, TEMP}) where {ℙ} = ℙ(TT(θ))
+TT(ξ::ThermModel{ℙ}, θ::Union{TEMP, Real, Missing}) where {ℙ} = ℙ(TT(θ))
 
 MM(M::MOLW) = uconvert(u"kg/kmol", M)
 MM(M::Real) = M * u"kg/kmol"
 MM(M::Missing) = missing
-MM(ξ::ThermModel{ℙ}, μ::Union{Real, TEMP}) where {ℙ} = ℙ(MM(μ))
+MM(ξ::ThermModel{ℙ}, μ::Union{MOLW, Real, Missing}) where {ℙ} = ℙ(MM(μ))
 
 vv(v::VOLU) = v isa MASS ? uconvert(u"m^3/kg", v) : uconvert(u"m^3/kmol", v)
 vv(v::Tuple{Real, Symbol}) = v[1] * (v[2] == :MA ? u"m^3/kg" : u"m^3/kmol")
 vv(v::Missing) = missing
-vv(ξ::ThermModel{ℙ}, υ::Union{Real, VOLU}) where {ℙ} = ℙ(vv(υ))
+vv(ξ::ThermModel{ℙ}, υ::Union{VOLU, Tuple{Real, Symbol}, Missing}) where {ℙ} = ℙ(vv(υ))
 
 ee(e::ENER) = e isa MASS ? uconvert(u"kJ/kg", e) : uconvert(u"kJ/kmol", e)
 ee(e::Tuple{Real, Symbol}) = e[1] * (e[2] == :MA ? u"kJ/kg" : u"kJ/kmol")
 ee(e::Missing) = missing
-ee(ξ::ThermModel{ℙ}, ϵ::Union{Real, ENER}) where {ℙ} = ℙ(ee(ϵ))
+ee(ξ::ThermModel{ℙ}, ϵ::Union{ENER, Tuple{Real, Symbol}, Missing}) where {ℙ} = ℙ(ee(ϵ))
 
 ss(s::ENTR) = s isa MASS ? uconvert(u"kJ/kg/K", s) : uconvert(u"kJ/kmol/K", s)
 ss(s::Tuple{Real, Symbol}) = s[1] * (s[2] == :MA ? u"kJ/kg/K" : u"kJ/kmol/K")
 ss(s::Missing) = missing
-ss(ξ::ThermModel{ℙ}, ς::Union{Real, ENTR}) where {ℙ} = ℙ(ss(ς))
+ss(ξ::ThermModel{ℙ}, ς::Union{ENTR, Tuple{Real, Symbol}, Missing}) where {ℙ} = ℙ(ss(ς))
 
 ρρ(ρ::DENS) = ρ isa MASS ? uconvert(u"kg/m^3", ρ) : uconvert(u"kmol/m^3", ρ)
 ρρ(ρ::Tuple{Real, Symbol}) = ρ[1] * (ρ[2] == :MA ? u"kg/m^3" : u"kmol/m^3")
 ρρ(ρ::Missing) = missing
-ρρ(ξ::ThermModel{ℙ}, ϱ::Union{Real, DENS}) where {ℙ} = ℙ(ρρ(ϱ))
+ρρ(ξ::ThermModel{ℙ}, ϱ::Union{DENS, Tuple{Real, Symbol}, Missing}) where {ℙ} = ℙ(ρρ(ϱ))
 
 PTv(P, T, v) = PP(P), TT(T), vv(v)
 
