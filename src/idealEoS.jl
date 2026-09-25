@@ -90,32 +90,31 @@ end
 # Internal, positional, dispatched, no default args P, T, v, ρ functions
 # ----------------------------------------------------------------------
 
-P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU) where {ℙ} = P(R(ξ.hmod, 𝑣) * ℙ(𝑇 / 𝑣))
-T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU) where {ℙ} = T(ℙ(𝑃 * 𝑣) / R(ξ.hmod, 𝑣))
-v(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = v(R(ξ.hmod, B) * ℙ(𝑇 / 𝑃))
+P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU) where {ℙ} = PP(R(ξ.hmod, 𝑣) * ℙ(𝑇 / 𝑣))
+T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU) where {ℙ} = TT(ℙ(𝑃 * 𝑣) / R(ξ.hmod, 𝑣))
+v(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = vv(R(ξ.hmod, B) * ℙ(𝑇 / 𝑃))
 ρ(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = inv(v(ξ, 𝑃, 𝑇, B))
-s(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = s(s0(ξ, 𝑇, B) - R(ξ.hmod, B) * log(ℙ(𝑃) / ξ.𝑃ref))
+s(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = ss(s0(ξ, 𝑇, B) - R(ξ.hmod, B) * log(ℙ(𝑃) / ξ.𝑃ref))
 
 # Internal, keyworded, default base property functions
 # ----------------------------------------------------
 
 function P(
         ξ::IdealGas{ℙ};
-        P::Union{Real, PRES, Missing} = missing,
-        T::Union{Real, TEMP, Missing} = missing,
-        v::Union{Tuple{Real, Symbol}, VOLU, Missing} = missing,
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
         kw...,
     ) where {ℙ}
-    𝑃, 𝑇, 𝑣 = PTv(P, T, v)
-    if !ismissing(P)
-        return _P(ξ, P)
+    return if !ismissing(P)
+        PP(ξ, P)
     else
         miss = [ i[1] for i in [(:P, P), (:T, T), (:v, v)] if ismissing(i[2]) ]
         length(miss) <= 1 ||
             throw(ArgumentError(@sprintf("Underspecified state: missing (%s)", join(miss, ", "))))
-        𝑇 = _T(ξ, T)
-        𝑣 = _v(ξ, v, ismissing(B) ? :MA : B)
-        _P(ξ, 𝑇, 𝑣)
+        𝑇 = TT(ξ, T)
+        𝑣 = vv(ξ, v)
+        P(ξ, 𝑇, 𝑣)
     end
 end
 
