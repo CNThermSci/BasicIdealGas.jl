@@ -143,7 +143,7 @@ end
 
 # Primitives
 cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ξ.f┆R(ℙ(𝑇)))
-cp┆R(ξ::SpecificHeat, T::Real) = cp┆R(ξ, T * u"K")
+cp┆R(ξ::SpecificHeat, T::Real) = cp┆R(ξ, TT(T))
 cv┆R(ξ::SpecificHeat{ℙ}, θ::Union{Real, TEMP}) where {ℙ <: FLOAT} = cp┆R(ξ, θ) - one(ℙ)
 
 # Base-selected R
@@ -158,13 +158,13 @@ R(ξ::SpecificHeat, B::MOLR) = R(ξ, :MO)
 γ(ξ::SpecificHeat, θ::Union{Real, TEMP}) = cp┆R(ξ, θ) / cv┆R(ξ, θ)
 k = γ
 ∫cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ∫(ξ.f┆R, ξ.𝑇ref, ℙ(𝑇)))
-∫cp┆R(ξ::SpecificHeat, T::Real) = ∫cp┆R(ξ, T * u"K")
+∫cp┆R(ξ::SpecificHeat, T::Real) = ∫cp┆R(ξ, TT(T))
 ∫cv┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = ∫cp┆R(ξ, 𝑇) - ℙ(𝑇) + ξ.𝑇ref
-∫cv┆R(ξ::SpecificHeat, T::Real) = ∫cv┆R(ξ, T * u"K")
+∫cv┆R(ξ::SpecificHeat, T::Real) = ∫cv┆R(ξ, TT(T))
 u┆R(ξ::SpecificHeat, θ::Union{Real, TEMP}) = ∫cv┆R(ξ, θ) + ξ.𝑢ref / ξ.𝑅
 h┆R(ξ::SpecificHeat{ℙ}, θ::Union{Real, TEMP}) where {ℙ <: FLOAT} = u┆R(ξ, θ) + ℙ(θ)
 ∫cp┆RT(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ∫(T -> ξ.f┆R(T) / T, ξ.𝑇ref, ℙ(𝑇)))
-∫cp┆RT(ξ::SpecificHeat, T::Real) = ∫cp┆RT(ξ, T * u"K")
+∫cp┆RT(ξ::SpecificHeat, T::Real) = ∫cp┆RT(ξ, TT(T))
 s0┆R(ξ::SpecificHeat, θ::Union{Real, TEMP}) = ∫cp┆RT(ξ, θ) + ξ.𝑠ref / ξ.𝑅
 Pr(ξ::SpecificHeat, θ::Union{Real, TEMP}) = exp(∫cp┆RT(ξ, θ))
 vr(ξ::SpecificHeat{ℙ}, θ::Union{Real, TEMP}) where {ℙ <: FLOAT} = ℙ(θ) / Pr(ξ, θ)
