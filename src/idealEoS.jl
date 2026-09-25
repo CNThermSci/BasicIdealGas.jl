@@ -300,7 +300,7 @@ function cs(
         v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
         kw...,
     )
-    𝑇 = T(ξ, P = P, T = T, v = v)
+    𝑇 = BasicIdealGas.T(ξ, P = P, T = T, v = v)
     return uconvert(u"m/s", √(γ(ξ.hmod, 𝑇) * R(ξ.hmod, :MA) * 𝑇))
 end
 
