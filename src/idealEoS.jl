@@ -354,12 +354,21 @@ function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
         fn = Symbol(string(sy)[1:(end - 2)])
         BA = Symbol(last(string(sy), 2))
         return (
-            ξ::IdealGas;
+            𝑃::Union{PRES, Real, Missing} = missing,
+            𝑇::Union{TEMP, Real, Missing} = missing,
+            𝑣::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing;
             P::Union{PRES, Real, Missing} = missing,
             T::Union{TEMP, Real, Missing} = missing,
             v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
             kw...,
-        ) -> eval(fn)(ξ, ismissing(T) ? 𝑇 : T, BA)
+        ) -> eval(fn)(
+            ξ;
+            P = ismissing(P) ? 𝑃 : P,
+            T = ismissing(T) ? 𝑇 : T,
+            v = ismissing(v) ? 𝑣 : v,
+            B = BA,
+            kw...
+        )
     end
     # SpecificHeat model property fallbacks
     if sy in props(𝐶)
