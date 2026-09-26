@@ -213,7 +213,7 @@ function u(
         B::Union{Symbol, Missing} = missing,
         kw...,
     )
-    return u(ξ.hmod, T(ξ, P = P, T = T, v = v), ismissing(B) ? :MA : B)
+    return u(ξ.hmod, BasicIdealGas.T(ξ, P = P, T = T, v = v), ismissing(B) ? :MA : B)
 end
 
 # Specific entropy
@@ -336,7 +336,7 @@ end
 
 fields(ξ::IdealGas) = (:form, :name, :hmod, :Pref)
 props_UNB(ξ::IdealGas) = (:P, :T, :β, :κT, :κs, :k, :cs, :μJT, :μs)
-props_BAS(ξ::IdealGas) = (:v, :ρ, :u, :h, :s, :a, :g)
+props_BAS(ξ::IdealGas) = (:v, :ρ, :s, :a, :g)
 props_CMP(ξ::IdealGas) = ([Symbol(string(i) * string(j)) for i in props_BAS(ξ) for j in (:MA, :MO)]...,)
 props(ξ::IdealGas) = (props_UNB(ξ)..., props_BAS(ξ)..., props_CMP(ξ)...)
 
@@ -351,12 +351,6 @@ function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
     elseif sy in (:𝑃ref, :Pref)
         return getfield(ξ, :𝑃ref)
     end
-    # Heat model object
-    𝐶 = getfield(ξ, :hmod)
-    # Pretty-print
-    if sy == :view
-        return 𝐶.view
-    end
     # IdealGas properties
     if sy in props_UNB(ξ)
         return eval(sy)
@@ -366,9 +360,7 @@ function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
         fn = Symbol(string(sy)[1:(end - 2)])
         BA = Symbol(last(string(sy), 2))
         return (
-            𝑃::Union{PRES, Real, Missing} = missing,
-            𝑇::Union{TEMP, Real, Missing} = missing,
-            𝑣::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing;
+            ;
             P::Union{PRES, Real, Missing} = missing,
             T::Union{TEMP, Real, Missing} = missing,
             v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
@@ -381,6 +373,12 @@ function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
             B = BA,
             kw...
         )
+    end
+    # Heat model object
+    𝐶 = getfield(ξ, :hmod)
+    # Pretty-print
+    if sy == :view
+        return 𝐶.view
     end
     # SpecificHeat model property fallbacks
     if sy in props(𝐶)
