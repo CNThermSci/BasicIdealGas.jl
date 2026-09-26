@@ -305,7 +305,7 @@ function cs(
 end
 
 # Joule-Thomson coefficient, μJT
-μJT(ξ::IdealGas{ℙ}; kw...,) where {ℙ} = zero(ℙ) * u"K/kPa"
+μJT(ξ::IdealGas{ℙ}; kw...) where {ℙ} = zero(ℙ) * u"K/kPa"
 
 # Isentropic expansion coefficient, μs
 function μs(
@@ -338,10 +338,17 @@ function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
     end
     # Heat model object
     𝐶 = getfield(ξ, :hmod)
+    # Pretty-print
+    if sy == :view
+        return 𝐶.view
+    end
     # IdealGas properties
     # ...
     # SpecificHeat model property fallbacks
-    if sy in fields(𝐶)
+    if sy in (
+            fields(𝐶)..., props_T(𝐶)..., props_T_B(𝐶)...,
+            [ Symbol(string(i) * string(j)) for i in props_T_B(𝐶) for j in (:MA, :MO) ]...,
+        )
         return getproperty(𝐶, sy)
     end
 end
