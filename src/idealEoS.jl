@@ -336,102 +336,14 @@ function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
     elseif sy in (:𝑃ref, :Pref)
         return getfield(ξ, :𝑃ref)
     end
-    # Short-circuit SpecificHeat model accessors
+    # Heat model object
     𝐶 = getfield(ξ, :hmod)
+    # IdealGas properties
+    # ...
+    # SpecificHeat model property fallbacks
     if sy in fields(𝐶)
         return getproperty(𝐶, sy)
     end
-# TODO: below
-    if sy in propertynames(𝐶)
-        if sy ∉ (props_T(𝐶)..., props_T_B(𝐶)...)
-            return getproperty(𝐶, sy)
-        elseif sy ∈ props_T(𝐶)
-            # This allows an 𝑓(T) be calc'd from 𝑓(T(P, T, v, B))
-            # Makes sense only at the IdealGas level (can't fallback to SpecificHeat directly)
-            return (; P = missing, T = missing, v = missing, B = missing) -> begin
-                getproperty(𝐶, sy)(_T(ξ; P = P, T = T, v = v, B = B))
-            end
-        elseif sy ∈ props_T_B(𝐶)
-            # This allows an 𝑓(T, B) be calc'd from 𝑓(T(P, T, v, B), B)
-            # Makes sense only at the IdealGas level (can't fallback to SpecificHeat directly)
-            return (; P = missing, T = missing, v = missing, B = missing) -> begin
-                getproperty(𝐶, sy)(_T(ξ; P = P, T = T, v = v), ismissing(B) ? :MA : B)
-            end
-        end
-    end
-    # OOP-style covenience functions (formerly exported ones)
-    return if sy == :P
-        (; P = missing, T = missing, v = missing, B = missing) -> _P(ξ; P = P, T = T, v = v, B = B)
-    elseif sy == :T
-        (; P = missing, T = missing, v = missing, B = missing) -> _T(ξ; P = P, T = T, v = v, B = B)
-    elseif sy == :v
-        (; P = missing, T = missing, v = missing, B = missing) -> _v(ξ; P = P, T = T, v = v, B = B)
-    elseif sy == :vMA
-        (; P = missing, T = missing, v = missing) -> _v(ξ; P = P, T = T, v = v, B = :MA)
-    elseif sy == :vMO
-        (; P = missing, T = missing, v = missing) -> _v(ξ; P = P, T = T, v = v, B = :MO)
-    elseif sy == :ρ
-        (; P = missing, T = missing, v = missing, B = :MA) -> inv(PTv(ξ; P = P, T = T, v = v, B = B)[3])
-    elseif sy == :ρMA
-        (; P = missing, T = missing, v = missing) -> inv(PTv(ξ; P = P, T = T, v = v, B = :MA)[3])
-    elseif sy == :ρMO
-        (; P = missing, T = missing, v = missing) -> inv(PTv(ξ; P = P, T = T, v = v, B = :MO)[3])
-    elseif sy == :uMA
-        (; P = missing, T = missing, v = missing, B = missing) -> begin
-            getproperty(𝐶, :u)(ξ, _T(ξ; P = P, T = T, v = v, B = B), ismissing(B) ? :MA : B)
-        end
-    elseif sy == :uMO
-        (; P = missing, T = missing, v = missing) -> begin
-            getproperty(𝐶, :u)(ξ, _T(ξ; P = P, T = T, v = v), B = :MO)
-        end
-    elseif sy == :s
-        (; P = missing, T = missing, v = missing, B = :MA) -> __s(ξ; P = P, T = T, v = v, B = B)
-    elseif sy == :sMA
-        (; P = missing, T = missing, v = missing) -> __s(ξ; P = P, T = T, v = v, B = :MA)
-    elseif sy == :sMO
-        (; P = missing, T = missing, v = missing) -> __s(ξ; P = P, T = T, v = v, B = :MO)
-    elseif sy == :a
-        (; P = missing, T = missing, v = missing, B = :MA) -> __a(ξ; P = P, T = T, v = v, B = B)
-    elseif sy == :aMA
-        (; P = missing, T = missing, v = missing) -> __a(ξ; P = P, T = T, v = v, B = :MA)
-    elseif sy == :aMO
-        (; P = missing, T = missing, v = missing) -> __a(ξ; P = P, T = T, v = v, B = :MO)
-    elseif sy == :g
-        (; P = missing, T = missing, v = missing, B = :MA) -> __g(ξ; P = P, T = T, v = v, B = B)
-    elseif sy == :gMA
-        (; P = missing, T = missing, v = missing) -> __g(ξ; P = P, T = T, v = v, B = :MA)
-    elseif sy == :gMO
-        (; P = missing, T = missing, v = missing) -> __g(ξ; P = P, T = T, v = v, B = :MO)
-    elseif sy in (:β, :beta)
-        (; P = missing, T = missing, v = missing, B = :MA) -> __β(ξ; P = P, T = T, v = v, B = B)
-    elseif sy in (:κT, :kappaT)
-        (; P = missing, T = missing, v = missing, B = :MA) -> __κT(ξ; P = P, T = T, v = v, B = B)
-    elseif sy in (:κs, :kappas)
-        (; P = missing, T = missing, v = missing, B = :MA) -> __κs(ξ; P = P, T = T, v = v, B = B)
-    elseif sy == :k
-        (; P = missing, T = missing, v = missing, B = :MA) -> getproperty(𝐶, :ga)(_T(ξ, T))
-    elseif sy == :c
-        (; P = missing, T = missing, v = missing, B = :MA) -> begin
-            𝑇 = _T(ξ, T)
-            γ = getproperty(𝐶, :ga)(𝑇)
-            𝑅 = getproperty(𝐶, :RMA)
-            uconvert(u"m/s", √(γ * 𝑅 * 𝑇))
-        end
-    elseif sy in (:μJT, :muJT)
-        (; P = missing, T = missing, v = missing, B = :MA) -> zero(ℙ) * u"K/kPa"
-    elseif sy in (:μs, :mus)
-        (; P = missing, T = missing, v = missing, B = :MA) -> begin
-            𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
-            uconvert(u"K/kPa", 𝑣 / getproperty(𝐶, :cp)(𝑇))
-        end
-    end
 end
 
-Base.propertynames(ξ::IdealGas) = (
-    :form, :name, :hmod, :𝑃ref,
-    :Pref,
-    propertynames(getfield(ξ, :hmod))...,
-    :P, :T, :v, :vMA, :vMO, :ρ, :ρMA, :ρMO, :s, :sMA, :sMO,
-    :a, :aMA, :aMO, :g, :gMA, :gMO, :β, :beta, :κT, :kappaT,
-    :κs, :kappas, :k, :c, :μJT, :muJT, :μs, :mus,
-)
+Base.propertynames(ξ::IdealGas) = (fields(ξ)..., props(ξ)..., fields(ξ.hmod)...)
