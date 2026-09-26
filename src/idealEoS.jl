@@ -87,7 +87,7 @@ function Base.show(io::IO, ::MIME"text/plain", ξ::IdealGas{ℙ}) where {ℙ <: 
     )
 end
 
-# Internal, positional, dispatched, no default args P, T, v, ρ functions
+# Internal, positional, dispatched, no default args P, T, v, ρ, s functions
 # ----------------------------------------------------------------------
 
 P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU) where {ℙ} = PP(R(ξ.hmod, 𝑣) * ℙ(𝑇 / 𝑣))
@@ -362,6 +362,10 @@ function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
         return getfield(ξ, :hmod)
     elseif sy in (:𝑃ref, :Pref)
         return getfield(ξ, :𝑃ref)
+    end
+    # Convenience hmod field accessors
+    if sy in fields(ξ.hmod)
+        return getproperty(ξ.hmod, sy)
     end
     # IdealGas properties
     if sy in props_UNB(ξ)
