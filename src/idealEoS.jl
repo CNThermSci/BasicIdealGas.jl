@@ -204,6 +204,18 @@ function PTv(
     end
 end
 
+# Specific internal energy
+function u(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        B::Union{Symbol, Missing} = missing,
+        kw...,
+    )
+    return u(ξ.hmod, T(ξ, P = P, T = T, v = v), ismissing(B) ? :MA : B)
+end
+
 # Specific entropy
 function s(
         ξ::IdealGas;
