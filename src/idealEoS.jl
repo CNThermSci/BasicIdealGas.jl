@@ -323,7 +323,10 @@ end
 # -----------------------------------------
 
 fields(ξ::IdealGas) = (:form, :name, :hmod, :Pref)
-props(ξ::IdealGas) = (:P, :T, :v, :ρ, :u, :h, :s, :a, :g, :β, :κT, :κs, :k, :cs, :μJT, :μs)
+props_UNB(ξ::IdealGas) = (:P, :T, :β, :κT, :κs, :k, :cs, :μJT, :μs)
+props_BAS(ξ::IdealGas) = (:v, :ρ, :u, :h, :s, :a, :g)
+props_CMP(ξ::IdealGas) = ([Symbol(string(i) * string(j)) for i in props_BAS(ξ) for j in (:MA, :MO)]...,)
+props(ξ::IdealGas) = (props_UNB(ξ)..., props_BAS(ξ)..., props_CMP(ξ)...)
 
 function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
     # Convenience raw field accessors
@@ -345,12 +348,11 @@ function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
     # IdealGas properties
     # ...
     # SpecificHeat model property fallbacks
-    if sy in (
-            fields(𝐶)..., props_T(𝐶)..., props_T_B(𝐶)...,
-            [ Symbol(string(i) * string(j)) for i in props_T_B(𝐶) for j in (:MA, :MO) ]...,
-        )
+    if sy in props(𝐶)
         return getproperty(𝐶, sy)
     end
 end
 
-Base.propertynames(ξ::IdealGas) = (fields(ξ)..., props(ξ)..., fields(ξ.hmod)...)
+Base.propertynames(ξ::IdealGas) = tuple(
+    Set([fields(ξ)..., props(ξ)..., fields(ξ.hmod)..., props(ξ.hmod)..., :view])...,
+)
