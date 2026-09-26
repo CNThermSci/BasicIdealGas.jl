@@ -353,9 +353,22 @@ function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
     end
     # IdealGas properties
     if sy in props_UNB(ξ)
-        return eval(sy)
+        return (
+            ;
+            P::Union{PRES, Real, Missing} = missing,
+            T::Union{TEMP, Real, Missing} = missing,
+            v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+            kw...,
+        ) -> eval(sy)(ξ, P = P, T = T, v = v, kw...)
     elseif sy in props_BAS(ξ)
-        return eval(sy)
+        return (
+            ;
+            P::Union{PRES, Real, Missing} = missing,
+            T::Union{TEMP, Real, Missing} = missing,
+            v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+            B::Union{Symbol, Missing} = missing,
+            kw...,
+        ) -> eval(sy)(ξ, P = P, T = T, v = v, B = B, kw...)
     elseif sy in props_CMP(ξ)
         fn = Symbol(string(sy)[1:(end - 2)])
         BA = Symbol(last(string(sy), 2))
@@ -366,7 +379,7 @@ function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
             v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
             kw...,
         ) -> eval(fn)(
-            ξ;
+            ξ,
             P = ismissing(P) ? 𝑃 : P,
             T = ismissing(T) ? 𝑇 : T,
             v = ismissing(v) ? 𝑣 : v,
