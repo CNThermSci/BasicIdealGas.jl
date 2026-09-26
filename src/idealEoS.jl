@@ -216,6 +216,18 @@ function u(
     return u(ξ.hmod, BasicIdealGas.T(ξ, P = P, T = T, v = v), ismissing(B) ? :MA : B)
 end
 
+# Specific enthalpy
+function h(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        B::Union{Symbol, Missing} = missing,
+        kw...,
+    )
+    return h(ξ.hmod, BasicIdealGas.T(ξ, P = P, T = T, v = v), ismissing(B) ? :MA : B)
+end
+
 # Specific entropy
 function s(
         ξ::IdealGas;
@@ -336,7 +348,7 @@ end
 
 fields(ξ::IdealGas) = (:form, :name, :hmod, :Pref)
 props_UNB(ξ::IdealGas) = (:P, :T, :β, :κT, :κs, :k, :cs, :μJT, :μs)
-props_BAS(ξ::IdealGas) = (:v, :ρ, :s, :a, :g)
+props_BAS(ξ::IdealGas) = (:v, :ρ, :u, :h, :s, :a, :g)
 props_CMP(ξ::IdealGas) = ([Symbol(string(i) * string(j)) for i in props_BAS(ξ) for j in (:MA, :MO)]...,)
 props(ξ::IdealGas) = (props_UNB(ξ)..., props_BAS(ξ)..., props_CMP(ξ)...)
 
@@ -387,15 +399,13 @@ function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
             kw...
         )
     end
-    # Heat model object
-    𝐶 = getfield(ξ, :hmod)
     # Pretty-print
     if sy == :view
-        return 𝐶.view
+        return ξ.hmod.view
     end
     # SpecificHeat model property fallbacks
-    if sy in props(𝐶)
-        return getproperty(𝐶, sy)
+    if sy in props(ξ.hmod)
+        return getproperty(ξ.hmod, sy)
     end
 end
 
