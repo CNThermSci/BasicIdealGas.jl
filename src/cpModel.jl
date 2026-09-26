@@ -177,8 +177,10 @@ s0(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = s0�
 # -----------------------------------------
 
 fields(ξ::SpecificHeat) = (:ID, :f, :M, :R, :RMO, :RMA, :Tmin, :Tref, :Tmax, :uref, :sref)
-props_T(ξ::SpecificHeat) = (:γ, :Pr, :vr)
-props_T_B(ξ::SpecificHeat) = (:cp, :cv, :u, :h, :s0)
+props_UNB(ξ::SpecificHeat) = (:γ, :Pr, :vr)
+props_BAS(ξ::SpecificHeat) = (:cp, :cv, :u, :h, :s0)
+props_CMP(ξ::SpecificHeat) = ([Symbol(string(i) * string(j)) for i in props_BAS(ξ) for j in (:MA, :MO)]...,)
+props(ξ::SpecificHeat) = (props_UNB(ξ)..., props_BAS(ξ)..., props_CMP(ξ)...)
 
 import Base: getproperty, propertynames
 
@@ -218,13 +220,13 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
         return println(join([pretty(ξ), string(plt)], "\n"))
     end
     # OOP-style covenience functions (formerly exported ones)
-    if sy in props_T(ξ)
+    if sy in props_UNB(ξ)
         return (
             𝑇::Union{Real, TEMP, Missing} = missing;
             T::Union{Real, TEMP, Missing} = missing,
             kw...,
         ) -> eval(sy)(ξ, ismissing(T) ? 𝑇 : T)
-    elseif sy in props_T_B(ξ)
+    elseif sy in props_BAS(ξ)
         return (
             𝑇::Union{Real, TEMP, Missing} = missing,
             𝐵::Symbol = :MA;
@@ -232,8 +234,8 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
             B::Union{Symbol, Missing} = missing,
             kw...,
         ) -> eval(sy)(ξ, ismissing(T) ? 𝑇 : T, ismissing(B) ? 𝐵 : B)
-    elseif sy in [ Symbol(string(i) * string(j)) for i in props_T_B(ξ) for j in (:MA, :MO) ]
-        fn = Symbol(string(sy)[1:end-2])
+    elseif sy in props_CMP(ξ)
+        fn = Symbol(string(sy)[1:(end - 2)])
         BA = Symbol(last(string(sy), 2))
         return (
             𝑇::Union{Real, TEMP, Missing} = missing;
@@ -243,4 +245,4 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
     end
 end
 
-Base.propertynames(ξ::SpecificHeat) = (fields(ξ)..., props_T(ξ)..., props_T_B(ξ)..., :view)
+Base.propertynames(ξ::SpecificHeat) = (fields(ξ)..., props(ξ)..., :view)
