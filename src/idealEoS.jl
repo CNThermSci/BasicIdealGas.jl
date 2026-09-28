@@ -250,7 +250,7 @@ function a(
         kw...,
     )
     𝑃, 𝑇 = PT(ξ, P = P, T = T, v = v)
-    𝑢 = u(ξ.hmod, T, ismissing(B) ? :MA : B)
+    𝑢 = u(ξ.hmod, 𝑇, ismissing(B) ? :MA : B)
     𝑠 = s(ξ, 𝑃, 𝑇, ismissing(B) ? :MA : B)
     return 𝑢 - 𝑇 * 𝑠
 end
@@ -375,7 +375,7 @@ function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
             T::Union{TEMP, Real, Missing} = missing,
             v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
             kw...,
-        ) -> eval(sy)(ξ, P = P, T = T, v = v, kw...)
+        ) -> eval(sy)(ξ; P = P, T = T, v = v, kw...)
     elseif sy in props_BAS(ξ)
         return (
             ;
@@ -384,7 +384,7 @@ function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
             v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
             B::Union{Symbol, Missing} = missing,
             kw...,
-        ) -> eval(sy)(ξ, P = P, T = T, v = v, B = B, kw...)
+        ) -> eval(sy)(ξ; P = P, T = T, v = v, B = B, kw...)
     elseif sy in props_CMP(ξ)
         fn = Symbol(string(sy)[1:(end - 2)])
         BA = Symbol(last(string(sy), 2))
@@ -395,7 +395,7 @@ function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
             v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
             kw...,
         ) -> eval(fn)(
-            ξ,
+            ξ;
             P = ismissing(P) ? 𝑃 : P,
             T = ismissing(T) ? 𝑇 : T,
             v = ismissing(v) ? 𝑣 : v,

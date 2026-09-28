@@ -24,15 +24,21 @@ provides types for basic ideal gas functionality from a hierarchy of `Type`s:
 - All dimensional data fields are stored with units as `Quantity{ℙ} where ℙ <: Base.IEEEFloat`
   types;
 
-- _Input_ specific heat functions are dimensionless and normalized by the gas constant;
-
-- _Stored_ value units are in the kSI system, and specific quantities in the molar base, `:MO`,
+- Stored value units are in the kSI system, and specific quantities in the molar base, `:MO`,
   rather than in the mass base, `:MA`, i.e., energy in $kJ$, temperatures in $K$, pressure in
   $kPa$, specific internal energies in $kJ/kmol$, and specific entropies in $kJ/kmol/K$;
 
 - User-facing outputs are accessed through fields and properties (in the julia language sense).
-  When the amount is based, a `Symbol`ic base argument—whether `:MO`, or `:MA`, respectively for
-  molar or mass base—can be optionally specified, with the mass base being the default one.
+  For state dependent outputs, the returned properties are functions that accept keyword
+  arguments for state specification: `(P = Pvalue, T = Tvalue, v = vvalue)`. A thermodynamically
+  minimum set of state specifying state functions is required. Input specific volume base is
+  taken from `vvalue` as either of the following: (i) a unitful value, or (ii) a `Tuple{Real,
+  Symbol}`, such as `(1, :MA)`, the example taken as being `1u"m^3/kg"`, or `(1, :MO)` for
+  `1u"m^3/kmol"`;
+
+- When the output amount is based, a `Symbol`ic base argument—whether `:MO`, or `:MA`,
+  respectively for molar or mass base—can be optionally specified, with the mass base being the
+  default one, if omitted;
 
 - Constructors accept any unambiguous combination of `Real` and `Quantity{<:Real}` arguments.
   Specifying unitless values of reference specific internal energy and entropy is ambiguous.
@@ -43,6 +49,8 @@ provides types for basic ideal gas functionality from a hierarchy of `Type`s:
 ## Quick Overview (for the impatient)
 
 ```julia
+julia> using BasicIdealGas
+
 julia> C = SpecificHeat(:const, T -> 5//2, 4, 5.2, 298, 6000, 3718u"kJ/kmol", 126u"J/mol/K")
 const cp₆₄(T)
 
@@ -52,17 +60,17 @@ He gas, const cp₆₄(T)
 julia> T1 = 1000u"K"
 1000 K
 
-julia> [ He.cp(T1, :MO), He.u(T1, :MA), He.h(T1, :MA), He.s0(T1, :MO) ]
+julia> [ He.cp(T = T1, B = :MO), He.u(T = T1), He.h(T = T1), He.s(P = 100, T = T1, B = :MO) ]
 4-element Vector{Quantity{Float64}}:
    20.7861565453831 kJ K^-1 kmol^-1
  3118.28228422884 kJ kg^-1
  5196.89793876715 kJ kg^-1
-  151.16500554193544 kJ K^-1 kmol^-1
+  112.87549018030364 kJ K^-1 kmol^-1
 
 julia> he = Float16(He)
 He gas, const cp₁₆(T)
 
-julia> he.u(T1, :MA)
+julia> he.u(T = T1, B = :MA)
 Float16(3.12e3) kJ kg^-1
 ```
 
@@ -107,19 +115,19 @@ arguments, and returns values as the precision parameter of (plain) `SpecificHea
 Base.IEEEFloat`, since $\bar{c}_p / \bar{R}$ is dimensionless:
 
 ```julia
-julia> C.f┆R(300u"K") # f┆R is a valid julia identifier for f/R, where f is the cp(T) function
-4.448124274352035
+julia> C.f(300u"K")     # the `:f` property returns the wrapped cp/R function
+4.4483717825354825      # the wrapping ensures inputs must be in u"K"
 
-julia> typeof(ans)
+julia> typeof(ans)      # the wrapping ensures outputs to be in the object's floating point precision
 Float64
 
-julia> C.f┆R
+julia> C.f┆R            # wrapped function, "┆" can be typed by \dshfnc<tab>
 #2 (generic function with 1 method)
 
-julia> C.f┆R.f┆R # this recovers the original function (unwraps f┆R)
+julia> C.f┆R.f┆R        # recovers the original function (unwraps f┆R)
 cp_R (generic function with 1 method)
 
-julia> C.R # The default Ru value (CODATA 2022)
+julia> C.R              # the default Ru value (CODATA 2022)
 8.31446261815324 kJ K^-1 kmol^-1
 ```
 
@@ -134,12 +142,12 @@ julia> C32 = Float32(C)
 cubic cp₃₂(T)
 
 julia> typeof(C32)
-SpecificHeat{Float32}
+SpecificHeat{Float32}           # conversion adjusts the object's precision parameter
 
-julia> dump(C32.f┆R(300u"K"))
-Float32 4.4483714f0
+julia> dump(C32.f┆R(300u"K"))   # precision conversion re-wraps the underlying function
+Float32 4.4483714f0             # thus preserving the object's precision parameter
 
-julia> C32.f┆R.f┆R # the original function is always recoverable!
+julia> C32.f┆R.f┆R              # the original function is always recoverable!
 cp_R (generic function with 1 method)
 ```
 
@@ -155,10 +163,12 @@ cubic cp₆₄(T)
 julia> C64.f┆R === C.f┆R    # Lossless conversion in the function
 true
 
-julia> C64.𝑅 === C.𝑅        # Lossy conversion in the parameters (by about eps(Float32))
+julia> C64.R === C.R        # Lossy conversion in the parameters (by about eps(Float32))
 false
-```
 
+julia> C64.R - C.R
+4.358992455877342e-8 kJ K^-1 kmol^-1
+```
 
 ### Example 2 – Using the `SpecificHeat`
 
@@ -169,21 +179,19 @@ false
 
 ```julia
 julia> C.<tab><tab>
-ID      M       Pr      R       RMA     RMO     Tmax    Tmin
-Tref    cp      cp┆R    cv      cv┆R    f       f┆R     ga
-h       h┆R     s0      s0┆R    sref    u       uref    u┆R
-view    vr      ∫cp┆R   ∫cp┆RT  ∫cv┆R   𝑀       𝑅       𝑇max
-𝑇min    𝑇ref    𝑠ref    𝑢ref
+ID    M     Pr    R     RMA   RMO
+Tmax  Tmin  Tref  cp    cpMA  cpMO
+cv    cvMA  cvMO  f     h     hMA
+hMO   s0    s0MA  s0MO  sref  u
+uMA   uMO   uref  view  vr    γ
 ```
 
 or programatically, through:
 
 ```julia
 julia> propertynames(C)
-(:ID, :f┆R, :𝑀, :𝑇min, :𝑇max, :𝑇ref, :𝑢ref, :𝑠ref, :𝑅, :f, :M, :Tmin, :Tref, :Tmax, :uref,
-:sref, :R, :RMO, :RMA, :vie w, :cp┆R, :cv┆R, :ga, :R, :∫cp┆R, :∫cv┆R, :u┆R, :h┆R, :∫cp┆RT,
-:s0┆R, :Pr, :vr, :cp, :cv, :u, :h, :s0)
-
+(:ID, :f, :M, :R, :RMO, :RMA, :Tmin, :Tref, :Tmax, :uref, :sref, :γ, :Pr, :vr, :cp, :cv,
+:u, :h, :s0, :cpMA, :cpMO, :cvMA, :cvMO, :uMA, :uMO, :hMA, :hMO, :s0MA, :s0MO, :view)
 ```
 
 *Model Previewing:*
@@ -213,8 +221,8 @@ properties available.
 
 _Model Constants:_
 
-Model constants are it's stored fields, which are _by design_ hard to type (due to special
-characters), since most of them are considered to be _low-level accessors_:
+Model stored field constants are by design hard to type (due to higher Unicode characters),
+since most of them are considered to be _low-level accessors_:
 
 ```julia
 julia> fieldnames(SpecificHeat)
@@ -266,18 +274,11 @@ of flooding the user namespace with short-named functions. Model functions can b
 (i) base-independent ones, that only require a temperature input, and (ii) based ones, that
 require both a temperature and a base (either mass `:MA`, or molar `:MO`) inputs.
 
-Base-independent ones include `(:cp┆R, :cv┆R, :ga, :R, :∫cp┆R, :∫cv┆R, :u┆R, :h┆R, :∫cp┆RT,
-:s0┆R, :Pr, :vr)`, being dimensionless ratios or functions thereof:
+Base-independent ones include `(:γ, :Pr, :vr)`, being dimensionless ratios or functions thereof:
 
 ```julia
-julia> C.ga(300u"K")        # γ ≡ cp/cv at given temperature
+julia> C.γ(300u"K")         # γ ≡ cp/cv at given temperature, "γ" can be typed by \gamma<tab>
 1.2899919333131564
-
-julia> C.∫cv┆R(300u"K")     # ∫(cv/r)dT from Tref -> T
-6.887131257604551 K
-
-julia> C.u┆R(300u"K")       # u/R at T
-834.9622957267734 K
 
 julia> C.Pr(300u"K")        # Relative pressure, dimensionless
 1.0301690572045714
@@ -290,22 +291,33 @@ Based ones include `(:cp, :cv, :u, :h, :s0)`, being based thermodynamic properti
 base being the mass `:MA` one):
 
 ```julia
-julia> T = 300u"K"
+julia> T1 = 300u"K"
 300 K
 
-julia> C.cp(T)          # specific heat at const-pressure (default mass base)
+julia> C.cp(T1)         # specific heat at const-pressure (default mass base)
 0.8403958395259933 kJ kg^-1 K^-1
 
-julia> C.cp(T, :MO)     # specific heat at const-pressure (molar base)
+julia> C.cp(T1, :MO)    # specific heat at const-pressure (molar base)
 36.98582089753896 kJ K^-1 kmol^-1
 
-julia> C.u(T, :MA)      # specific internal energy (explicit mass base)
+julia> C.u(T1, :MA)     # specific internal energy (explicit mass base)
 157.742849247618 kJ kg^-1
 
-julia> C.h(T, :MA)      # specific enthlapy, mass base
+julia> C.h(T1, :MA)     # specific enthlapy, mass base
 214.41948604484526 kJ kg^-1
 ```
 
+Moreover, both positional or keyword argument versions are provided, as well as plain `Real`
+(whenever unambiguous) or unitful input values ones:
+
+```julia
+julia> [ C.u(300), C.u(300u"K"), C.u(T = 300), C.u(T = 300u"K") ]
+4-element Vector{Quantity{Float64, 𝐋^2 𝐓^-2, Unitful.FreeUnits{(kg^-1, kJ), 𝐋^2 𝐓^-2, nothing}}}:
+ 157.742849247618 kJ kg^-1
+ 157.742849247618 kJ kg^-1
+ 157.742849247618 kJ kg^-1
+ 157.742849247618 kJ kg^-1
+```
 
 ### Example 3 – `IdealGas`
 
@@ -317,25 +329,64 @@ require multiple input parameters, keyword argument versions are provided:
 julia> CO2 = IdealGas("CO2", "Carbon Dioxide", C)
 CO2 gas, cubic cp₆₄(T)
 
-julia> CO2.s(P=100, T=300)
-3.9909694845958117
+julia> CO2.s(P = 100, T = 300)
+3.991311401092605 kJ kg^-1 K^-1
 
 julia> CO2.Pref
-1.0
+1.0 kPa
 
-julia> CO2.P(T=300, v=1.2, B=:MA) # v taken in mass base
-47.23057259713702
+julia> CO2.P(T = 300, v = (1.2, :MA))   # v taken in mass base
+47.23053066435605 kPa
 
-julia> CO2.P(T=300, v=1.2) # If omitted, base defaults to mass
-47.23057259713702
+julia> CO2.P(T = 300, v = 1.2u"m^3/kg")
+47.23053066435605 kPa
 
-julia> CO2.P(T=300, v=1.2, B=:MO) # v taken in molar base
-2078.6175
-
-julia> CO2.v(P=47, T=300)
-1.2058869599269026
+julia> CO2.v(P = 47, T = 300)
+1.2058869599269026 m^3 kg^-1
 ```
 
+Since the `IdealGas` is able to compute the $P$ - $T$ - $v$ state from any two of the inputs, it
+expands the `SpecificHeat` functionality as to return the value of a temperature-only property
+from `(P, v)` inputs:
+
+```julia
+julia> T2 = CO2.T(P = 47, v = (1.2, :MA))       # T can be determined from (P, v) for the gas
+298.535709882273 K
+
+julia> u2 = CO2.u(P = 47, v = (1.2, :MA))       # Therefore u(P, v) is possible
+156.78987590580027 kJ kg^-1
+
+julia> u2 == CO2.hmod.u(T2)                     # The underlying heat model :hmod only does u(T)
+true
+```
+
+`IdealGas` returns a more extensive set of thermodynamic properties:
+
+```julia
+julia> CO2.<tab><tab>
+ID    M     P     Pr    Pref  R     RMA   RMO   T     Tmax  Tmin  Tref
+a     aMA   aMO   cp    cpMA  cpMO  cs    cv    cvMA  cvMO  f     form
+g     gMA   gMO   h     hMA   hMO   hmod  k     name  s     s0    s0MA
+s0MO  sMA   sMO   sref  u     uMA   uMO   uref  v     vMA   vMO   view
+vr    β     γ     κT    κs    μJT   μs    ρ     ρMA   ρMO
+
+julia> props = (:a, :g, :β, :κT, :κs, :μJT, :μs, :cs)
+(:a, :g, :β, :κT, :κs, :μJT, :μs, :cs)
+
+julia> inputs = (P = 47, v = (1.2, :MA), B = :MO)
+(P = 47, v = (1.2, :MA), B = :MO)
+
+julia> [ getproperty(CO2, prop)(; inputs...) for prop in props ]
+8-element Vector{Quantity{Float64}}:
+ -47359.85533363907 kJ kmol^-1
+ -44877.69133363907 kJ kmol^-1
+      0.0033496830258408555 K^-1
+      0.02127659574468085 kPa^-1
+      0.016486008499247518 kPa^-1
+      0.0 K kPa^-1
+      1.430161364068402 K kPa^-1
+    269.79435797126683 m s^-1
+```
 
 ## Author
 
