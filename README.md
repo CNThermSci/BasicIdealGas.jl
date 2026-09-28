@@ -115,19 +115,19 @@ arguments, and returns values as the precision parameter of (plain) `SpecificHea
 Base.IEEEFloat`, since $\bar{c}_p / \bar{R}$ is dimensionless:
 
 ```julia
-julia> C.f┆R(300u"K") # f┆R is a valid julia identifier for f/R, where f is the cp(T) function
-4.448124274352035
+julia> C.f(300u"K")     # the `:f` property returns the wrapped cp/R function
+4.4483717825354825      # the wrapping ensures inputs must be in u"K"
 
-julia> typeof(ans)
+julia> typeof(ans)      # the wrapping ensures outputs to be in the object's floating point precision
 Float64
 
-julia> C.f┆R
+julia> C.f┆R            # wrapped function, "┆" can be typed by \dshfnc<tab>
 #2 (generic function with 1 method)
 
-julia> C.f┆R.f┆R # this recovers the original function (unwraps f┆R)
+julia> C.f┆R.f┆R        # recovers the original function (unwraps f┆R)
 cp_R (generic function with 1 method)
 
-julia> C.R # The default Ru value (CODATA 2022)
+julia> C.R              # the default Ru value (CODATA 2022)
 8.31446261815324 kJ K^-1 kmol^-1
 ```
 
