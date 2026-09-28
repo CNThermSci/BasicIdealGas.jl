@@ -288,26 +288,37 @@ julia> C.vr(300u"K")        # Relative specific volume (vr ≡ T/Pr), [K]
 291.21433797872834 K
 ```
 
+Object oriented-like property accessors are also available/dispatched in keyworded variants, and
+accept plain `Real` (whenever unambiguous) or unitful input values:
+
 Based ones include `(:cp, :cv, :u, :h, :s0)`, being based thermodynamic properties (the default
 base being the mass `:MA` one):
 
 ```julia
-julia> T = 300u"K"
+julia> T1 = 300u"K"
 300 K
 
-julia> C.cp(T)          # specific heat at const-pressure (default mass base)
+julia> C.cp(T1)         # specific heat at const-pressure (default mass base)
 0.8403958395259933 kJ kg^-1 K^-1
 
-julia> C.cp(T, :MO)     # specific heat at const-pressure (molar base)
+julia> C.cp(T1, :MO)    # specific heat at const-pressure (molar base)
 36.98582089753896 kJ K^-1 kmol^-1
 
-julia> C.u(T, :MA)      # specific internal energy (explicit mass base)
+julia> C.u(T1, :MA)     # specific internal energy (explicit mass base)
 157.742849247618 kJ kg^-1
 
-julia> C.h(T, :MA)      # specific enthlapy, mass base
+julia> C.h(T1, :MA)     # specific enthlapy, mass base
 214.41948604484526 kJ kg^-1
 ```
 
+```julia
+julia> [ C.u(300), C.u(300u"K"), C.u(T = 300), C.u(T = 300u"K") ]
+4-element Vector{Quantity{Float64, 𝐋^2 𝐓^-2, Unitful.FreeUnits{(kg^-1, kJ), 𝐋^2 𝐓^-2, nothing}}}:
+ 157.742849247618 kJ kg^-1
+ 157.742849247618 kJ kg^-1
+ 157.742849247618 kJ kg^-1
+ 157.742849247618 kJ kg^-1
+```
 
 ### Example 3 – `IdealGas`
 
