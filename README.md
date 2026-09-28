@@ -163,7 +163,7 @@ cubic cp₆₄(T)
 julia> C64.f┆R === C.f┆R    # Lossless conversion in the function
 true
 
-julia> C64.𝑅 === C.𝑅        # Lossy conversion in the parameters (by about eps(Float32))
+julia> C64.R === C.R        # Lossy conversion in the parameters (by about eps(Float32))
 false
 ```
 
