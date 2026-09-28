@@ -374,7 +374,19 @@ vr    β     γ     κT    κs    μJT   μs    ρ     ρMA   ρMO
 julia> props = (:a, :g, :β, :κT, :κs, :μJT, :μs, :cs)
 (:a, :g, :β, :κT, :κs, :μJT, :μs, :cs)
 
+julia> inputs = (P = 47, v = (1.2, :MA), B = :MO)
+(P = 47, v = (1.2, :MA), B = :MO)
 
+julia> [ getproperty(CO2, prop)(; inputs...) for prop in props ]
+8-element Vector{Quantity{Float64}}:
+ -47359.85533363907 kJ kmol^-1
+ -44877.69133363907 kJ kmol^-1
+      0.0033496830258408555 K^-1
+      0.02127659574468085 kPa^-1
+      0.016486008499247518 kPa^-1
+      0.0 K kPa^-1
+      1.430161364068402 K kPa^-1
+    269.79435797126683 m s^-1
 ```
 
 ## Author
