@@ -274,8 +274,7 @@ of flooding the user namespace with short-named functions. Model functions can b
 (i) base-independent ones, that only require a temperature input, and (ii) based ones, that
 require both a temperature and a base (either mass `:MA`, or molar `:MO`) inputs.
 
-Base-independent ones include `(:cp┆R, :cv┆R, :ga, :R, :∫cp┆R, :∫cv┆R, :u┆R, :h┆R, :∫cp┆RT,
-:s0┆R, :Pr, :vr)`, being dimensionless ratios or functions thereof:
+Base-independent ones include `(:γ, :Pr, :vr)`, being dimensionless ratios or functions thereof:
 
 ```julia
 julia> C.γ(300u"K")         # γ ≡ cp/cv at given temperature, "γ" can be typed by \gamma<tab>
@@ -287,9 +286,6 @@ julia> C.Pr(300u"K")        # Relative pressure, dimensionless
 julia> C.vr(300u"K")        # Relative specific volume (vr ≡ T/Pr), [K]
 291.21433797872834 K
 ```
-
-Object oriented-like property accessors are also available/dispatched in keyworded variants, and
-accept plain `Real` (whenever unambiguous) or unitful input values:
 
 Based ones include `(:cp, :cv, :u, :h, :s0)`, being based thermodynamic properties (the default
 base being the mass `:MA` one):
@@ -310,6 +306,9 @@ julia> C.u(T1, :MA)     # specific internal energy (explicit mass base)
 julia> C.h(T1, :MA)     # specific enthlapy, mass base
 214.41948604484526 kJ kg^-1
 ```
+
+Moreover, both positional or keyword argument versions are provided, as well as plain `Real`
+(whenever unambiguous) or unitful input values ones:
 
 ```julia
 julia> [ C.u(300), C.u(300u"K"), C.u(T = 300), C.u(T = 300u"K") ]
