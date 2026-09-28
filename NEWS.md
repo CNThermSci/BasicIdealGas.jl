@@ -1,3 +1,12 @@
+## v0.4.0-alpha.1
+
+- Implementing units on package composite types (ongoing)
+- Status:
+- `SpecificHeat`: fully implemented / all tests passing;
+- `IdealGas`: fully implemented / informally tested;
+- Others: disabled / turned off
+- `alpha`: Feature-incomplete, unstable
+
 ## v0.4.0-alpha
 
 - Implementing units on packages (ongoing)

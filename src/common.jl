@@ -1,8 +1,24 @@
+# IEEE-754 normalized floating point types of half, single, and double precision
+# ------------------------------------------------------------------------------
+
+FLOAT = Base.IEEEFloat
+
+# Abstract types
+# --------------
+
+abstract type ThermModel{ℙ <: FLOAT} end
+
+# Precision conversion
+# --------------------
+
+import Base: Float16, Float32, Float64
+
+Float16(x::Missing) = missing
+Float32(x::Missing) = missing
+Float64(x::Missing) = missing
+
 # Type aliasing
 # -------------
-
-# IEEE-754 normalized floating point types of half, single, and double precision
-FLOAT = Base.IEEEFloat
 
 # Thermodynamic state function Quantity type alias - dimension set (for arguments)
 const PRES = Quantity{ℙ, dimension(u"kPa")} where {ℙ <: Real}
@@ -39,35 +55,43 @@ const MOLR = Union{
     Quantity{ℙ, dimension(u"kmol/m^3")},
 } where {ℙ <: Real}
 
-# Thermodynamic unit conversion/stripping
-kSI(x::Real) = x
-kSI(x::PRES) = uconvert(u"kPa", x).val
-kSI(x::TEMP) = uconvert(u"K", x).val
-kSI(x::MOLW) = uconvert(u"kg/kmol", x).val
+# Unit-dressing helper functions
+PP(P::PRES) = uconvert(u"kPa", P)
+PP(P::Real) = P * u"kPa"
+PP(P::Missing) = missing
+PP(ξ::ThermModel{ℙ}, 𝜋::Union{PRES, Real, Missing}) where {ℙ} = ℙ(PP(𝜋))
 
-function kSI(x::MASS)
-    return if x isa VOLU
-        uconvert(u"m^3/kg", x).val
-    elseif x isa ENER
-        uconvert(u"kJ/kg", x).val
-    elseif x isa ENTR
-        uconvert(u"kJ/kg/K", x).val
-    elseif x isa DENS
-        uconvert(u"kg/m^3", x).val
-    end
-end
+TT(T::TEMP) = uconvert(u"K", T)
+TT(T::Real) = T * u"K"
+TT(T::Missing) = missing
+TT(ξ::ThermModel{ℙ}, θ::Union{TEMP, Real, Missing}) where {ℙ} = ℙ(TT(θ))
 
-function kSI(x::MOLR)
-    return if x isa VOLU
-        uconvert(u"m^3/kmol", x).val
-    elseif x isa ENER
-        uconvert(u"kJ/kmol", x).val
-    elseif x isa ENTR
-        uconvert(u"kJ/kmol/K", x).val
-    elseif x isa DENS
-        uconvert(u"kmol/m^3", x).val
-    end
-end
+MM(M::MOLW) = uconvert(u"kg/kmol", M)
+MM(M::Real) = M * u"kg/kmol"
+MM(M::Missing) = missing
+MM(ξ::ThermModel{ℙ}, μ::Union{MOLW, Real, Missing}) where {ℙ} = ℙ(MM(μ))
+
+vv(v::VOLU) = v isa MASS ? uconvert(u"m^3/kg", v) : uconvert(u"m^3/kmol", v)
+vv(v::Tuple{Real, Symbol}) = v[1] * (v[2] == :MA ? u"m^3/kg" : u"m^3/kmol")
+vv(v::Missing) = missing
+vv(ξ::ThermModel{ℙ}, υ::Union{VOLU, Tuple{Real, Symbol}, Missing}) where {ℙ} = ℙ(vv(υ))
+
+ee(e::ENER) = e isa MASS ? uconvert(u"kJ/kg", e) : uconvert(u"kJ/kmol", e)
+ee(e::Tuple{Real, Symbol}) = e[1] * (e[2] == :MA ? u"kJ/kg" : u"kJ/kmol")
+ee(e::Missing) = missing
+ee(ξ::ThermModel{ℙ}, ϵ::Union{ENER, Tuple{Real, Symbol}, Missing}) where {ℙ} = ℙ(ee(ϵ))
+
+ss(s::ENTR) = s isa MASS ? uconvert(u"kJ/kg/K", s) : uconvert(u"kJ/kmol/K", s)
+ss(s::Tuple{Real, Symbol}) = s[1] * (s[2] == :MA ? u"kJ/kg/K" : u"kJ/kmol/K")
+ss(s::Missing) = missing
+ss(ξ::ThermModel{ℙ}, ς::Union{ENTR, Tuple{Real, Symbol}, Missing}) where {ℙ} = ℙ(ss(ς))
+
+ρρ(ρ::DENS) = ρ isa MASS ? uconvert(u"kg/m^3", ρ) : uconvert(u"kmol/m^3", ρ)
+ρρ(ρ::Tuple{Real, Symbol}) = ρ[1] * (ρ[2] == :MA ? u"kg/m^3" : u"kmol/m^3")
+ρρ(ρ::Missing) = missing
+ρρ(ξ::ThermModel{ℙ}, ϱ::Union{DENS, Tuple{Real, Symbol}, Missing}) where {ℙ} = ℙ(ρρ(ϱ))
+
+PTv(P, T, v) = PP(P), TT(T), vv(v)
 
 # Constants
 # ---------
@@ -120,14 +144,11 @@ function ∫(𝑔::𝔽, a::HILIM, b::HILIM) where {𝔽 <: Function}
 end
 
 function ∫(𝑔::𝔽, a::LOLIM, b::LOLIM) where {𝔽 <: Function}
-    a ≈ b && return zero(Float16)
+    # isapprox(a, b, atol = max(eps(a), eps(b))) && return zero(Float16) * unit(𝑔(a) * a)
+    a != b || return zero(Float16) * unit(𝑔(a) * a)
     sa, sb, ss = b > a ? Float16.((a, b, 1)) : Float16.((b, a, -1))
     n = min(Int(trunc((sb - sa) / eps(sb))), 256)
     x = range(sa, step = (sb - sa) / n, length = n + 1) |> collect
     y = map(𝑔, x)
     return integrate(x, y, Trapezoidal()) * ss
 end
-
-## function ∫(𝑔::𝔽, a::Quantity{𝔸}, b::Quantity{𝔹}) where {𝔽 <: Function, 𝔸 <: LOTYP, 𝔹 <: LOTYP}
-##     return ∫(𝑔.f┆R, a.val, b.val) * unit(a) * unit(𝑔(a))
-## end
