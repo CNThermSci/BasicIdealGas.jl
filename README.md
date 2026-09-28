@@ -330,24 +330,22 @@ require multiple input parameters, keyword argument versions are provided:
 julia> CO2 = IdealGas("CO2", "Carbon Dioxide", C)
 CO2 gas, cubic cp₆₄(T)
 
-julia> CO2.s(P=100, T=300)
-3.9909694845958117
+julia> CO2.s(P = 100, T = 300)
+3.991311401092605 kJ kg^-1 K^-1
 
 julia> CO2.Pref
-1.0
+1.0 kPa
 
-julia> CO2.P(T=300, v=1.2, B=:MA) # v taken in mass base
-47.23057259713702
+julia> CO2.P(T = 300, v = (1.2, :MA))   # v taken in mass base
+47.23053066435605 kPa
 
-julia> CO2.P(T=300, v=1.2) # If omitted, base defaults to mass
-47.23057259713702
+julia> CO2.P(T = 300, v = 1.2u"m^3/kg")
+47.23053066435605 kPa
 
-julia> CO2.P(T=300, v=1.2, B=:MO) # v taken in molar base
-2078.6175
-
-julia> CO2.v(P=47, T=300)
-1.2058869599269026
+julia> CO2.v(P = 47, T = 300)
+1.2058869599269026 m^3 kg^-1
 ```
+
 
 
 ## Author
