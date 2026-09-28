@@ -24,14 +24,19 @@ provides types for basic ideal gas functionality from a hierarchy of `Type`s:
 - All dimensional data fields are stored with units as `Quantity{ℙ} where ℙ <: Base.IEEEFloat`
   types;
 
-- _Input_ specific heat functions are dimensionless and normalized by the gas constant;
-
 - _Stored_ value units are in the kSI system, and specific quantities in the molar base, `:MO`,
   rather than in the mass base, `:MA`, i.e., energy in $kJ$, temperatures in $K$, pressure in
   $kPa$, specific internal energies in $kJ/kmol$, and specific entropies in $kJ/kmol/K$;
 
 - User-facing outputs are accessed through fields and properties (in the julia language sense).
-  When the amount is based, a `Symbol`ic base argument—whether `:MO`, or `:MA`, respectively for
+  For state dependent outputs, the returned properties are functions that accept keyword
+  arguments for state specification: `(P = Pvalue, T = Tvalue, v = vvalue)`. A thermodynamically
+  minimum set of state specifying state functions is required. Input specific volume base is
+  taken from `vvalue` as either of the following:
+
+- 
+
+- When the amount is based, a `Symbol`ic base argument—whether `:MO`, or `:MA`, respectively for
   molar or mass base—can be optionally specified, with the mass base being the default one.
 
 - Constructors accept any unambiguous combination of `Real` and `Quantity{<:Real}` arguments.
