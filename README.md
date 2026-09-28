@@ -24,7 +24,7 @@ provides types for basic ideal gas functionality from a hierarchy of `Type`s:
 - All dimensional data fields are stored with units as `Quantity{ℙ} where ℙ <: Base.IEEEFloat`
   types;
 
-- _Stored_ value units are in the kSI system, and specific quantities in the molar base, `:MO`,
+- Stored value units are in the kSI system, and specific quantities in the molar base, `:MO`,
   rather than in the mass base, `:MA`, i.e., energy in $kJ$, temperatures in $K$, pressure in
   $kPa$, specific internal energies in $kJ/kmol$, and specific entropies in $kJ/kmol/K$;
 
@@ -32,12 +32,13 @@ provides types for basic ideal gas functionality from a hierarchy of `Type`s:
   For state dependent outputs, the returned properties are functions that accept keyword
   arguments for state specification: `(P = Pvalue, T = Tvalue, v = vvalue)`. A thermodynamically
   minimum set of state specifying state functions is required. Input specific volume base is
-  taken from `vvalue` as either of the following:
+  taken from `vvalue` as either of the following: (i) a unitful value, or (ii) a `Tuple{Real,
+  Symbol}`, such as `(1, :MA)`, the example taken as being `1u"m^3/kg"`, or `(1, :MO)` for
+  `1u"m^3/kmol"`;
 
-- 
-
-- When the amount is based, a `Symbol`ic base argument—whether `:MO`, or `:MA`, respectively for
-  molar or mass base—can be optionally specified, with the mass base being the default one.
+- When the output amount is based, a `Symbol`ic base argument—whether `:MO`, or `:MA`,
+  respectively for molar or mass base—can be optionally specified, with the mass base being the
+  default one, if omitted;
 
 - Constructors accept any unambiguous combination of `Real` and `Quantity{<:Real}` arguments.
   Specifying unitless values of reference specific internal energy and entropy is ambiguous.
