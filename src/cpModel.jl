@@ -3,7 +3,7 @@
 # Structure (type) definition
 # ---------------------------
 
-struct SpecificHeat{ℙ <: FLOAT}
+struct SpecificHeat{ℙ <: FLOAT} <: ThermModel{ℙ}
     ID::Symbol      # Model ID, as in :cubic, etc...
     f┆R::Function   # Unitless function cp(T)/R: ℙ -> ℙ
     𝑀::Quantity{ℙ, dimension(u"kg/kmol"), typeof(u"kg/kmol")}
@@ -49,13 +49,13 @@ function SpecificHeat{ℙ}(
         𝑠ref::ENTR,
         𝑅::ENTR = ℙ(Ru),
     ) where {ℙ <: FLOAT}
-    M = 𝑀 isa MOLW ? uconvert(u"kg/kmol", 𝑀) : 𝑀 * u"kg/kmol"
-    Tmin = 𝑇min isa TEMP ? uconvert(u"K", 𝑇min) : 𝑇min * u"K"
-    Tref = 𝑇ref isa TEMP ? uconvert(u"K", 𝑇ref) : 𝑇ref * u"K"
-    Tmax = 𝑇max isa TEMP ? uconvert(u"K", 𝑇max) : 𝑇max * u"K"
-    uref = 𝑢ref isa MASS ? uconvert(u"kJ/kmol", 𝑢ref * 𝑀) : uconvert(u"kJ/kmol", 𝑢ref)
-    sref = 𝑠ref isa MASS ? uconvert(u"kJ/kmol/K", 𝑠ref * 𝑀) : uconvert(u"kJ/kmol/K", 𝑠ref)
-    R = 𝑅 isa MASS ? uconvert(u"kJ/kmol/K", 𝑅 * 𝑀) : uconvert(u"kJ/kmol/K", 𝑅)
+    M = MM(𝑀)
+    Tmin = TT(𝑇min)
+    Tref = TT(𝑇ref)
+    Tmax = TT(𝑇max)
+    uref = ee(𝑢ref)
+    sref = ss(𝑠ref)
+    R = ss(𝑅)
     return SpecificHeat(ID, f┆R, ℙ.((M, Tmin, Tref, Tmax, uref, sref, 𝑅))...)
 end
 
@@ -91,8 +91,6 @@ function convert(::Type{SpecificHeat{ℙ}}, ξ::SpecificHeat{ℚ}) where {ℙ <:
     end
 end
 
-import Base: Float16, Float32, Float64
-
 Float16(ξ::SpecificHeat) = convert(SpecificHeat{Float16}, ξ)
 Float32(ξ::SpecificHeat) = convert(SpecificHeat{Float32}, ξ)
 Float64(ξ::SpecificHeat) = convert(SpecificHeat{Float64}, ξ)
@@ -123,84 +121,90 @@ function Base.show(io::IO, ::MIME"text/plain", ξ::SpecificHeat{ℙ}) where {ℙ
     return print(io, pretty(ξ))
 end
 
-# User-facing functions
-# ---------------------
+# Internal Property Calculations: positional, dispatched, no default args
+# -----------------------------------------------------------------------
 
+import Base: cp
+
+# Temperature args types:
+#   𝑇::TEMP                 => dispatched fallback
+#   T::Real                 => add units and fallback
+#   θ::Union{Real, TEMP}    => fallback
+
+# Ancillary: bounds
 𝗯(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = begin
     T = ℙ(𝑇)
     msg = "T = $(@sprintf("%.*g K", 5, T.val)) out of bounds"
     @assert(ξ.𝑇min <= T <= ξ.𝑇max, msg)
 end
-𝗯(ξ::SpecificHeat, 𝑇::Real) = 𝗯(ξ, 𝑇 * u"K")
+𝗯(ξ::SpecificHeat, T::Real) = 𝗯(ξ, TT(T))
 
-import Base: cp
-
+# Primitives
 cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ξ.f┆R(ℙ(𝑇)))
-cp┆R(ξ::SpecificHeat, 𝑇::Real) = cp┆R(ξ, 𝑇 * u"K")
-cv┆R(ξ::SpecificHeat{ℙ}, 𝑇) where {ℙ <: FLOAT} = cp┆R(ξ, 𝑇) - one(ℙ)
-ga(ξ::SpecificHeat, 𝑇) = cp┆R(ξ, 𝑇) / cv┆R(ξ, 𝑇)
+cp┆R(ξ::SpecificHeat, T::Real) = cp┆R(ξ, TT(T))
+cv┆R(ξ::SpecificHeat{ℙ}, θ::Union{Real, TEMP}) where {ℙ <: FLOAT} = cp┆R(ξ, θ) - one(ℙ)
 
-function R(ξ::SpecificHeat, B::Symbol = :MA)
+# Base-selected R
+function R(ξ::SpecificHeat, B::Symbol)
     @assert B in (:MA, :MO)
     return B == :MO ? ξ.𝑅 : ξ.𝑅 / ξ.𝑀
 end
+R(ξ::SpecificHeat, B::MASS) = R(ξ, :MA)
+R(ξ::SpecificHeat, B::MOLR) = R(ξ, :MO)
 
-cp(ξ::SpecificHeat, 𝑇, B = :MA) = cp┆R(ξ, 𝑇) * R(ξ, B)
-cv(ξ::SpecificHeat, 𝑇, B = :MA) = cv┆R(ξ, 𝑇) * R(ξ, B)
+# Derived, base-independent properties
+γ(ξ::SpecificHeat, θ::Union{Real, TEMP}) = cp┆R(ξ, θ) / cv┆R(ξ, θ)
 ∫cp┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ∫(ξ.f┆R, ξ.𝑇ref, ℙ(𝑇)))
-∫cp┆R(ξ::SpecificHeat, 𝑇::Real) = ∫cp┆R(ξ, 𝑇 * u"K")
+∫cp┆R(ξ::SpecificHeat, T::Real) = ∫cp┆R(ξ, TT(T))
 ∫cv┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = ∫cp┆R(ξ, 𝑇) - ℙ(𝑇) + ξ.𝑇ref
-∫cv┆R(ξ::SpecificHeat, 𝑇::Real) = ∫cv┆R(ξ, 𝑇 * u"K")
-u┆R(ξ::SpecificHeat, 𝑇) = ∫cv┆R(ξ, 𝑇) + ξ.𝑢ref / ξ.𝑅
-h┆R(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = u┆R(ξ, 𝑇) + ℙ(𝑇)
-h┆R(ξ::SpecificHeat, 𝑇::Real) = h┆R(ξ, 𝑇 * u"K")
-u(ξ::SpecificHeat, 𝑇, B = :MA) = u┆R(ξ, 𝑇) * R(ξ, B)
-h(ξ::SpecificHeat, 𝑇, B = :MA) = h┆R(ξ, 𝑇) * R(ξ, B)
+∫cv┆R(ξ::SpecificHeat, T::Real) = ∫cv┆R(ξ, TT(T))
+u┆R(ξ::SpecificHeat, θ::Union{Real, TEMP}) = ∫cv┆R(ξ, θ) + ξ.𝑢ref / ξ.𝑅
+h┆R(ξ::SpecificHeat{ℙ}, θ::Union{Real, TEMP}) where {ℙ <: FLOAT} = u┆R(ξ, θ) + ℙ(θ)
 ∫cp┆RT(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = (𝗯(ξ, 𝑇); ∫(T -> ξ.f┆R(T) / T, ξ.𝑇ref, ℙ(𝑇)))
-∫cp┆RT(ξ::SpecificHeat, 𝑇::Real) = ∫cp┆RT(ξ, 𝑇 * u"K")
-s0┆R(ξ::SpecificHeat, 𝑇) = ∫cp┆RT(ξ, 𝑇) + ξ.𝑠ref / ξ.𝑅
-s0(ξ::SpecificHeat, 𝑇, B = :MA) = s0┆R(ξ, 𝑇) * R(ξ, B)
-Pr(ξ::SpecificHeat, 𝑇) = exp(∫cp┆RT(ξ, 𝑇))
-vr(ξ::SpecificHeat{ℙ}, 𝑇::TEMP) where {ℙ <: FLOAT} = ℙ(𝑇) / Pr(ξ, 𝑇)
-vr(ξ::SpecificHeat, 𝑇::Real) = vr(ξ, 𝑇 * u"K")
+∫cp┆RT(ξ::SpecificHeat, T::Real) = ∫cp┆RT(ξ, TT(T))
+s0┆R(ξ::SpecificHeat, θ::Union{Real, TEMP}) = ∫cp┆RT(ξ, θ) + ξ.𝑠ref / ξ.𝑅
+Pr(ξ::SpecificHeat, θ::Union{Real, TEMP}) = exp(∫cp┆RT(ξ, θ))
+vr(ξ::SpecificHeat{ℙ}, θ::Union{Real, TEMP}) where {ℙ <: FLOAT} = ℙ(θ) / Pr(ξ, θ)
 
-# Base.getproperty
-# ----------------
+# Derived, based properties
+cp(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = cp┆R(ξ, θ) * R(ξ, B)
+cv(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = cv┆R(ξ, θ) * R(ξ, B)
+u(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = u┆R(ξ, θ) * R(ξ, B)
+h(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = h┆R(ξ, θ) * R(ξ, B)
+s0(ξ::SpecificHeat, θ::Union{Real, TEMP}, B::Union{Symbol, MASS, MOLR}) = s0┆R(ξ, θ) * R(ξ, B)
 
-props_T(ξ::SpecificHeat) = (
-    :cp┆R, :cv┆R, :ga, :∫cp┆R, :∫cv┆R,
-    :u┆R, :h┆R, :∫cp┆RT, :s0┆R, :Pr, :vr,
-)
+# Base.getproperty - user-facing, oop-style
+# -----------------------------------------
 
-props_T_B(ξ::SpecificHeat) = (
-    :cp, :cv, :u, :h, :s0,
-)
+fields(ξ::SpecificHeat) = (:ID, :f, :M, :R, :RMO, :RMA, :Tmin, :Tref, :Tmax, :uref, :sref)
+props_UNB(ξ::SpecificHeat) = (:γ, :Pr, :vr)
+props_BAS(ξ::SpecificHeat) = (:cp, :cv, :u, :h, :s0)
+props_CMP(ξ::SpecificHeat) = ([Symbol(string(i) * string(j)) for i in props_BAS(ξ) for j in (:MA, :MO)]...,)
+props(ξ::SpecificHeat) = (props_UNB(ξ)..., props_BAS(ξ)..., props_CMP(ξ)...)
 
 import Base: getproperty, propertynames
 
 function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
-    # Raw fields
-    if sy in fieldnames(SpecificHeat)
-        return getfield(ξ, sy)
-    end
     # Convenience accessors/transformers
-    if sy == :f
+    if sy == :ID
+        return getfield(ξ, :ID)
+    elseif sy in (:f┆R, :f)
         return getfield(ξ, :f┆R)
-    elseif sy == :M
+    elseif sy in (:𝑀, :M)
         return getfield(ξ, :𝑀)
-    elseif sy in (:R, :RMO)
+    elseif sy in (:𝑅, :R, :RMO)
         return getfield(ξ, :𝑅)
     elseif sy == :RMA
         return R(ξ, :MA)
-    elseif sy == :Tmin
+    elseif sy in (:𝑇min, :Tmin)
         return getfield(ξ, :𝑇min)
-    elseif sy == :Tref
+    elseif sy in (:𝑇ref, :Tref)
         return getfield(ξ, :𝑇ref)
-    elseif sy == :Tmax
+    elseif sy in (:𝑇max, :Tmax)
         return getfield(ξ, :𝑇max)
-    elseif sy == :uref
+    elseif sy in (:𝑢ref, :uref)
         return getfield(ξ, :𝑢ref)
-    elseif sy == :sref
+    elseif sy in (:𝑠ref, :sref)
         return getfield(ξ, :𝑠ref)
     end
     # Pretty print
@@ -216,24 +220,29 @@ function Base.getproperty(ξ::SpecificHeat, sy::Symbol)
         return println(join([pretty(ξ), string(plt)], "\n"))
     end
     # OOP-style covenience functions (formerly exported ones)
-    if sy in props_T(ξ)
+    if sy in props_UNB(ξ)
         return (
-            t::Union{Real, TEMP, Missing} = missing;
+            𝑇::Union{Real, TEMP, Missing} = missing;
             T::Union{Real, TEMP, Missing} = missing,
-        ) -> eval(sy)(ξ, ismissing(T) ? t : T)
-    elseif sy in props_T_B(ξ)
+            kw...,
+        ) -> eval(sy)(ξ, ismissing(T) ? 𝑇 : T)
+    elseif sy in props_BAS(ξ)
         return (
-            t::Union{Real, TEMP, Missing} = missing,
-            b::Symbol = :MA;
+            𝑇::Union{Real, TEMP, Missing} = missing,
+            𝐵::Symbol = :MA;
             T::Union{Real, TEMP, Missing} = missing,
             B::Union{Symbol, Missing} = missing,
-        ) -> eval(sy)(ξ, ismissing(T) ? t : T, ismissing(B) ? b : B)
+            kw...,
+        ) -> eval(sy)(ξ, ismissing(T) ? 𝑇 : T, ismissing(B) ? 𝐵 : B)
+    elseif sy in props_CMP(ξ)
+        fn = Symbol(string(sy)[1:(end - 2)])
+        BA = Symbol(last(string(sy), 2))
+        return (
+            𝑇::Union{Real, TEMP, Missing} = missing;
+            T::Union{Real, TEMP, Missing} = missing,
+            kw...,
+        ) -> eval(fn)(ξ, ismissing(T) ? 𝑇 : T, BA)
     end
 end
 
-Base.propertynames(ξ::SpecificHeat) = (
-    :ID, :f┆R, :𝑀, :𝑇min, :𝑇max, :𝑇ref, :𝑢ref, :𝑠ref, :𝑅,
-    :f, :M, :Tmin, :Tref, :Tmax, :uref, :sref, :R, :RMO, :RMA, :view,
-    props_T(ξ)...,
-    props_T_B(ξ)...,
-)
+Base.propertynames(ξ::SpecificHeat) = (fields(ξ)..., props(ξ)..., :view)

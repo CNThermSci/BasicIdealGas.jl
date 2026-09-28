@@ -3,7 +3,7 @@
 # Structure (type) definition
 # ---------------------------
 
-struct IdealGas{ℙ <: FLOAT}
+struct IdealGas{ℙ <: FLOAT} <: ThermModel{ℙ}
     form::String            # formula
     name::String            # name
     hmod::SpecificHeat{ℙ}   # heat model
@@ -87,279 +87,332 @@ function Base.show(io::IO, ::MIME"text/plain", ξ::IdealGas{ℙ}) where {ℙ <: 
     )
 end
 
-for FUNC in (:R,)
-    @eval begin
-        $FUNC(ξ::IdealGas, B::Symbol = :MA) = $FUNC(ξ.hmod, B)
-    end
-end
+# Internal, positional, dispatched, no default args P, T, v, ρ, s functions
+# ----------------------------------------------------------------------
 
-R(ξ::IdealGas, 𝑣::VOLU) = 𝑣 isa MASS ? R(ξ, :MA) : R(ξ, :MO)
+P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU) where {ℙ} = PP(R(ξ.hmod, 𝑣) * ℙ(𝑇 / 𝑣))
+T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU) where {ℙ} = TT(ℙ(𝑃 * 𝑣) / R(ξ.hmod, 𝑣))
+v(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = vv(R(ξ.hmod, B) * ℙ(𝑇 / 𝑃))
+ρ(ξ::IdealGas, 𝑃::PRES, 𝑇::TEMP, B::Symbol) = inv(v(ξ, 𝑃, 𝑇, B))
+s(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol) where {ℙ} = ss(s0(ξ.hmod, 𝑇, B) - R(ξ.hmod, B) * log(ℙ(𝑃) / ξ.𝑃ref))
 
-for FUNC in (:cp┆R, :cv┆R, :ga, :∫cp┆R, :∫cv┆R, :u┆R, :h┆R, :∫cp┆RT, :s0┆R, :Pr, :vr)
-    @eval begin
-        $FUNC(ξ::IdealGas, 𝑇::TEMP) = $FUNC(ξ.hmod, 𝑇)
-        $FUNC(ξ::IdealGas, 𝑇::Real) = $FUNC(ξ.hmod, 𝑇)
-    end
-end
-
-for FUNC in (:cp, :cv, :u, :h, :s0)
-    @eval begin
-        $FUNC(ξ::IdealGas, 𝑇::TEMP, B::Symbol = :MA) = $FUNC(ξ.hmod, 𝑇, B)
-        $FUNC(ξ::IdealGas, 𝑇::Real, B::Symbol = :MA) = $FUNC(ξ.hmod, 𝑇, B)
-    end
-end
-
-# Internal Positional P, T, V, ρ, s functions
-# -------------------------------------------
+# Internal, keyworded, default base property functions
+# ----------------------------------------------------
 
 # Pressure
-function _P(ξ::IdealGas{ℙ}, 𝑇::TEMP, 𝑣::VOLU) where {ℙ}
-    return uconvert(u"kPa", R(ξ, 𝑣) * ℙ(𝑇 / 𝑣))
+function P(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        kw...,
+    )
+    return ismissing(P) ? BasicIdealGas.P(ξ, TT(ξ, T), vv(ξ, v)) : PP(ξ, P)
 end
-_P(ξ::IdealGas{ℙ}, 𝑃::PRES) where {ℙ} = uconvert(u"kPa", ℙ(𝑃))
-_P(ξ::IdealGas{ℙ}, P::Real) where {ℙ} = ℙ(P) * u"kPa"
 
 # Temperature
-function _T(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑣::VOLU) where {ℙ}
-    return uconvert(u"K", ℙ(𝑃 * 𝑣) / R(ξ, 𝑣))
+function T(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        kw...,
+    )
+    return ismissing(T) ? BasicIdealGas.T(ξ, PP(ξ, P), vv(ξ, v)) : TT(ξ, T)
 end
-_T(ξ::IdealGas{ℙ}, 𝑇::TEMP) where {ℙ} = uconvert(u"K", ℙ(T))
-_T(ξ::IdealGas{ℙ}, T::Real) where {ℙ} = ℙ(T) * u"K"
 
 # Specific volume
-function _v(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {ℙ}
-    UNIT = B == :MA ? u"m^3/kg" : u"m^3/kmol"
-    return uconvert(UNIT, R(ξ, B) * ℙ(𝑇 / 𝑃))
-end
-function _v(ξ::IdealGas{ℙ}, 𝑣::VOLU) where {ℙ}
-    UNIT = 𝑣 isa MASS ? u"m^3/kg" : u"m^3/kmol"
-    return uconvert(UNIT, ℙ(𝑣))
-end
-function _v(ξ::IdealGas{ℙ}, 𝑣::VOLU, B::Symbol) where {ℙ}
-    iUNIT = 𝑣 isa MASS ? u"m^3/kg" : u"m^3/kmol"
-    oUNIT = B == :MA ? u"m^3/kg" : u"m^3/kmol"
-    return if iUNIT == oUNIT
-        # No base change / same dims / units can still differ
-        uconvert(oUNIT, ℙ(𝑣))
+function v(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        B::Union{Symbol, Missing} = missing,
+        kw...,
+    )
+    return if ismissing(v)
+        BasicIdealGas.v(ξ, PP(ξ, P), TT(ξ, T), ismissing(B) ? :MA : B)
     else
-        # Base change to B
-        uconvert(oUNIT, B == :MA ? 𝑣 / ξ.𝑀 : 𝑣 * ξ.𝑀)
+        𝑣 = vv(ξ, v)
+        if ismissing(B) || (𝑣 isa MASS && B == :MA) || (𝑣 isa MOLR && B == :MO)
+            𝑣
+        else
+            𝑣 isa MASS ? 𝑣 * ξ.M : 𝑣 / ξ.M
+        end
     end
-end
-function _v(ξ::IdealGas{ℙ}, v::Real, B::Symbol = :MA) where {ℙ}
-    return ℙ(v) * (B == :MA ? u"m^3/kg" : u"m^3/kmol")
 end
 
 # Density
-_ρ(ξ::IdealGas, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) = inv(_v(ξ, 𝑃, 𝑇, B))
-
-# Specific entropy
-function _s(ξ::IdealGas{ℙ}, 𝑃::PRES, 𝑇::TEMP, B::Symbol = :MA) where {ℙ}
-    return s0(ξ, 𝑇, B) - R(ξ, B) * log(ℙ(𝑃) / ξ.𝑃ref)
+function ρ(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        B::Union{Symbol, Missing} = missing,
+        kw...,
+    )
+    return inv(BasicIdealGas.v(ξ; P = P, T = T, v = v, B = B, kw...))
 end
 
-# PTV helper
-# ----------
-
-PTv = (
-    ξ::IdealGas;
-    P::Union{Real, PRES, Missing} = missing,
-    T::Union{Real, TEMP, Missing} = missing,
-    v::Union{Real, VOLU, Missing} = missing,
-    B::Symbol = :MA,
-) -> begin
+# Helper PT, PTv functions
+function PT(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        kw...,
+    )
     miss = [ i[1] for i in [(:P, P), (:T, T), (:v, v)] if ismissing(i[2]) ]
     length(miss) <= 1 ||
         throw(ArgumentError(@sprintf("Underspecified state: missing (%s)", join(miss, ", "))))
     return if ismissing(P)
-        𝑇 = _T(ξ, T)
-        𝑣 = _v(ξ, v, B)
-        _P(ξ, 𝑇, 𝑣), 𝑇, 𝑣
+        𝑇 = TT(ξ, T)
+        𝑣 = vv(ξ, v)
+        BasicIdealGas.P(ξ, 𝑇, 𝑣), 𝑇
     elseif ismissing(T)
-        𝑃 = _P(ξ, P)
-        𝑣 = _v(ξ, v, B)
-        𝑃, _T(ξ, 𝑃, 𝑣), 𝑣
+        𝑃 = PP(ξ, P)
+        𝑣 = vv(ξ, v)
+        𝑃, BasicIdealGas.T(ξ, 𝑃, 𝑣)
     else
-        𝑃 = _P(ξ, P)
-        𝑇 = _T(ξ, T)
-        𝑃, 𝑇, _v(ξ, 𝑃, 𝑇, B)
+        PP(ξ, P), TT(ξ, T)
     end
 end
 
-__s = (
-    ξ::IdealGas;
-    P::Union{Real, PRES, Missing} = missing,
-    T::Union{Real, TEMP, Missing} = missing,
-    v::Union{Real, VOLU, Missing} = missing,
-    B::Symbol = :MA,
-) -> begin
-    𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
-    _s(ξ, 𝑃, 𝑇, B)
-end
-
-__a = (
-    ξ::IdealGas;
-    P::Union{Real, PRES, Missing} = missing,
-    T::Union{Real, TEMP, Missing} = missing,
-    v::Union{Real, VOLU, Missing} = missing,
-    B::Symbol = :MA,
-) -> begin
-    𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
-    𝑠 = _s(ξ, 𝑃, 𝑇, B)
-    𝑢 = u(ξ, 𝑇, B)
-    𝑢 - 𝑇 * 𝑠
-end
-
-__g = (
-    ξ::IdealGas;
-    P::Union{Real, PRES, Missing} = missing,
-    T::Union{Real, TEMP, Missing} = missing,
-    v::Union{Real, VOLU, Missing} = missing,
-    B::Symbol = :MA,
-) -> begin
-    𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
-    𝑠 = _s(ξ, 𝑃, 𝑇, B)
-    ℎ = h(ξ, 𝑇, B)
-    ℎ - 𝑇 * 𝑠
-end
-
-__β = (
-    ξ::IdealGas;
-    P::Union{Real, PRES, Missing} = missing,
-    T::Union{Real, TEMP, Missing} = missing,
-    v::Union{Real, VOLU, Missing} = missing,
-    B::Symbol = :MA,
-) -> begin
-    if !ismissing(T)
-        return inv(_T(ξ, T))
+function PTv(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        B::Union{Symbol, Missing} = missing,
+        kw...,
+    )
+    miss = [ i[1] for i in [(:P, P), (:T, T), (:v, v)] if ismissing(i[2]) ]
+    length(miss) <= 1 ||
+        throw(ArgumentError(@sprintf("Underspecified state: missing (%s)", join(miss, ", "))))
+    return if ismissing(P)
+        𝑇 = TT(ξ, T)
+        𝑣 = vv(ξ, v)
+        BasicIdealGas.P(ξ, 𝑇, 𝑣), 𝑇, 𝑣
+    elseif ismissing(T)
+        𝑃 = PP(ξ, P)
+        𝑣 = vv(ξ, v)
+        𝑃, BasicIdealGas.T(ξ, 𝑃, 𝑣), 𝑣
+    else
+        𝑃 = PP(ξ, P)
+        𝑇 = TT(ξ, T)
+        return 𝑃, 𝑇, BasicIdealGas.v(ξ, 𝑃, 𝑇, ismissing(B) ? :MA : B)
     end
-    𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
-    inv(𝑇)
 end
 
-__κT = (
-    ξ::IdealGas;
-    P::Union{Real, PRES, Missing} = missing,
-    T::Union{Real, TEMP, Missing} = missing,
-    v::Union{Real, VOLU, Missing} = missing,
-    B::Symbol = :MA,
-) -> begin
-    if !ismissing(P)
-        return inv(_P(ξ, P))
-    end
-    𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
-    inv(𝑃)
+# Specific internal energy
+function u(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        B::Union{Symbol, Missing} = missing,
+        kw...,
+    )
+    return u(ξ.hmod, BasicIdealGas.T(ξ, P = P, T = T, v = v), ismissing(B) ? :MA : B)
 end
 
-__κs = (
-    ξ::IdealGas;
-    P::Union{Real, PRES, Missing} = missing,
-    T::Union{Real, TEMP, Missing} = missing,
-    v::Union{Real, VOLU, Missing} = missing,
-    B::Symbol = :MA,
-) -> begin
-    𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
-    inv(𝑃 * ga(ξ, 𝑇))
+# Specific enthalpy
+function h(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        B::Union{Symbol, Missing} = missing,
+        kw...,
+    )
+    return h(ξ.hmod, BasicIdealGas.T(ξ, P = P, T = T, v = v), ismissing(B) ? :MA : B)
 end
 
-# Base.getproperty
-# ----------------
+# Specific entropy
+function s(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        B::Union{Symbol, Missing} = missing,
+        kw...,
+    )
+    return s(ξ, PT(ξ, P = P, T = T, v = v)..., ismissing(B) ? :MA : B)
+end
 
-import Base: getproperty, propertynames
+# Specific Helmholtz energy
+function a(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        B::Union{Symbol, Missing} = missing,
+        kw...,
+    )
+    𝑃, 𝑇 = PT(ξ, P = P, T = T, v = v)
+    𝑢 = u(ξ.hmod, T, ismissing(B) ? :MA : B)
+    𝑠 = s(ξ, 𝑃, 𝑇, ismissing(B) ? :MA : B)
+    return 𝑢 - 𝑇 * 𝑠
+end
+
+# Specific Gibbs energy
+function g(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        B::Union{Symbol, Missing} = missing,
+        kw...,
+    )
+    𝑃, 𝑇 = PT(ξ, P = P, T = T, v = v)
+    ℎ = h(ξ.hmod, 𝑇, ismissing(B) ? :MA : B)
+    𝑠 = s(ξ, 𝑃, 𝑇, ismissing(B) ? :MA : B)
+    return ℎ - 𝑇 * 𝑠
+end
+
+# Coefficient of volume expansion, β
+function β(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        kw...,
+    )
+    return inv(BasicIdealGas.T(ξ, P = P, T = T, v = v))
+end
+
+# Isothermal compressibility, κT
+function κT(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        kw...,
+    )
+    return inv(BasicIdealGas.P(ξ, P = P, T = T, v = v))
+end
+
+# Isentropic compressibility, κs
+function κs(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        kw...,
+    )
+    𝑃, 𝑇 = PT(ξ, P = P, T = T, v = v)
+    return inv(𝑃 * γ(ξ.hmod, 𝑇))
+end
+
+# Isentropic expansion exponent, k
+function k(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        kw...,
+    )
+    𝑇 = T(ξ, P = P, T = T, v = v)
+    return γ(ξ.hmod, 𝑇)
+end
+
+# Adiabatic speed of sound, cs
+function cs(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        kw...,
+    )
+    𝑇 = BasicIdealGas.T(ξ, P = P, T = T, v = v)
+    return uconvert(u"m/s", √(γ(ξ.hmod, 𝑇) * R(ξ.hmod, :MA) * 𝑇))
+end
+
+# Joule-Thomson coefficient, μJT
+μJT(ξ::IdealGas{ℙ}; kw...) where {ℙ} = zero(ℙ) * u"K/kPa"
+
+# Isentropic expansion coefficient, μs
+function μs(
+        ξ::IdealGas;
+        P::Union{PRES, Real, Missing} = missing,
+        T::Union{TEMP, Real, Missing} = missing,
+        v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+        kw...,
+    )
+    𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = :MA)
+    return uconvert(u"K/kPa", 𝑣 / cp(ξ.hmod, 𝑇, :MA))
+end
+
+# Base.getproperty - user-facing, oop-style
+# -----------------------------------------
+
+fields(ξ::IdealGas) = (:form, :name, :hmod, :Pref)
+props_UNB(ξ::IdealGas) = (:P, :T, :β, :κT, :κs, :k, :cs, :μJT, :μs)
+props_BAS(ξ::IdealGas) = (:v, :ρ, :u, :h, :s, :a, :g)
+props_CMP(ξ::IdealGas) = ([Symbol(string(i) * string(j)) for i in props_BAS(ξ) for j in (:MA, :MO)]...,)
+props(ξ::IdealGas) = (props_UNB(ξ)..., props_BAS(ξ)..., props_CMP(ξ)...)
 
 function Base.getproperty(ξ::IdealGas{ℙ}, sy::Symbol) where {ℙ}
-    # Raw fields
-    if sy in fieldnames(IdealGas)
-        return getfield(ξ, sy)
-    end
-    # Convenience raw field aliases
-    if sy == :Pref
+    # Convenience raw field accessors
+    if sy == :form
+        return getfield(ξ, :form)
+    elseif sy == :name
+        return getfield(ξ, :name)
+    elseif sy in (:hmod, :heat)
+        return getfield(ξ, :hmod)
+    elseif sy in (:𝑃ref, :Pref)
         return getfield(ξ, :𝑃ref)
     end
-    # Short-circuit SpecificHeat model accessors
-    𝐶 = getfield(ξ, :hmod)
-    if sy in propertynames(𝐶)
-        if sy ∉ (props_T(𝐶)..., props_T_B(𝐶)...)
-            return getproperty(𝐶, sy)
-        elseif sy ∈ props_T(𝐶)
-            # This allows an 𝑓(T) be calc'd from 𝑓(T(P, T, v, B))
-            # Makes sense only at the IdealGas level (can't fallback to SpecificHeat directly)
-            return (; P = missing, T = missing, v = missing, B = :MA) -> begin
-                getproperty(𝐶, sy)(_T(ξ, T))
-            end
-        elseif sy ∈ props_T_B(𝐶)
-            # This allows an 𝑓(T, B) be calc'd from 𝑓(T(P, T, v, B), B)
-            # Makes sense only at the IdealGas level (can't fallback to SpecificHeat directly)
-            return (; P = missing, T = missing, v = missing, B = :MA) -> begin
-                getproperty(𝐶, sy)(_T(ξ, T), B)
-            end
-        end
+    # Convenience hmod field accessors
+    if sy in fields(ξ.hmod)
+        return getproperty(ξ.hmod, sy)
     end
-    # OOP-style covenience functions (formerly exported ones)
-    return if sy == :P
-        (; P = missing, T = missing, v = missing, B = :MA) -> PTv(ξ; P = P, T = T, v = v, B = B)[1]
-    elseif sy == :T
-        (; P = missing, T = missing, v = missing, B = :MA) -> PTv(ξ; P = P, T = T, v = v, B = B)[2]
-    elseif sy == :v
-        (; P = missing, T = missing, v = missing, B = :MA) -> PTv(ξ; P = P, T = T, v = v, B = B)[3]
-    elseif sy == :vMA
-        (; P = missing, T = missing, v = missing) -> PTv(ξ; P = P, T = T, v = v, B = :MA)[3]
-    elseif sy == :vMO
-        (; P = missing, T = missing, v = missing) -> PTv(ξ; P = P, T = T, v = v, B = :MO)[3]
-    elseif sy == :ρ
-        (; P = missing, T = missing, v = missing, B = :MA) -> inv(PTv(ξ; P = P, T = T, v = v, B = B)[3])
-    elseif sy == :ρMA
-        (; P = missing, T = missing, v = missing) -> inv(PTv(ξ; P = P, T = T, v = v, B = :MA)[3])
-    elseif sy == :ρMO
-        (; P = missing, T = missing, v = missing) -> inv(PTv(ξ; P = P, T = T, v = v, B = :MO)[3])
-    elseif sy == :s
-        (; P = missing, T = missing, v = missing, B = :MA) -> __s(ξ; P = P, T = T, v = v, B = B)
-    elseif sy == :sMA
-        (; P = missing, T = missing, v = missing) -> __s(ξ; P = P, T = T, v = v, B = :MA)
-    elseif sy == :sMO
-        (; P = missing, T = missing, v = missing) -> __s(ξ; P = P, T = T, v = v, B = :MO)
-    elseif sy == :a
-        (; P = missing, T = missing, v = missing, B = :MA) -> __a(ξ; P = P, T = T, v = v, B = B)
-    elseif sy == :aMA
-        (; P = missing, T = missing, v = missing) -> __a(ξ; P = P, T = T, v = v, B = :MA)
-    elseif sy == :aMO
-        (; P = missing, T = missing, v = missing) -> __a(ξ; P = P, T = T, v = v, B = :MO)
-    elseif sy == :g
-        (; P = missing, T = missing, v = missing, B = :MA) -> __g(ξ; P = P, T = T, v = v, B = B)
-    elseif sy == :gMA
-        (; P = missing, T = missing, v = missing) -> __g(ξ; P = P, T = T, v = v, B = :MA)
-    elseif sy == :gMO
-        (; P = missing, T = missing, v = missing) -> __g(ξ; P = P, T = T, v = v, B = :MO)
-    elseif sy in (:β, :beta)
-        (; P = missing, T = missing, v = missing, B = :MA) -> __β(ξ; P = P, T = T, v = v, B = B)
-    elseif sy in (:κT, :kappaT)
-        (; P = missing, T = missing, v = missing, B = :MA) -> __κT(ξ; P = P, T = T, v = v, B = B)
-    elseif sy in (:κs, :kappas)
-        (; P = missing, T = missing, v = missing, B = :MA) -> __κs(ξ; P = P, T = T, v = v, B = B)
-    elseif sy == :k
-        (; P = missing, T = missing, v = missing, B = :MA) -> getproperty(𝐶, :ga)(_T(ξ, T))
-    elseif sy == :c
-        (; P = missing, T = missing, v = missing, B = :MA) -> begin
-            𝑇 = _T(ξ, T)
-            γ = getproperty(𝐶, :ga)(𝑇)
-            𝑅 = getproperty(𝐶, :RMA)
-            uconvert(u"m/s", √(γ * 𝑅 * 𝑇))
-        end
-    elseif sy in (:μJT, :muJT)
-        (; P = missing, T = missing, v = missing, B = :MA) -> zero(ℙ) * u"K/kPa"
-    elseif sy in (:μs, :mus)
-        (; P = missing, T = missing, v = missing, B = :MA) -> begin
-            𝑃, 𝑇, 𝑣 = PTv(ξ, P = P, T = T, v = v, B = B)
-            uconvert(u"K/kPa", 𝑣 / getproperty(𝐶, :cp)(𝑇))
-        end
+    # IdealGas properties
+    if sy in props_UNB(ξ)
+        return (
+            ;
+            P::Union{PRES, Real, Missing} = missing,
+            T::Union{TEMP, Real, Missing} = missing,
+            v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+            kw...,
+        ) -> eval(sy)(ξ, P = P, T = T, v = v, kw...)
+    elseif sy in props_BAS(ξ)
+        return (
+            ;
+            P::Union{PRES, Real, Missing} = missing,
+            T::Union{TEMP, Real, Missing} = missing,
+            v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+            B::Union{Symbol, Missing} = missing,
+            kw...,
+        ) -> eval(sy)(ξ, P = P, T = T, v = v, B = B, kw...)
+    elseif sy in props_CMP(ξ)
+        fn = Symbol(string(sy)[1:(end - 2)])
+        BA = Symbol(last(string(sy), 2))
+        return (
+            ;
+            P::Union{PRES, Real, Missing} = missing,
+            T::Union{TEMP, Real, Missing} = missing,
+            v::Union{VOLU, Tuple{Real, Symbol}, Missing} = missing,
+            kw...,
+        ) -> eval(fn)(
+            ξ,
+            P = ismissing(P) ? 𝑃 : P,
+            T = ismissing(T) ? 𝑇 : T,
+            v = ismissing(v) ? 𝑣 : v,
+            B = BA,
+            kw...
+        )
+    end
+    # Pretty-print
+    if sy == :view
+        return ξ.hmod.view
+    end
+    # SpecificHeat model property fallbacks
+    if sy in props(ξ.hmod)
+        return getproperty(ξ.hmod, sy)
     end
 end
 
-Base.propertynames(ξ::IdealGas) = (
-    :form, :name, :hmod, :𝑃ref,
-    :Pref,
-    propertynames(getfield(ξ, :hmod))...,
-    :P, :T, :v, :vMA, :vMO, :ρ, :ρMA, :ρMO, :s, :sMA, :sMO,
-    :a, :aMA, :aMO, :g, :gMA, :gMO, :β, :beta, :κT, :kappaT,
-    :κs, :kappas, :k, :c, :μJT, :muJT, :μs, :mus,
+Base.propertynames(ξ::IdealGas) = tuple(
+    Set([fields(ξ)..., props(ξ)..., fields(ξ.hmod)..., props(ξ.hmod)..., :view])...,
 )
