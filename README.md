@@ -179,21 +179,19 @@ julia> C64.R - C.R
 
 ```julia
 julia> C.<tab><tab>
-ID      M       Pr      R       RMA     RMO     Tmax    Tmin
-Tref    cp      cp┆R    cv      cv┆R    f       f┆R     ga
-h       h┆R     s0      s0┆R    sref    u       uref    u┆R
-view    vr      ∫cp┆R   ∫cp┆RT  ∫cv┆R   𝑀       𝑅       𝑇max
-𝑇min    𝑇ref    𝑠ref    𝑢ref
+ID    M     Pr    R     RMA   RMO
+Tmax  Tmin  Tref  cp    cpMA  cpMO
+cv    cvMA  cvMO  f     h     hMA
+hMO   s0    s0MA  s0MO  sref  u
+uMA   uMO   uref  view  vr    γ
 ```
 
 or programatically, through:
 
 ```julia
 julia> propertynames(C)
-(:ID, :f┆R, :𝑀, :𝑇min, :𝑇max, :𝑇ref, :𝑢ref, :𝑠ref, :𝑅, :f, :M, :Tmin, :Tref, :Tmax, :uref,
-:sref, :R, :RMO, :RMA, :vie w, :cp┆R, :cv┆R, :ga, :R, :∫cp┆R, :∫cv┆R, :u┆R, :h┆R, :∫cp┆RT,
-:s0┆R, :Pr, :vr, :cp, :cv, :u, :h, :s0)
-
+(:ID, :f, :M, :R, :RMO, :RMA, :Tmin, :Tref, :Tmax, :uref, :sref, :γ, :Pr, :vr, :cp, :cv,
+:u, :h, :s0, :cpMA, :cpMO, :cvMA, :cvMO, :uMA, :uMO, :hMA, :hMO, :s0MA, :s0MO, :view)
 ```
 
 *Model Previewing:*
