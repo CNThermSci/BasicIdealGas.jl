@@ -346,7 +346,36 @@ julia> CO2.v(P = 47, T = 300)
 1.2058869599269026 m^3 kg^-1
 ```
 
+Since the `IdealGas` is able to compute the $P$ - $T$ - $v$ state from any two of the inputs, it
+expands the `SpecificHeat` functionality as to return the value of a temperature-only property
+from `(P, v)` inputs:
 
+```julia
+julia> T2 = CO2.T(P = 47, v = (1.2, :MA))       # T can be determined from (P, v) for the gas
+298.535709882273 K
+
+julia> u2 = CO2.u(P = 47, v = (1.2, :MA))       # Therefore u(P, v) is possible
+156.78987590580027 kJ kg^-1
+
+julia> u2 == CO2.hmod.u(T2)                     # The underlying heat model :hmod only does u(T)
+true
+```
+
+`IdealGas` returns a more extensive set of thermodynamic properties:
+
+```julia
+julia> CO2.<tab><tab>
+ID    M     P     Pr    Pref  R     RMA   RMO   T     Tmax  Tmin  Tref
+a     aMA   aMO   cp    cpMA  cpMO  cs    cv    cvMA  cvMO  f     form
+g     gMA   gMO   h     hMA   hMO   hmod  k     name  s     s0    s0MA
+s0MO  sMA   sMO   sref  u     uMA   uMO   uref  v     vMA   vMO   view
+vr    β     γ     κT    κs    μJT   μs    ρ     ρMA   ρMO
+
+julia> props = (:a, :g, :β, :κT, :κs, :μJT, :μs, :cs)
+(:a, :g, :β, :κT, :κs, :μJT, :μs, :cs)
+
+
+```
 
 ## Author
 
