@@ -162,43 +162,34 @@ end
     @test_throws AssertionError bounds(C, nextfloat(C.Tmax))
 end
 
-@testset "cpModel.test.jl: user-facing functions: thermodynamic consistencies       " begin
+@testset "cpModel.test.jl: thermodynamic consistencies                              " begin
+    R = BasicIdealGas.R
     cp┆R = BasicIdealGas.cp┆R
     cv┆R = BasicIdealGas.cv┆R
-    ga = BasicIdealGas.ga
-    R = BasicIdealGas.R
-    cp = BasicIdealGas.cp
-    cv = BasicIdealGas.cv
     ∫cp┆R = BasicIdealGas.∫cp┆R
     ∫cv┆R = BasicIdealGas.∫cv┆R
     u┆R = BasicIdealGas.u┆R
     h┆R = BasicIdealGas.h┆R
-    u = BasicIdealGas.u
-    h = BasicIdealGas.h
     ∫cp┆RT = BasicIdealGas.∫cp┆RT
     s0┆R = BasicIdealGas.s0┆R
-    s0 = BasicIdealGas.s0
-    Pr = BasicIdealGas.Pr
-    vr = BasicIdealGas.vr
     # Float16 are tested but may overflow depending on model function form and argument type
     for ℙ in [Float32, Float64]
         Tmin, Tref, Tmax = 273u"K", 298u"K", 1800u"K"
         uref, sref, 𝑀 = 6885u"kJ/kmol", 213.685u"kJ/kmol/K", 44.01u"kg/kmol"
-        𝑅 = Ru
         C = SpecificHeat{ℙ}(:cubic, cp_R[:cubic], 𝑀, Tmin, Tref, Tmax, uref, sref)
         G = SpecificHeat{ℙ}(:const, cp_R[:const], 𝑀, Tmin, Tref, Tmax, uref, sref)
         for T in (Tmin, (Tmin + Tmax) / 2, Tmax)
-            @test C.f┆R(T) isa ℙ
-            @test cp┆R(C, T) ≈ C.f┆R(T)
-            @test cv┆R(C, T) ≈ C.f┆R(T) - one(ℙ)
-            @test ga(C, T) ≈ cp┆R(C, T) / cv┆R(C, T) ≈ cp(C, T) / cv(C, T)
-            @test R(C, :MO) == C.𝑅
-            @test R(C, :MA) ≈ C.𝑅 / C.𝑀
+            @test C.f(T) isa ℙ
+            @test cp┆R(C, T) ≈ C.f(T)
+            @test cv┆R(C, T) ≈ C.f(T) - one(ℙ)
+            @test C.γ(T) ≈ cp┆R(C, T) / cv┆R(C, T) ≈ C.cp(T) / C.cv(T)
+            @test C.R == C.RMO
+            @test C.RMA ≈ C.R / C.M
             for B in (:MA, :MO)
-                @test cp(C, T, B) ≈ cp┆R(C, T) * R(C, B)
-                @test cv(C, T, B) ≈ cv┆R(C, T) * R(C, B)
-                @test cp(C, T, B) ≈ cv(C, T, B) + R(C, B)
-                @test ga(C, T) ≈ cp(C, T, B) / cv(C, T, B)
+                @test C.cp(T, B) ≈ cp┆R(C, T) * R(C, B)
+                @test C.cv(T, B) ≈ cv┆R(C, T) * R(C, B)
+                @test C.cp(T, B) ≈ C.cv(T, B) + R(C, B)
+                @test C.γ(T) ≈ C.cp(T, B) / C.cv(T, B)
             end
             @test ∫cp┆R(G, T) ≈ (5 // 2) * (ℙ(T) - C.Tref)
             @test ∫cv┆R(G, T) ≈ (3 // 2) * (ℙ(T) - C.Tref)
@@ -208,18 +199,18 @@ end
                 @test h┆R(H, T) ≈ u┆R(H, T) + ℙ(T)
             end
             for B in (:MA, :MO)
-                @test u(C, T) ≈ u┆R(C, T) * R(C)
-                @test h(C, T) ≈ h┆R(C, T) * R(C)
-                @test h(C, T) ≈ u(C, T) + R(C) * ℙ(T)
+                @test C.u(T, B) ≈ u┆R(C, T) * R(C, B)
+                @test C.h(T, B) ≈ h┆R(C, T) * R(C, B)
+                @test C.h(T, B) ≈ C.u(T, B) + R(C, B) * ℙ(T)
             end
             @test ∫cp┆RT(G, T) ≈ (5 // 2) * log(ℙ(T) / C.Tref)
-            @test s0┆R(G, T) ≈ ∫cp┆RT(G, T) + C.sref / C.𝑅
+            @test s0┆R(G, T) ≈ ∫cp┆RT(G, T) + C.sref / C.R
             for B in (:MA, :MO)
-                @test s0(C, T) ≈ s0┆R(C, T) * R(C)
+                @test C.s0(T, B) ≈ s0┆R(C, T) * R(C, B)
             end
-            @test Pr(C, C.Tref) ≈ one(ℙ)
-            @test Pr(C, T) ≈ exp(∫cp┆RT(C, T))
-            @test vr(C, T) * Pr(C, T) ≈ ℙ(T)
+            @test C.Pr(C.Tref) ≈ one(ℙ)
+            @test C.Pr(T) ≈ exp(∫cp┆RT(C, T))
+            @test C.vr(T) * C.Pr(T) ≈ ℙ(T)
         end
     end
 end
