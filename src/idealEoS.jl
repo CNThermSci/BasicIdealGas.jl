@@ -250,7 +250,7 @@ function a(
         kw...,
     )
     𝑃, 𝑇 = PT(ξ, P = P, T = T, v = v)
-    𝑢 = u(ξ.hmod, T, ismissing(B) ? :MA : B)
+    𝑢 = u(ξ.hmod, 𝑇, ismissing(B) ? :MA : B)
     𝑠 = s(ξ, 𝑃, 𝑇, ismissing(B) ? :MA : B)
     return 𝑢 - 𝑇 * 𝑠
 end
