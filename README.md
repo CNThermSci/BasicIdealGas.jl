@@ -142,12 +142,12 @@ julia> C32 = Float32(C)
 cubic cp₃₂(T)
 
 julia> typeof(C32)
-SpecificHeat{Float32}
+SpecificHeat{Float32}           # conversion adjusts the object's precision parameter
 
-julia> dump(C32.f┆R(300u"K"))
-Float32 4.4483714f0
+julia> dump(C32.f┆R(300u"K"))   # precision conversion re-wraps the underlying function
+Float32 4.4483714f0             # thus preserving the object's precision parameter
 
-julia> C32.f┆R.f┆R # the original function is always recoverable!
+julia> C32.f┆R.f┆R              # the original function is always recoverable!
 cp_R (generic function with 1 method)
 ```
 
