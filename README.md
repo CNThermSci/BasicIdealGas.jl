@@ -165,8 +165,10 @@ true
 
 julia> C64.R === C.R        # Lossy conversion in the parameters (by about eps(Float32))
 false
-```
 
+julia> C64.R - C.R
+4.358992455877342e-8 kJ K^-1 kmol^-1
+```
 
 ### Example 2 – Using the `SpecificHeat`
 
