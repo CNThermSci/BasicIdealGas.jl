@@ -278,14 +278,8 @@ Base-independent ones include `(:cp┆R, :cv┆R, :ga, :R, :∫cp┆R, :∫cv┆
 :s0┆R, :Pr, :vr)`, being dimensionless ratios or functions thereof:
 
 ```julia
-julia> C.ga(300u"K")        # γ ≡ cp/cv at given temperature
+julia> C.γ(300u"K")         # γ ≡ cp/cv at given temperature, "γ" can be typed by \gamma<tab>
 1.2899919333131564
-
-julia> C.∫cv┆R(300u"K")     # ∫(cv/r)dT from Tref -> T
-6.887131257604551 K
-
-julia> C.u┆R(300u"K")       # u/R at T
-834.9622957267734 K
 
 julia> C.Pr(300u"K")        # Relative pressure, dimensionless
 1.0301690572045714
