@@ -221,8 +221,8 @@ properties available.
 
 _Model Constants:_
 
-Model constants are it's stored fields, which are _by design_ hard to type (due to special
-characters), since most of them are considered to be _low-level accessors_:
+Model stored field constants are by design hard to type (due to higher Unicode characters),
+since most of them are considered to be _low-level accessors_:
 
 ```julia
 julia> fieldnames(SpecificHeat)
